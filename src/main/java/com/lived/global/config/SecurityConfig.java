@@ -1,4 +1,4 @@
-package com.lived.global.config; // 본인 패키지 경로에 맞게 수정
+package com.lived.global.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,10 +13,11 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable()) // POST 테스트를 위해 CSRF 비활성화
+                .csrf(csrf -> csrf.disable()) // CSRF 보호 비활성화
+                .formLogin(form -> form.disable()) // 기본 로그인 페이지 비활성화
+                .httpBasic(basic -> basic.disable()) // HTTP Basic 인증 비활성화
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/temp/**").permitAll() // /temp로 시작하는 모든 주소는 로그인 없이 허용
-                        .anyRequest().authenticated()            // 나머지는 여전히 로그인 필요
+                        .anyRequest().permitAll() // 모든 요청을 로그인 없이 허용
                 );
 
         return http.build();
