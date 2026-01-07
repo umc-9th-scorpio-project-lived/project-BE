@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: lived
+
+  datasource:
+    url: ${RDS_URL}
+      username: ${RDS_USERNAME}
+      password: ${RDS_PASSWORD}
+      driver-class-name: com.mysql.cj.jdbc.Driver
+
+
+
+
