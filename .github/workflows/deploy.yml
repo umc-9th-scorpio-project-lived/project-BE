@@ -1,0 +1,42 @@
+name: Deploy to EC2 with Docker
+
+on:
+  push:
+    branches: [ "develop" ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Build with Gradle
+        run: ./gradlew clean build -x test
+
+      - name: Docker build & push
+        run: |
+          docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+          docker build -t naho1108/lived-app .
+          docker push naho1108/lived-app
+
+      - name: EC2 Deploy
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            sudo docker pull naho1108/lived-app
+            sudo docker stop lived-app || true
+            sudo docker rm lived-app || true
+            sudo docker run -d --name lived-app -p 8080:8080 \
+              -e RDS_URL='${{ secrets.RDS_URL }}' \
+              -e RDS_USERNAME='${{ secrets.RDS_USERNAME }}' \
+              -e RDS_PASSWORD='${{ secrets.RDS_PASSWORD }}' \
+              naho1108/lived-app
