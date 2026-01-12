@@ -1,7 +1,7 @@
-🌳 살아보니 - Backend
+## 🌳 살아보니 - Backend
 UMC 9기 Scorpio지부 프로젝트 '살아보니'의 백엔드 저장소입니다.
 
-🛠 Tech Stack
+## 🛠 Tech Stack
 
 ## 🏗️ Branch Strategy
 
@@ -51,4 +51,4 @@ UMC 9기 Scorpio지부 프로젝트 '살아보니'의 백엔드 저장소입니�
 | **test** | 테스트 코드 추가 및 수정 |
 | **release** | 버전 릴리즈 (버전 태깅이나 배포 관련 커밋) |
 
-👥 Backend Team
+## 👥 Backend Team
