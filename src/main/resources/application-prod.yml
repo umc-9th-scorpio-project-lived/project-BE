@@ -8,6 +8,21 @@ spring:
     password: "${RDS_PASSWORD}"
     driver-class-name: com.mysql.cj.jdbc.Driver
 
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+        jdbc.batch_size: 20
+    open-in-view: false
+
+logging:
+    level:
+      root: info
+      com.lived: info
+
 
 
 
