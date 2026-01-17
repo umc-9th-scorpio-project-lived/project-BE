@@ -7,6 +7,7 @@ import com.lived.domain.member.enums.TreeVisibility;
 import com.lived.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -14,7 +15,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "member")
 @Getter
-@Builder
+@SuperBuilder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 public class Member extends BaseEntity {
@@ -44,8 +45,9 @@ public class Member extends BaseEntity {
     @Column(name = "living_period", nullable = false)
     private LivingPeriod livingPeriod; // 사용자 자취연차
 
+    @Builder.Default
     @Column(name = "notification_status", nullable = false)
-    private Integer notificationStatus; // 알림수신 상태 (default: 0)
+    private Integer notificationStatus = 0; // 알림수신 상태 (default: 0)
 
     @Column(name = "agreement_date")
     private LocalDateTime agreementDate; // 알림수신 상태 변경 시점
