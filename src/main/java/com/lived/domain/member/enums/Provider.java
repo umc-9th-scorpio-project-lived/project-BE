@@ -1,0 +1,6 @@
+package com.lived.domain.member.enums;
+
+public enum Provider {
+    KAKAO,
+    GOOGLE
+}
