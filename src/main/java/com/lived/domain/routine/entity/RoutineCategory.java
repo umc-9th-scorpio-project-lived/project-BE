@@ -1,5 +1,6 @@
 package com.lived.domain.routine.entity;
 
+import com.lived.domain.routine.entity.enums.CategoryName;
 import com.lived.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -10,18 +11,17 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-public class Routine extends BaseEntity {
+public class RoutineCategory extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "routine_id")
+    @Column(name = "category_id")
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id", nullable = false)
-    private RoutineCategory category;
-
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String title;
+    private CategoryName name;
 
+    @Column(nullable = false, length = 20)
+    private String emoji;
 }
