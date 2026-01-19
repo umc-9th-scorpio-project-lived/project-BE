@@ -8,8 +8,11 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalAdjusters;
 import java.util.Arrays;
 import java.util.List;
 
@@ -52,6 +55,10 @@ public class MemberRoutine extends BaseEntity {
     private String repeatValue;
 
     @Builder.Default
+    @Column(name = "repeat_interval")
+    private Integer repeatInterval = 1;
+
+    @Builder.Default
     @Column(nullable = false)
     private Boolean isActive = true;
 
@@ -80,7 +87,14 @@ public class MemberRoutine extends BaseEntity {
         String todayNum = String.valueOf(dayValue);
         List<String> activeDays = Arrays.asList(this.repeatValue.split(","));
 
-        return activeDays.contains(todayNum);
+        if(!activeDays.contains(todayNum)) return false;
+
+        LocalDate startMonday = this.startDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        LocalDate targetMonday = date.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+
+        long weeksBetween = ChronoUnit.WEEKS.between(startMonday, targetMonday);
+
+        return (weeksBetween % this.repeatInterval) == 0;
     }
 
     /**
