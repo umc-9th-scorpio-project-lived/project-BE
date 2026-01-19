@@ -29,4 +29,14 @@ public class NotificationController {
 
         return ApiResponse.onSuccess(GeneralSuccessCode.OK, result);
     }
+
+    @GetMapping("/settings")
+    public ApiResponse<NotificationResponseDTO.NotificationSettingDTO> getNotificationSetting() {
+        // 사용자 ID 가져오기 추후 구현
+        Long memberId = 1L;
+
+        NotificationResponseDTO.NotificationSettingDTO result = notificationService.getNotificationSetting(memberId);
+
+        return ApiResponse.onSuccess(GeneralSuccessCode.OK, result);
+    }
 }
