@@ -20,7 +20,6 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class NotificationService {
     private final NotificationRepository notificationRepository;
-    private final NotificationSettingRepository notificationSettingRepository;
 
     public List<NotificationResponseDTO.NotificationDTO> getNotificationByCategory(Long memberId, TargetType targetType) {
         List<Notification> notifications = notificationRepository.findAllByMemberIdAndTargetOrderByCreatedAtDesc(memberId, targetType);
@@ -33,11 +32,5 @@ public class NotificationService {
         }
 
         return dtoNotificationList;
-    }
-
-    public NotificationResponseDTO.NotificationSettingDTO getNotificationSetting(Long memberId) {
-        NotificationSetting notificationSetting = notificationSettingRepository.findByMemberId(memberId);
-
-        return NotificationConverter.toNotificationSettingDTO(notificationSetting);
     }
 }
