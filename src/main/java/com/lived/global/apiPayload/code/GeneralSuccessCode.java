@@ -15,7 +15,9 @@ public enum GeneralSuccessCode implements BaseSuccessCode {
     CREATED(HttpStatus.CREATED, "COMMON201_1", "리소스 생성이 완료되었습니다."),
 
     // 루틴 관련 성공 코드
-    ROUTINE_CREATED(HttpStatus.CREATED, "ROUTINE201_1", "루틴 생성 성공입니다.");
+    ROUTINE_CREATED(HttpStatus.CREATED, "ROUTINE201_1", "루틴 생성 성공입니다."),
+    ROUTINE_OK(HttpStatus.OK, "ROUTINE200_1", "루틴 조회 성공입니다.");
+
 
     private final HttpStatus status;
     private final String code;
