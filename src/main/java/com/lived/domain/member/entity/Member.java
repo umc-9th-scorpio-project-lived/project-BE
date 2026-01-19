@@ -31,6 +31,9 @@ public class Member extends BaseEntity {
     @Column(name = "social_id", nullable = false, length = 256)
     private String socialId; // 소셜 서비스 유저 식별값
 
+    @Column(name = "name", nullable = false, length = 64)
+    private String name;
+
     @Column(name = "nickname", nullable = false, length = 64)
     private String nickname; // 서비스 내 활동명
 
