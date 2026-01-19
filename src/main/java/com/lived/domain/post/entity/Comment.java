@@ -1,7 +1,7 @@
-package com.lived.domain.post.entity;
+package com.lived.domain.comment.entity;
 
 import com.lived.domain.member.entity.Member;
-import com.lived.domain.post.entity.enums.PostCategory;
+import com.lived.domain.post.entity.Post;
 import com.lived.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
@@ -17,43 +17,32 @@ import lombok.Builder;
 @SuperBuilder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Table(name = "post")
-public class Post extends BaseEntity {
+@Table(name = "comment")
+public class Comment extends BaseEntity {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @Column(name = "post_id")
+  @Column(name = "comment_id")
   private Long id;
+
+  @ManyToOne(fetch = FetchType.LAZY, optional = false)
+  @JoinColumn(name = "post_id", nullable = false)
+  private Post post;
 
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
   @JoinColumn(name = "member_id", nullable = false)
   private Member member;
 
-  @Enumerated(EnumType.STRING)
-  @Column(name = "category", nullable = false)
-  private PostCategory category;
-
-  @Column(name = "title", nullable = false)
-  private String title;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "parent_comment_id")
+  private Comment parent;
 
   @Column(name = "content", columnDefinition = "TEXT", nullable = false)
   private String content;
 
   @Builder.Default
-  @Column(name = "view_count", nullable = false)
-  private Integer viewCount = 0;
-
-  @Builder.Default
   @Column(name = "like_count", nullable = false)
   private Integer likeCount = 0;
-
-  @Builder.Default
-  @Column(name = "comment_count", nullable = false)
-  private Integer commentCount = 0;
-
-  @Builder.Default
-  @Column(name = "scrap_count", nullable = false)
-  private Integer scrapCount = 0;
 
   @Column(name = "deleted_at")
   private LocalDateTime deletedAt;
