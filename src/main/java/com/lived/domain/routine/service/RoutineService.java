@@ -5,6 +5,7 @@ import com.lived.domain.member.repository.MemberRepository;
 import com.lived.domain.routine.converter.RoutineConverter;
 import com.lived.domain.routine.dto.HomeRoutineResponseDTO;
 import com.lived.domain.routine.dto.RoutineRequestDTO;
+import com.lived.domain.routine.dto.RoutineUpdateRequestDTO;
 import com.lived.domain.routine.entity.RoutineHistory;
 import com.lived.domain.routine.entity.mapping.MemberRoutine;
 import com.lived.domain.routine.repository.MemberRoutineRepository;
@@ -111,6 +112,15 @@ public class RoutineService {
         if (total == 0) return "오늘 루틴을 시작해볼까요?";
         if (completed == 0) return "아직 완료하지 않은 루틴이 있어요!";
         return String.format("오늘 루틴 %d/%d 진행 중!", completed, total);
+    }
+
+    // 루틴 수정
+    @Transactional
+    public void updateRoutine(Long routineId, RoutineUpdateRequestDTO request) {
+        MemberRoutine memberRoutine = memberRoutineRepository.findById(routineId)
+                .orElseThrow(() -> new GeneralException(GeneralErrorCode.ROUTINE_NOT_FOUND));
+
+        memberRoutine.update(request);
     }
 
 

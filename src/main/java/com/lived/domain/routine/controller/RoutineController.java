@@ -2,18 +2,22 @@ package com.lived.domain.routine.controller;
 
 import com.lived.domain.routine.dto.HomeRoutineResponseDTO;
 import com.lived.domain.routine.dto.RoutineRequestDTO;
+import com.lived.domain.routine.dto.RoutineUpdateRequestDTO;
 import com.lived.domain.routine.service.RoutineService;
 import com.lived.global.apiPayload.ApiResponse;
 import com.lived.global.apiPayload.code.GeneralSuccessCode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 
+@Tag(name = "Routine", description = "루틴 관련 API")
 @RestController
 @RequestMapping("/api/routines")
 @RequiredArgsConstructor
@@ -48,6 +52,20 @@ public class RoutineController {
             ) {
         HomeRoutineResponseDTO response = routineService.getHomeRoutines(memberId, date);
         return ApiResponse.onSuccess(GeneralSuccessCode.ROUTINE_OK, response);
+    }
+
+    @Operation(
+            summary = "루틴 수정 API",
+            description = "기존 루틴의 정보를 수정합니다. 수정은 과거와 미래의 모든 일정에 반영됩니다."
+    )
+    @PatchMapping("/{memberRoutineId}")
+    public ApiResponse<String> updateRoutine(
+            @Parameter(description = "수정할 루틴의 ID", example = "1")
+            @PathVariable Long memberRoutineId,
+            @Valid @RequestBody RoutineUpdateRequestDTO request
+            ) {
+        routineService.updateRoutine(memberRoutineId, request);
+        return ApiResponse.onSuccess(GeneralSuccessCode.ROUTINE_UPDATED, "루틴 수정이 완료되었습니다.");
     }
 
 }
