@@ -19,7 +19,7 @@ public record RoutineUpdateRequestDTO(
         @Schema(description = "이모지", example = "👍")
         String emoji,
 
-        @Schema(description = "반복 타입", example = "WEEKLY")
+        @Schema(description = "반복 타입", example = "MONTHLY")
         RepeatType repeatType,
 
         @Schema(description = "주 단위 반복 간격", example = "1")
