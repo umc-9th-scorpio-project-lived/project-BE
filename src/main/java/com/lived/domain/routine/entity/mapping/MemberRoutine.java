@@ -1,6 +1,7 @@
 package com.lived.domain.routine.entity.mapping;
 
 import com.lived.domain.member.entity.Member;
+import com.lived.domain.routine.dto.RoutineUpdateRequestDTO;
 import com.lived.domain.routine.entity.Routine;
 import com.lived.domain.routine.entity.enums.RepeatType;
 import com.lived.global.entity.BaseEntity;
@@ -111,5 +112,15 @@ public class MemberRoutine extends BaseEntity {
         boolean isLastDayMatch = targetDays.contains("L") && (date.getDayOfMonth() == date.lengthOfMonth());
 
         return isSpecificDayMatch || isLastDayMatch;
+    }
+
+    public void update(RoutineUpdateRequestDTO request) {
+        this.title = request.title();
+        this.emoji = request.emoji();
+        this.repeatType = request.repeatType();
+        this.repeatInterval = request.repeatInterval() != null ? request.repeatInterval() : 1;
+        this.repeatValue = request.getJoinedRepeatValue();
+        this.alarmTime = request.alarmTime();
+        this.isAlarmOn = request.isAlarmOn();
     }
 }

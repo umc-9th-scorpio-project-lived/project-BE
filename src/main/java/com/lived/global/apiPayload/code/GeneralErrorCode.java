@@ -14,7 +14,10 @@ public enum GeneralErrorCode implements BaseErrorCode {
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "COMMON500_1", "예기치 않은 서버 에러가 발생했습니다."),
 
     // 회원 관련 에러 코드
-    MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "MEMBER404_1", "사용자를 찾을 수 없습니다.");
+    MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "MEMBER404_1", "사용자를 찾을 수 없습니다."),
+
+    // 루틴 관련 에러 코드
+    ROUTINE_NOT_FOUND(HttpStatus.NOT_FOUND, "ROUTINE404_1", "해당 루틴을 찾을 수 없습니다.");
 
     private final HttpStatus status;
     private final String code;
