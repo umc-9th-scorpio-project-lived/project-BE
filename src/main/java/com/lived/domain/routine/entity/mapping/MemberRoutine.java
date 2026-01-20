@@ -116,6 +116,7 @@ public class MemberRoutine extends BaseEntity {
 
     public void update(RoutineUpdateRequestDTO request) {
         this.title = request.title();
+        this.emoji = request.emoji();
         this.repeatType = request.repeatType();
         this.repeatInterval = request.repeatInterval() != null ? request.repeatInterval() : 1;
         this.repeatValue = request.getJoinedRepeatValue();
