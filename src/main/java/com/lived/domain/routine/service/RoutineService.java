@@ -3,13 +3,14 @@ package com.lived.domain.routine.service;
 import com.lived.domain.member.entity.Member;
 import com.lived.domain.member.repository.MemberRepository;
 import com.lived.domain.routine.converter.RoutineConverter;
-import com.lived.domain.routine.dto.HomeRoutineResponseDTO;
-import com.lived.domain.routine.dto.RoutineRequestDTO;
-import com.lived.domain.routine.dto.RoutineUpdateRequestDTO;
+import com.lived.domain.routine.dto.*;
+import com.lived.domain.routine.entity.Routine;
 import com.lived.domain.routine.entity.RoutineHistory;
+import com.lived.domain.routine.entity.enums.RepeatType;
 import com.lived.domain.routine.entity.mapping.MemberRoutine;
 import com.lived.domain.routine.repository.MemberRoutineRepository;
 import com.lived.domain.routine.repository.RoutineHistoryRepository;
+import com.lived.domain.routine.repository.RoutineRepository;
 import com.lived.global.apiPayload.code.GeneralErrorCode;
 import com.lived.global.apiPayload.exception.GeneralException;
 import lombok.RequiredArgsConstructor;
@@ -32,11 +33,16 @@ public class RoutineService {
     private final MemberRoutineRepository memberRoutineRepository;
     private final MemberRepository memberRepository;
     private final RoutineHistoryRepository routineHistoryRepository;
+    private final RoutineRepository routineRepository;
 
     // 루틴 생성 로직 (커스텀)
     public Long createCustomRoutine(Long memberId, RoutineRequestDTO request) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new GeneralException(GeneralErrorCode.MEMBER_NOT_FOUND));
+
+        if (memberRoutineRepository.existsByMemberIdAndTitleAndIsActiveTrue(memberId, request.getTitle())){
+            throw new GeneralException(GeneralErrorCode.ROUTINE_ALREADY_EXISTS);
+        }
 
         MemberRoutine newRoutine = MemberRoutine.builder()
                 .member(member)
@@ -59,6 +65,7 @@ public class RoutineService {
     public HomeRoutineResponseDTO getHomeRoutines(Long memberId, LocalDate targetDate) {
         List<MemberRoutine> activeRoutines = memberRoutineRepository.findAllByMemberIdAndIsActiveTrue(memberId);
 
+        // targetDate가 반복 설정에 해당하는지 필터링
         List<MemberRoutine> scheduledRoutines = activeRoutines.stream()
                 .filter(mr -> mr.isScheduledFor(targetDate))
                 .toList();
@@ -67,14 +74,17 @@ public class RoutineService {
                 .map(MemberRoutine::getId)
                 .toList();
 
+        // 해당 날짜에 각 루틴을 완료했는지 조회
         List<RoutineHistory> histories = routineHistoryRepository.findAllByMemberRoutineIdInAndCheckDate(routineIds, targetDate);
 
+        // Map으로 변환하여 루틴 ID별로 isDone 탐색 빠르게
         Map<Long, Boolean> historyMap = histories.stream()
                 .collect(Collectors.toMap(
                         rh -> rh.getMemberRoutine().getId(),
                         RoutineHistory::getIsDone
                 ));
 
+        // MemberRoutine -> RoutineItem 변환
         List<HomeRoutineResponseDTO.RoutineItem> items = scheduledRoutines.stream()
                 .map(mr -> RoutineConverter.toHomeRoutineItem(mr, historyMap.getOrDefault(mr.getId(), false)))
                 .toList();
@@ -116,12 +126,99 @@ public class RoutineService {
 
     // 루틴 수정
     @Transactional
-    public void updateRoutine(Long routineId, RoutineUpdateRequestDTO request) {
-        MemberRoutine memberRoutine = memberRoutineRepository.findById(routineId)
+    public void updateRoutine(Long memberRoutineId, RoutineUpdateRequestDTO request) {
+        MemberRoutine memberRoutine = memberRoutineRepository.findById(memberRoutineId)
                 .orElseThrow(() -> new GeneralException(GeneralErrorCode.ROUTINE_NOT_FOUND));
 
         memberRoutine.update(request);
     }
+
+    // 루틴 삭제
+    @Transactional
+    public void deleteRoutine(Long memberRoutineId, RoutineDeleteRequestDTO request) {
+        MemberRoutine memberRoutine = memberRoutineRepository.findById(memberRoutineId)
+                .orElseThrow(() -> new GeneralException(GeneralErrorCode.ROUTINE_NOT_FOUND));
+
+        switch (request.deleteType()) {
+            case ONLY_SET -> memberRoutine.excludeDate(request.targetDate());
+            case AFTER_SET -> memberRoutine.terminateAt(request.targetDate());
+            case ALL_SET -> {
+                routineHistoryRepository.deleteAllByMemberRoutineId(memberRoutineId);
+
+                memberRoutineRepository.delete(memberRoutine);
+            }
+        }
+    }
+
+    // 루틴 완료상태 변경
+    @Transactional
+    public boolean toggleRoutineCheck(Long memberRoutineId, LocalDate targetDate) {
+        MemberRoutine memberRoutine = memberRoutineRepository.findById(memberRoutineId)
+                .orElseThrow(() -> new GeneralException(GeneralErrorCode.ROUTINE_NOT_FOUND));
+
+        if(!memberRoutine.isScheduledFor(targetDate)) {
+            throw new GeneralException(GeneralErrorCode.BAD_REQUEST);
+        }
+
+        return routineHistoryRepository.findByMemberRoutineIdAndCheckDate(memberRoutineId, targetDate)
+                .map(history -> {
+                    history.toggleDone();
+                    return history.getIsDone();
+                })
+                .orElseGet(() -> {
+                    RoutineHistory newHistory = RoutineHistory.builder()
+                            .memberRoutine(memberRoutine)
+                            .checkDate(targetDate)
+                            .isDone(true)
+                            .build();
+                    routineHistoryRepository.save(newHistory);
+                    return true;
+                });
+    }
+
+    // 일괄 선택된 루틴 등록
+    @Transactional
+    public int registerRoutinesBatch(Long memberId, RoutineBatchAddRequestDTO request) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new GeneralException(GeneralErrorCode.MEMBER_NOT_FOUND));
+
+        // 사용자가 이미 등록한 루틴들
+        List<Long> existingRoutineIds = memberRoutineRepository.findAllByMemberIdAndIsActiveTrue(memberId)
+                .stream()
+                .filter(mr -> mr.getRoutine() != null)
+                .map(mr -> mr.getRoutine().getId())
+                .toList();
+
+        // 이미 등록되어 있는 것들은 빼고 조회
+        List<Routine> templates = routineRepository.findAllById(request.routinIds())
+                .stream()
+                .filter(template -> !existingRoutineIds.contains(template.getId())) // 중복 제거
+                .toList();
+
+        if(templates.isEmpty()) {
+            return 0;
+        }
+
+        List<MemberRoutine> memberRoutines = templates.stream()
+                .map(template -> MemberRoutine.builder()
+                        .member(member)
+                        .routine(template)
+                        .title(template.getTitle())
+                        .emoji(template.getCategory().getEmoji())
+                        .startDate(LocalDate.now())
+                        .repeatType(RepeatType.WEEKLY)
+                        .repeatValue("0,1,2,3,4,5,6")
+                        .isActive(true)
+                        .isAlarmOn(false)
+                        .build())
+                .collect(Collectors.toList());
+
+        memberRoutineRepository.saveAll(memberRoutines);
+        return memberRoutines.size();
+
+
+    }
+
 
 
 
