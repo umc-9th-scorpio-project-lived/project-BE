@@ -40,4 +40,7 @@ jobs:
               -e RDS_URL='${{ secrets.RDS_URL }}' \
               -e RDS_USERNAME='${{ secrets.RDS_USERNAME }}' \
               -e RDS_PASSWORD='${{ secrets.RDS_PASSWORD }}' \
+              -e AWS_ACCESS_KEY='${{ secrets.AWS_ACCESS_KEY }}' \
+              -e AWS_SECRET_KEY='${{ secrets.AWS_SECRET_KEY }}' \
+              -e AWS_S3_BUCKET='${{ secrets.AWS_S3_BUCKET }}' \
               naho1108/lived-app
