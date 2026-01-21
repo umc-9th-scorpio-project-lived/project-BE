@@ -64,4 +64,11 @@ public class Member extends BaseEntity {
 
     @Column(name = "inactive_date")
     private LocalDateTime inactiveDate; // 비활성화 시각
+
+    @Column(name = "refresh_token", length = 512)
+    private String refreshToken;    // ReFresh 토큰 저장
+
+    public void updateRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
+    }
 }
