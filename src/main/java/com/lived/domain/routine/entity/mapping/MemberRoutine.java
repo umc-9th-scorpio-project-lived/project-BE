@@ -14,6 +14,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -42,6 +43,10 @@ public class MemberRoutine extends BaseEntity {
     private String title;
 
     @Builder.Default
+    @Column(nullable = false, length = 20)
+    private String emoji = "👍";
+
+    @Builder.Default
     @Column(name = "is_alarm_on")
     private Boolean isAlarmOn = false;
 
@@ -66,12 +71,21 @@ public class MemberRoutine extends BaseEntity {
     @Column(name = "start_date")
     private LocalDate startDate;
 
+    @Column(name = "end_date")
+    private LocalDate endDate;
+
     @Builder.Default
-    @Column(nullable = false, length = 20)
-    private String emoji = "👍";
+    @ElementCollection
+    @CollectionTable(name = "routine_exclusion", joinColumns = @JoinColumn(name = "member_routine_id"))
+    @Column(name = "excluded_date")
+    private List<LocalDate> excludedDates = new ArrayList<>();
+
 
     public boolean isScheduledFor(LocalDate date) {
         if(date.isBefore((this.startDate)) || !this.isActive) return false;
+        if(this.endDate != null && date.isAfter(this.endDate)) return false;
+
+        if(this.excludedDates.contains(date)) return false;
 
         return switch (this.repeatType) {
             case WEEKLY -> checkWeekly(date);
@@ -122,5 +136,20 @@ public class MemberRoutine extends BaseEntity {
         this.repeatValue = request.getJoinedRepeatValue();
         this.alarmTime = request.alarmTime();
         this.isAlarmOn = request.isAlarmOn();
+    }
+
+    // 이 일정만 삭제
+    public void excludeDate(LocalDate date) {
+        if(!this.excludedDates.contains(date)) {
+            this.excludedDates.add(date);
+        }
+    }
+
+    // 이후 일정 삭제
+    public void terminateAt(LocalDate date) {
+        this.endDate = date.minusDays(1);
+        if(this.endDate.isBefore(this.startDate)) {
+            this.isActive = false;
+        }
     }
 }
