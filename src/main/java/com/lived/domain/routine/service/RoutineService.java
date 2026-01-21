@@ -3,14 +3,14 @@ package com.lived.domain.routine.service;
 import com.lived.domain.member.entity.Member;
 import com.lived.domain.member.repository.MemberRepository;
 import com.lived.domain.routine.converter.RoutineConverter;
-import com.lived.domain.routine.dto.HomeRoutineResponseDTO;
-import com.lived.domain.routine.dto.RoutineDeleteRequestDTO;
-import com.lived.domain.routine.dto.RoutineRequestDTO;
-import com.lived.domain.routine.dto.RoutineUpdateRequestDTO;
+import com.lived.domain.routine.dto.*;
+import com.lived.domain.routine.entity.Routine;
 import com.lived.domain.routine.entity.RoutineHistory;
+import com.lived.domain.routine.entity.enums.RepeatType;
 import com.lived.domain.routine.entity.mapping.MemberRoutine;
 import com.lived.domain.routine.repository.MemberRoutineRepository;
 import com.lived.domain.routine.repository.RoutineHistoryRepository;
+import com.lived.domain.routine.repository.RoutineRepository;
 import com.lived.global.apiPayload.code.GeneralErrorCode;
 import com.lived.global.apiPayload.exception.GeneralException;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +33,7 @@ public class RoutineService {
     private final MemberRoutineRepository memberRoutineRepository;
     private final MemberRepository memberRepository;
     private final RoutineHistoryRepository routineHistoryRepository;
+    private final RoutineRepository routineRepository;
 
     // 루틴 생성 로직 (커스텀)
     public Long createCustomRoutine(Long memberId, RoutineRequestDTO request) {
@@ -165,6 +166,49 @@ public class RoutineService {
                     routineHistoryRepository.save(newHistory);
                     return true;
                 });
+    }
+
+    // 일괄 선택된 루틴 등록
+    @Transactional
+    public int registerRoutinesBatch(Long memberId, RoutineBatchAddRequestDTO request) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new GeneralException(GeneralErrorCode.MEMBER_NOT_FOUND));
+
+        // 사용자가 이미 등록한 루틴들
+        List<Long> existingRoutinIds = memberRoutineRepository.findAllByMemberIdAndIsActiveTrue(memberId)
+                .stream()
+                .filter(mr -> mr.getRoutine() != null)
+                .map(mr -> mr.getRoutine().getId())
+                .toList();
+
+        // 이미 등록되어 있는 것들은 빼고 조회
+        List<Routine> templates = routineRepository.findAllById(request.routindIds())
+                .stream()
+                .filter(template -> !existingRoutinIds.contains(template.getId())) // 중복 제거
+                .toList();
+
+        if(templates.isEmpty()) {
+            return 0;
+        }
+
+        List<MemberRoutine> memberRoutines = templates.stream()
+                .map(template -> MemberRoutine.builder()
+                        .member(member)
+                        .routine(template)
+                        .title(template.getTitle())
+                        .emoji(template.getCategory().getEmoji())
+                        .startDate(LocalDate.now())
+                        .repeatType(RepeatType.WEEKLY)
+                        .repeatValue("0,1,2,3,4,5,6")
+                        .isActive(true)
+                        .isAlarmOn(false)
+                        .build())
+                .collect(Collectors.toList());
+
+        memberRoutineRepository.saveAll(memberRoutines);
+        return memberRoutines.size();
+
+
     }
 
 
