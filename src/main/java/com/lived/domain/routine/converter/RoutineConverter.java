@@ -1,6 +1,8 @@
 package com.lived.domain.routine.converter;
 
 import com.lived.domain.routine.dto.HomeRoutineResponseDTO;
+import com.lived.domain.routine.dto.RoutineResponseDTO;
+import com.lived.domain.routine.entity.Routine;
 import com.lived.domain.routine.entity.mapping.MemberRoutine;
 import org.springframework.stereotype.Component;
 
@@ -37,6 +39,17 @@ public class RoutineConverter {
                 fullDate,
                 statusMessage,
                 items
+        );
+    }
+
+    /**
+     * 원본 루틴 엔티티 -> 추천 응답 DTO
+     */
+    public static RoutineResponseDTO toRoutineResponseDTO(Routine routine) {
+        return new RoutineResponseDTO(
+                routine.getId(),
+                routine.getTitle(),
+                routine.getCategory().getEmoji()
         );
     }
 
