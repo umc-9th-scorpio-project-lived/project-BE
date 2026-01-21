@@ -4,6 +4,7 @@ import com.lived.domain.member.entity.Member;
 import com.lived.domain.member.repository.MemberRepository;
 import com.lived.domain.routine.converter.RoutineConverter;
 import com.lived.domain.routine.dto.HomeRoutineResponseDTO;
+import com.lived.domain.routine.dto.RoutineDeleteRequestDTO;
 import com.lived.domain.routine.dto.RoutineRequestDTO;
 import com.lived.domain.routine.dto.RoutineUpdateRequestDTO;
 import com.lived.domain.routine.entity.RoutineHistory;
@@ -116,11 +117,28 @@ public class RoutineService {
 
     // 루틴 수정
     @Transactional
-    public void updateRoutine(Long routineId, RoutineUpdateRequestDTO request) {
-        MemberRoutine memberRoutine = memberRoutineRepository.findById(routineId)
+    public void updateRoutine(Long memberRoutineId, RoutineUpdateRequestDTO request) {
+        MemberRoutine memberRoutine = memberRoutineRepository.findById(memberRoutineId)
                 .orElseThrow(() -> new GeneralException(GeneralErrorCode.ROUTINE_NOT_FOUND));
 
         memberRoutine.update(request);
+    }
+
+    // 루틴 삭제
+    @Transactional
+    public void deleteRoutine(Long memberRoutineId, RoutineDeleteRequestDTO request) {
+        MemberRoutine memberRoutine = memberRoutineRepository.findById(memberRoutineId)
+                .orElseThrow(() -> new GeneralException(GeneralErrorCode.ROUTINE_NOT_FOUND));
+
+        switch (request.deleteType()) {
+            case ONLY_SET -> memberRoutine.excludeDate(request.targetDate());
+            case AFTER_SET -> memberRoutine.terminateAt(request.targetDate());
+            case ALL_SET -> {
+                routineHistoryRepository.deleteAllByMemberRoutineId(memberRoutineId);
+
+                memberRoutineRepository.delete(memberRoutine);
+            }
+        }
     }
 
 

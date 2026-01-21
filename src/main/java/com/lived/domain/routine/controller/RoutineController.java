@@ -1,6 +1,7 @@
 package com.lived.domain.routine.controller;
 
 import com.lived.domain.routine.dto.HomeRoutineResponseDTO;
+import com.lived.domain.routine.dto.RoutineDeleteRequestDTO;
 import com.lived.domain.routine.dto.RoutineRequestDTO;
 import com.lived.domain.routine.dto.RoutineUpdateRequestDTO;
 import com.lived.domain.routine.service.RoutineService;
@@ -67,5 +68,20 @@ public class RoutineController {
         routineService.updateRoutine(memberRoutineId, request);
         return ApiResponse.onSuccess(GeneralSuccessCode.ROUTINE_UPDATED, "루틴 수정이 완료되었습니다.");
     }
+
+    @Operation(
+            summary = "루틴 삭제 API",
+            description = "삭제 타입(ONLY_SET(이 일정에만), AFTER_SET(이후 일정에도), ALL_SET(모든 일정에))에 따라 루틴을 삭제"
+    )
+    @DeleteMapping("/{memberRoutineId}")
+    public ApiResponse<String> deleteRoutine(
+            @Parameter(description = "삭제할 memberRoutineId", example = "1")
+            @PathVariable Long memberRoutineId,
+            @Valid @RequestBody RoutineDeleteRequestDTO request
+    ) {
+        routineService.deleteRoutine(memberRoutineId, request);
+        return ApiResponse.onSuccess(GeneralSuccessCode.ROUTINE_DELETED, "루틴 삭제가 완료되었습니다.");
+    }
+
 
 }
