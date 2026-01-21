@@ -65,6 +65,7 @@ public class RoutineService {
     public HomeRoutineResponseDTO getHomeRoutines(Long memberId, LocalDate targetDate) {
         List<MemberRoutine> activeRoutines = memberRoutineRepository.findAllByMemberIdAndIsActiveTrue(memberId);
 
+        // targetDate가 반복 설정에 해당하는지 필터링
         List<MemberRoutine> scheduledRoutines = activeRoutines.stream()
                 .filter(mr -> mr.isScheduledFor(targetDate))
                 .toList();
@@ -73,14 +74,17 @@ public class RoutineService {
                 .map(MemberRoutine::getId)
                 .toList();
 
+        // 해당 날짜에 각 루틴을 완료했는지 조회
         List<RoutineHistory> histories = routineHistoryRepository.findAllByMemberRoutineIdInAndCheckDate(routineIds, targetDate);
 
+        // Map으로 변환하여 루틴 ID별로 isDone 탐색 빠르게
         Map<Long, Boolean> historyMap = histories.stream()
                 .collect(Collectors.toMap(
                         rh -> rh.getMemberRoutine().getId(),
                         RoutineHistory::getIsDone
                 ));
 
+        // MemberRoutine -> RoutineItem 변환
         List<HomeRoutineResponseDTO.RoutineItem> items = scheduledRoutines.stream()
                 .map(mr -> RoutineConverter.toHomeRoutineItem(mr, historyMap.getOrDefault(mr.getId(), false)))
                 .toList();
