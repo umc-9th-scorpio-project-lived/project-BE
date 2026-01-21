@@ -141,6 +141,33 @@ public class RoutineService {
         }
     }
 
+    // 루틴 완료상태 변경
+    @Transactional
+    public boolean toggleRoutineCheck(Long memberRoutineId, LocalDate targetDate) {
+        MemberRoutine memberRoutine = memberRoutineRepository.findById(memberRoutineId)
+                .orElseThrow(() -> new GeneralException(GeneralErrorCode.ROUTINE_NOT_FOUND));
+
+        if(!memberRoutine.isScheduledFor(targetDate)) {
+            throw new GeneralException(GeneralErrorCode.BAD_REQUEST);
+        }
+
+        return routineHistoryRepository.findByMemberRoutineIdAndCheckDate(memberRoutineId, targetDate)
+                .map(history -> {
+                    history.toggleDone();
+                    return history.getIsDone();
+                })
+                .orElseGet(() -> {
+                    RoutineHistory newHistory = RoutineHistory.builder()
+                            .memberRoutine(memberRoutine)
+                            .checkDate(targetDate)
+                            .isDone(true)
+                            .build();
+                    routineHistoryRepository.save(newHistory);
+                    return true;
+                });
+    }
+
+
 
 
 }

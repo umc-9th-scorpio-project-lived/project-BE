@@ -83,5 +83,19 @@ public class RoutineController {
         return ApiResponse.onSuccess(GeneralSuccessCode.ROUTINE_DELETED, "루틴 삭제가 완료되었습니다.");
     }
 
+    @Operation(
+            summary = "루틴 완료 체크/해제 API",
+            description = "루인틔 완료 상태를 토글합니다. 기록이 없으면 생성(true), 있으면 상태를 반전시킵니다."
+    )
+    @PatchMapping("/{memberRoutineId}/check")
+    public ApiResponse<Boolean> toggleRoutineCheck(
+            @PathVariable Long memberRoutineId,
+            @Parameter(description = "체크할 날짜", example = "2026-01-21")
+            @RequestParam(name = "date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
+    ) {
+        boolean isDone = routineService.toggleRoutineCheck(memberRoutineId, date);
+        return ApiResponse.onSuccess(GeneralSuccessCode.OK, isDone);
+    }
+
 
 }
