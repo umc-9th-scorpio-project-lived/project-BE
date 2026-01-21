@@ -18,4 +18,7 @@ public interface RoutineHistoryRepository extends JpaRepository<RoutineHistory, 
 
     // 특정 루틴 리스트와 날짜에 해당하는 모든 기록을 한 번에 조회
     List<RoutineHistory> findAllByMemberRoutineIdInAndCheckDate(List<Long> memberRoutineIds, LocalDate checkDate);
+
+    // 특정 루틴과 연결된 모든 수행 기록을 삭제
+    void deleteAllByMemberRoutineId(Long memberRoutineId);
 }
