@@ -40,6 +40,10 @@ public class RoutineService {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new GeneralException(GeneralErrorCode.MEMBER_NOT_FOUND));
 
+        if (memberRoutineRepository.existsByMemberIdAndTitleAndIsActiveTrue(memberId, request.getTitle())){
+            throw new GeneralException(GeneralErrorCode.ROUTINE_ALREADY_EXISTS);
+        }
+
         MemberRoutine newRoutine = MemberRoutine.builder()
                 .member(member)
                 .title(request.getTitle())
@@ -175,16 +179,16 @@ public class RoutineService {
                 .orElseThrow(() -> new GeneralException(GeneralErrorCode.MEMBER_NOT_FOUND));
 
         // 사용자가 이미 등록한 루틴들
-        List<Long> existingRoutinIds = memberRoutineRepository.findAllByMemberIdAndIsActiveTrue(memberId)
+        List<Long> existingRoutineIds = memberRoutineRepository.findAllByMemberIdAndIsActiveTrue(memberId)
                 .stream()
                 .filter(mr -> mr.getRoutine() != null)
                 .map(mr -> mr.getRoutine().getId())
                 .toList();
 
         // 이미 등록되어 있는 것들은 빼고 조회
-        List<Routine> templates = routineRepository.findAllById(request.routindIds())
+        List<Routine> templates = routineRepository.findAllById(request.routinIds())
                 .stream()
-                .filter(template -> !existingRoutinIds.contains(template.getId())) // 중복 제거
+                .filter(template -> !existingRoutineIds.contains(template.getId())) // 중복 제거
                 .toList();
 
         if(templates.isEmpty()) {
