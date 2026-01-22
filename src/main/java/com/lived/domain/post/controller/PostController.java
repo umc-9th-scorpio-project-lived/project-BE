@@ -121,4 +121,26 @@ public class PostController {
     PostResponseDTO.ToggleLikeResponse response = postService.toggleLike(postId, memberId);
     return ApiResponse.onSuccess(GeneralSuccessCode.OK, response);
   }
+
+  @Operation(
+      summary = "게시글 스크랩 토글",
+      description = "게시글 스크랩을 추가하거나 취소합니다."
+  )
+  @ApiResponses({
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(
+          responseCode = "200",
+          description = "스크랩 토글 성공"
+      )
+  })
+  @PostMapping("/{postId}/scrap")
+  public ApiResponse<PostResponseDTO.ToggleScrapResponse> toggleScrap(
+      @Parameter(description = "사용자 ID", required = true, example = "1")
+      @RequestHeader("Member-Id") Long memberId,
+
+      @Parameter(description = "게시글 ID", required = true, example = "1")
+      @PathVariable Long postId
+  ) {
+    PostResponseDTO.ToggleScrapResponse response = postService.toggleScrap(postId, memberId);
+    return ApiResponse.onSuccess(GeneralSuccessCode.OK, response);
+  }
 }

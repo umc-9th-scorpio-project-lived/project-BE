@@ -84,4 +84,14 @@ public class Post extends BaseEntity {
       this.likeCount--;
     }
   }
+
+  public void incrementScrapCount() {
+    this.scrapCount++;
+  }
+
+  public void decrementScrapCount() {
+    if (this.scrapCount > 0) {
+      this.scrapCount--;
+    }
+  }
 }

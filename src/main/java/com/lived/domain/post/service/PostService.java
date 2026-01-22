@@ -8,9 +8,11 @@ import com.lived.domain.post.dto.PostResponseDTO;
 import com.lived.domain.post.entity.Post;
 import com.lived.domain.post.entity.PostImage;
 import com.lived.domain.post.entity.mapping.PostLike;
+import com.lived.domain.post.entity.mapping.PostScrap;
 import com.lived.domain.post.repository.PostImageRepository;
 import com.lived.domain.post.repository.PostLikeRepository;
 import com.lived.domain.post.repository.PostRepository;
+import com.lived.domain.post.repository.PostScrapRepository;
 import com.lived.global.apiPayload.code.GeneralErrorCode;
 import com.lived.global.apiPayload.exception.GeneralException;
 import com.lived.global.s3.S3Service;
@@ -35,6 +37,7 @@ public class PostService {
   private final MemberRepository memberRepository;
   private final S3Service s3Service;
   private final PostLikeRepository postLikeRepository;
+  private final PostScrapRepository postScrapRepository;
 
   private static final int MAX_IMAGE_COUNT = 10;
 
@@ -242,5 +245,47 @@ public class PostService {
     }
 
     return PostConverter.toToggleLikeResponse(isLiked, post.getLikeCount());
+  }
+
+  /**
+   * 게시글 스크랩 토글
+   */
+  @Transactional
+  public PostResponseDTO.ToggleScrapResponse toggleScrap(Long postId, Long memberId) {
+    // Post 조회
+    Post post = postRepository.findById(postId)
+        .orElseThrow(() -> new GeneralException(GeneralErrorCode.POST_NOT_FOUND));
+
+    // 삭제된 게시글인지 확인
+    if (post.getDeletedAt() != null) {
+      throw new GeneralException(GeneralErrorCode.POST_NOT_FOUND);
+    }
+
+    // Member 조회
+    Member member = memberRepository.findById(memberId)
+        .orElseThrow(() -> new GeneralException(GeneralErrorCode.MEMBER_NOT_FOUND));
+
+    // 스크랩 존재 여부 확인
+    Optional<PostScrap> existingScrap = postScrapRepository.findByPostIdAndMemberId(postId, memberId);
+
+    boolean isScrapped;
+
+    if (existingScrap.isPresent()) {
+      // 스크랩 취소
+      postScrapRepository.delete(existingScrap.get());
+      post.decrementScrapCount();
+      isScrapped = false;
+    } else {
+      // 스크랩 추가
+      PostScrap postScrap = PostScrap.builder()
+          .post(post)
+          .member(member)
+          .build();
+      postScrapRepository.save(postScrap);
+      post.incrementScrapCount();
+      isScrapped = true;
+    }
+
+    return PostConverter.toToggleScrapResponse(isScrapped);
   }
 }

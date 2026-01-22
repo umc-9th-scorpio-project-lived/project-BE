@@ -54,4 +54,15 @@ public class PostResponseDTO {
     @Schema(description = "토글 후 좋아요 수", example = "1")
     private Integer likeCount;
   }
+
+  @Getter
+  @Builder
+  @NoArgsConstructor
+  @AllArgsConstructor
+  @Schema(description = "게시글 스크랩 토글 응답")
+  public static class ToggleScrapResponse {
+
+    @Schema(description = "토글 후 스크랩 여부", example = "true")
+    private Boolean isScrapped;
+  }
 }
