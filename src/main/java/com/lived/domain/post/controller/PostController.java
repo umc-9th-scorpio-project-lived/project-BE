@@ -77,4 +77,26 @@ public class PostController {
     PostResponseDTO.UpdatePostResponse response = postService.updatePost(postId, memberId, request, images);
     return ApiResponse.onSuccess(GeneralSuccessCode.OK, response);
   }
+
+  @Operation(
+      summary = "게시글 삭제",
+      description = "게시글을 삭제합니다."
+  )
+  @ApiResponses({
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(
+          responseCode = "200",
+          description = "게시글 삭제 성공"
+      )
+  })
+  @DeleteMapping("/{postId}")
+  public ApiResponse<PostResponseDTO.DeletePostResponse> deletePost(
+      @Parameter(description = "사용자 ID", required = true, example = "1")
+      @RequestHeader("Member-Id") Long memberId,
+
+      @Parameter(description = "게시글 ID", required = true, example = "1")
+      @PathVariable Long postId
+  ) {
+    PostResponseDTO.DeletePostResponse response = postService.deletePost(postId, memberId);
+    return ApiResponse.onSuccess(GeneralSuccessCode.OK, response);
+  }
 }

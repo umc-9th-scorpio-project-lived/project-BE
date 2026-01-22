@@ -70,4 +70,8 @@ public class Post extends BaseEntity {
       this.content = request.getContent();
     }
   }
+
+  public void delete() {
+    this.deletedAt = LocalDateTime.now();
+  }
 }

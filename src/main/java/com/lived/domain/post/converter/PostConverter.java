@@ -44,4 +44,11 @@ public class PostConverter {
         .postId(post.getId())
         .build();
   }
+
+  // Post Entity → DeletePostResponse
+  public static PostResponseDTO.DeletePostResponse toDeletePostResponse(Post post) {
+    return PostResponseDTO.DeletePostResponse.builder()
+        .postId(post.getId())
+        .build();
+  }
 }

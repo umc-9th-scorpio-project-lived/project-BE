@@ -166,4 +166,35 @@ public class PostService {
 
     return PostConverter.toUpdatePostResponse(post);
   }
+
+  /**
+   * 게시글 삭제
+   */
+  @Transactional
+  public PostResponseDTO.DeletePostResponse deletePost(Long postId, Long memberId) {
+    // Post 조회
+    Post post = postRepository.findById(postId)
+        .orElseThrow(() -> new GeneralException(GeneralErrorCode.POST_NOT_FOUND));
+
+    // 이미 삭제된 게시글인지 확인
+    if (post.getDeletedAt() != null) {
+      throw new GeneralException(GeneralErrorCode.POST_NOT_FOUND);
+    }
+
+    // 권한 확인 (작성자만 삭제 가능)
+    if (!post.getMember().getId().equals(memberId)) {
+      throw new GeneralException(GeneralErrorCode.POST_FORBIDDEN);
+    }
+
+    post.delete();
+
+    // S3에서 이미지 삭제
+    List<PostImage> images = postImageRepository.findAllByPostId(postId);
+    for (PostImage image : images) {
+      s3Service.deleteFile(image.getImageUrl());
+    }
+    postImageRepository.deleteAll(images);
+
+    return PostConverter.toDeletePostResponse(post);
+  }
 }
