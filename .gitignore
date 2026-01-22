@@ -38,3 +38,6 @@ out/
 
 ### Spring Boot Config ###
 application-local.yml
+
+### FireBase 알림 설정 관련 파일 ###
+serviceAccountKey.json

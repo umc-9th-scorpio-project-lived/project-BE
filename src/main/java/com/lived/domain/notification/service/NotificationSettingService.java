@@ -21,6 +21,7 @@ public class NotificationSettingService {
         return NotificationConverter.toNotificationSettingDTO(notificationSetting);
     }
 
+    @Transactional
     public NotificationResponseDTO.NotificationSettingDTO updateNotificationSetting(Long memberId, NotificationRequestDTO.NotificationSettingDTO request) {
         NotificationSetting notificationSetting = notificationSettingRepository.findByMemberId(memberId);
 

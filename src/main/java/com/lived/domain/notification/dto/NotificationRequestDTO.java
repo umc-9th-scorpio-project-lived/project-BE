@@ -14,4 +14,9 @@ public class NotificationRequestDTO {
         private Boolean commentLikeEnabled;
         private Boolean marketingEnabled;
     }
+
+    @Getter
+    public static class FcmTokenDTO {
+        private String token;
+    }
 }
