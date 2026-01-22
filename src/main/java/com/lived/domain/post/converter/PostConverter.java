@@ -18,7 +18,6 @@ public class PostConverter {
         .viewCount(0)
         .likeCount(0)
         .commentCount(0)
-        .scrapCount(0)
         .build();
   }
 
@@ -35,6 +34,38 @@ public class PostConverter {
   public static PostResponseDTO.CreatePostResponse toCreatePostResponse(Post post) {
     return PostResponseDTO.CreatePostResponse.builder()
         .postId(post.getId())
+        .build();
+  }
+
+  // Post Entity → UpdatePostResponse
+  public static PostResponseDTO.UpdatePostResponse toUpdatePostResponse(Post post) {
+    return PostResponseDTO.UpdatePostResponse.builder()
+        .postId(post.getId())
+        .build();
+  }
+
+  // Post Entity → DeletePostResponse
+  public static PostResponseDTO.DeletePostResponse toDeletePostResponse(Post post) {
+    return PostResponseDTO.DeletePostResponse.builder()
+        .postId(post.getId())
+        .build();
+  }
+
+  // 좋아요 토글 결과 → ToggleLikeResponse
+  public static PostResponseDTO.ToggleLikeResponse toToggleLikeResponse(
+      boolean isLiked,
+      int likeCount
+  ) {
+    return PostResponseDTO.ToggleLikeResponse.builder()
+        .isLiked(isLiked)
+        .likeCount(likeCount)
+        .build();
+  }
+
+  // 스크랩 토글 결과 → ToggleScrapResponse
+  public static PostResponseDTO.ToggleScrapResponse toToggleScrapResponse(boolean isScrapped) {
+    return PostResponseDTO.ToggleScrapResponse.builder()
+        .isScrapped(isScrapped)
         .build();
   }
 }

@@ -18,4 +18,51 @@ public class PostResponseDTO {
     @Schema(description = "생성된 게시글 ID", example = "123")
     private Long postId;
   }
+
+  @Getter
+  @Builder
+  @NoArgsConstructor
+  @AllArgsConstructor
+  @Schema(description = "게시글 수정 응답")
+  public static class UpdatePostResponse {
+
+    @Schema(description = "수정된 게시글 ID", example = "123")
+    private Long postId;
+  }
+
+  @Getter
+  @Builder
+  @NoArgsConstructor
+  @AllArgsConstructor
+  @Schema(description = "게시글 삭제 응답")
+  public static class DeletePostResponse {
+
+    @Schema(description = "삭제된 게시글 ID", example = "123")
+    private Long postId;
+  }
+
+  @Getter
+  @Builder
+  @NoArgsConstructor
+  @AllArgsConstructor
+  @Schema(description = "게시글 좋아요 토글 응답")
+  public static class ToggleLikeResponse {
+
+    @Schema(description = "토글 후 좋아요 여부", example = "true")
+    private Boolean isLiked;
+
+    @Schema(description = "토글 후 좋아요 수", example = "1")
+    private Integer likeCount;
+  }
+
+  @Getter
+  @Builder
+  @NoArgsConstructor
+  @AllArgsConstructor
+  @Schema(description = "게시글 스크랩 토글 응답")
+  public static class ToggleScrapResponse {
+
+    @Schema(description = "토글 후 스크랩 여부", example = "true")
+    private Boolean isScrapped;
+  }
 }

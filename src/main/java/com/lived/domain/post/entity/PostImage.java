@@ -38,4 +38,8 @@ public class PostImage extends BaseEntity {
 
   @Column(name = "order_index", nullable = false)
   private Integer orderIndex;
+
+  public void updateOrderIndex(Integer orderIndex) {
+    this.orderIndex = orderIndex;
+  }
 }
