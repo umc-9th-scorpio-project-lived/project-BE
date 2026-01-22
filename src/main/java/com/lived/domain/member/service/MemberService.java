@@ -22,8 +22,8 @@ public class MemberService {
         member.updateRefreshToken(refreshToken); // Member 엔티티에 추가한 메서드
     }
 
-    public String reissueAccessToken(String socialId, String oldRefreshToken) {
-        Member member = memberRepository.findBySocialId(socialId)
+    public String reissueAccessToken(Long memberId, String oldRefreshToken) {
+        Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
         //DB에 저장된 리프레시 토큰과 클라이언트가 보낸 토큰이 일치하는지 검증
@@ -31,7 +31,7 @@ public class MemberService {
             throw new RuntimeException("리프레시 토큰이 일치하지 않습니다. 다시 로그인하세요.");
         }
 
-        //새로운 액세스 토큰 생성하여 반환
-        return jwtTokenProvider.createAccessToken(member.getSocialId(), member.getProvider().name());
+        //새로운 토큰 생성하여 반환
+        return jwtTokenProvider.createAccessToken(member.getId(), member.getProvider().name());
     }
 }

@@ -32,12 +32,12 @@ public class JwtTokenProvider {
     }
 
     //토큰 생성
-    public String createAccessToken(String socialId, String provider) {
+    public String createAccessToken(Long memberId, String provider) {
         Date now = new Date();
         Date validity = new Date(now.getTime() + accessTokenExpiration);
 
         return Jwts.builder()
-                .subject(socialId)
+                .subject(String.valueOf(memberId)) // socialId 대신 memberId 사용
                 .claim("provider", provider)
                 .issuedAt(now)
                 .expiration(validity)
@@ -46,12 +46,12 @@ public class JwtTokenProvider {
     }
 
     //Refresh Token 생성
-    public String createRefreshToken(String socialId) {
+    public String createRefreshToken(Long memberId) {
         Date now = new Date();
         Date validity = new Date(now.getTime() + refreshTokenExpiration);
 
         return Jwts.builder()
-                .subject(socialId)
+                .subject(String.valueOf(memberId)) // socialId 대신 memberId 사용
                 .issuedAt(now)
                 .expiration(validity)
                 .signWith(key)
@@ -70,12 +70,12 @@ public class JwtTokenProvider {
     }
 
     //토큰에서 socialId 추출
-    public String getSocialId(String token) {
+    public String getPayload(String token) {
         return Jwts.parser()
                 .verifyWith(key)
                 .build()
                 .parseSignedClaims(token)
-                .getPayload() // getBody() -> getPayload()
+                .getPayload()
                 .getSubject();
     }
 }

@@ -1,6 +1,8 @@
 package com.lived.global.oauth2.handler;
 
+import com.lived.domain.member.entity.Member;
 import com.lived.domain.member.enums.Provider;
+import com.lived.domain.member.repository.MemberRepository;
 import com.lived.domain.member.service.MemberService;
 import com.lived.global.jwt.JwtTokenProvider;
 import jakarta.servlet.http.HttpServletRequest;
@@ -24,7 +26,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     private final JwtTokenProvider jwtTokenProvider;
     private final MemberService memberService;
 
-    @Value("${app.frontend-url:http://localhost:3000}")
+    @Value("${app.frontend-url}") // 나중에 수정
     private String frontendUrl;
 
     @Override
@@ -35,11 +37,14 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         String socialId = (String) oAuth2User.getAttributes().get("socialId");
         String name = (String) oAuth2User.getAttributes().get("name");
         String provider = (String) oAuth2User.getAttributes().get("provider");
+        Provider providerEnum = Provider.valueOf(provider.toUpperCase());
 
         String targetUrl;
+
         if (isNewMember) {
             //신규 가입자 (회원가입 페이지로 리다이렉트)
-            targetUrl = UriComponentsBuilder.fromUriString(frontendUrl + "/signup")
+            targetUrl = UriComponentsBuilder.fromUriString(frontendUrl + "/login/callback")
+                    .queryParam("isNewMember", true)
                     .queryParam("socialId", socialId)
                     .queryParam("name", name)
                     .queryParam("provider", provider)
@@ -49,14 +54,17 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
             getRedirectStrategy().sendRedirect(request, response, targetUrl);
         } else {
-            Provider providerEnum = Provider.valueOf(provider.toUpperCase());
+
+            Long memberId = (Long) oAuth2User.getAttributes().get("memberId");
 
             //기존 가입자 (JWT 토큰 생성)
-            String accessToken = jwtTokenProvider.createAccessToken(socialId, provider);
-            String refreshToken = jwtTokenProvider.createRefreshToken(socialId);
+            String accessToken = jwtTokenProvider.createAccessToken(memberId, provider);
+            String refreshToken = jwtTokenProvider.createRefreshToken(memberId);
 
+            // 리프레시 토큰 업데이트
             memberService.updateRefreshToken(socialId, providerEnum, refreshToken);
 
+            // 쿠키 설정
             ResponseCookie accessCookie = ResponseCookie.from("accessToken", accessToken)
                     .path("/")
                     .httpOnly(true)
@@ -68,7 +76,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
             ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", refreshToken)
                     .path("/")
                     .httpOnly(true)
-                    .secure(false)
+                    .secure(true)
                     .sameSite("Lax")
                     .maxAge(1209600) // 쿠키 유효 기간 (2주)
                     .build();
@@ -76,7 +84,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
             response.addHeader("Set-Cookie", accessCookie.toString());
             response.addHeader("Set-Cookie", refreshCookie.toString());
 
-
+            // 로그인 성공시 리다이렉트
             targetUrl = UriComponentsBuilder.fromUriString(frontendUrl + "/login/callback")
                     .queryParam("isNewMember", false)
                     .build()

@@ -6,11 +6,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 
 public interface MemberRepository extends JpaRepository<Member, Long> {
-    // 가입 여부 확인용 (이미 존재하는 소셜 계정인지 체크)
-    boolean existsBySocialIdAndProvider(String socialId, Provider provider);
 
     // 기존 유저 로그인용 (소셜 정보로 멤버 객체 찾아오기)
     Optional<Member> findBySocialIdAndProvider(String socialId, Provider provider);
 
-    Optional<Member> findBySocialId(String socialId);
 }

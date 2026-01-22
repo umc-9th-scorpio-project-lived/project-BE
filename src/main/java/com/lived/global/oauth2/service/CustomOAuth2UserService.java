@@ -1,5 +1,6 @@
 package com.lived.global.oauth2.service;
 
+import com.lived.domain.member.entity.Member;
 import com.lived.domain.member.enums.Provider;
 import com.lived.domain.member.repository.MemberRepository;
 import com.lived.global.oauth2.dto.OAuthAttributes;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -40,16 +42,22 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         //DB 조회를 통해 신규 유저인지 판단
         Provider providerEnum = Provider.valueOf(attributes.getProvider().toUpperCase());
 
-        boolean isNewMember = !memberRepository.existsBySocialIdAndProvider(
+        Optional<Member> memberEntity = memberRepository.findBySocialIdAndProvider(
                 attributes.getSocialId(),
-                providerEnum // 변환된 Enum 전달
+                providerEnum
         );
+
+        boolean isNewMember = memberEntity.isEmpty();
 
         Map<String, Object> memberData = new HashMap<>(attributes.getAttributes());
         memberData.put("isNewMember", isNewMember);
         memberData.put("name", attributes.getName());
         memberData.put("socialId", attributes.getSocialId());
         memberData.put("provider", attributes.getProvider());
+
+        if (!isNewMember) {
+            memberData.put("memberId", memberEntity.get().getId());
+        }
 
         return new DefaultOAuth2User(
                 Collections.singleton(new SimpleGrantedAuthority("ROLE_USER")),
