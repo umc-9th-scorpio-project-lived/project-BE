@@ -30,11 +30,11 @@ public class AuthController {
 
         // 리프레시 토큰 유효성 검사
         if (refreshToken != null && jwtTokenProvider.validateToken(refreshToken)) {
-            String socialId = jwtTokenProvider.getSocialId(refreshToken);
+            Long memberId = Long.parseLong(jwtTokenProvider.getPayload(refreshToken));
 
             try {
                 //새 액세스 토큰 받기
-                String newAccessToken = memberService.reissueAccessToken(socialId, refreshToken);
+                String newAccessToken = memberService.reissueAccessToken(memberId, refreshToken);
 
                 //새 액세스 토큰을 쿠키에 갱신
                 ResponseCookie accessCookie = ResponseCookie.from("accessToken", newAccessToken)

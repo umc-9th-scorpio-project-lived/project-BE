@@ -29,11 +29,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         //토큰이 있고 유효하다면 인증 정보 설정
         if (token != null && jwtTokenProvider.validateToken(token)) {
-            String socialId = jwtTokenProvider.getSocialId(token);
-
+            Long memberId = Long.parseLong(jwtTokenProvider.getPayload(token));
 
             UsernamePasswordAuthenticationToken authentication =
-                    new UsernamePasswordAuthenticationToken(socialId, null, Collections.emptyList());
+                    new UsernamePasswordAuthenticationToken(memberId, null, Collections.emptyList());
 
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
