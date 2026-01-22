@@ -1,6 +1,7 @@
 package com.lived.domain.post.entity;
 
 import com.lived.domain.member.entity.Member;
+import com.lived.domain.post.dto.PostRequestDTO;
 import com.lived.domain.post.entity.enums.PostCategory;
 import com.lived.global.entity.BaseEntity;
 import jakarta.persistence.*;
@@ -57,4 +58,16 @@ public class Post extends BaseEntity {
 
   @Column(name = "deleted_at")
   private LocalDateTime deletedAt;
+
+  public void update(PostRequestDTO.UpdatePostRequest request) {
+    if (request.getCategory() != null) {
+      this.category = request.getCategory();
+    }
+    if (request.getTitle() != null) {
+      this.title = request.getTitle();
+    }
+    if (request.getContent() != null) {
+      this.content = request.getContent();
+    }
+  }
 }

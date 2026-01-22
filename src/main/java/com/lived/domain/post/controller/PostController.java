@@ -49,4 +49,32 @@ public class PostController {
     PostResponseDTO.CreatePostResponse response = postService.createPost(request, images, memberId);
     return ApiResponse.onSuccess(GeneralSuccessCode.CREATED, response);
   }
+
+  @Operation(
+      summary = "게시글 수정",
+      description = "게시글을 수정합니다. 카테고리, 제목, 본문, 이미지를 수정할 수 있습니다."
+  )
+  @ApiResponses({
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(
+          responseCode = "200",
+          description = "게시글 수정 성공"
+      )
+  })
+  @PatchMapping(value = "/{postId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  public ApiResponse<PostResponseDTO.UpdatePostResponse> updatePost(
+      @Parameter(description = "사용자 ID", required = true, example = "1")
+      @RequestHeader("Member-Id") Long memberId,
+
+      @Parameter(description = "게시글 ID", required = true, example = "1")
+      @PathVariable Long postId,
+
+      @Parameter(description = "게시글 수정 요청 데이터", required = true)
+      @Valid @ModelAttribute PostRequestDTO.UpdatePostRequest request,
+
+      @Parameter(description = "새로 추가할 이미지 파일 목록", required = false)
+      @RequestPart(value = "images", required = false) List<MultipartFile> images
+  ) {
+    PostResponseDTO.UpdatePostResponse response = postService.updatePost(postId, memberId, request, images);
+    return ApiResponse.onSuccess(GeneralSuccessCode.OK, response);
+  }
 }

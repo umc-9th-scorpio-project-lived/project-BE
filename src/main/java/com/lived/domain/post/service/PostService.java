@@ -34,6 +34,9 @@ public class PostService {
 
   private static final int MAX_IMAGE_COUNT = 10;
 
+  /**
+   * 게시글 작성
+   */
   @Transactional
   public PostResponseDTO.CreatePostResponse createPost(
       PostRequestDTO.CreatePostRequest request,
@@ -42,7 +45,7 @@ public class PostService {
   ) {
     // 이미지 개수 검증
     if (images != null && images.size() > MAX_IMAGE_COUNT) {
-      throw new GeneralException(GeneralErrorCode.BAD_REQUEST);
+      throw new GeneralException(GeneralErrorCode.POST_IMAGE_LIMIT_EXCEEDED);
     }
 
     // Member 조회
@@ -72,5 +75,95 @@ public class PostService {
     }
 
     return PostConverter.toCreatePostResponse(savedPost);
+  }
+
+  /**
+   * 게시글 수정
+   */
+  @Transactional
+  public PostResponseDTO.UpdatePostResponse updatePost(
+      Long postId,
+      Long memberId,
+      PostRequestDTO.UpdatePostRequest request,
+      List<MultipartFile> images
+  ) {
+    // Post 조회
+    Post post = postRepository.findById(postId)
+        .orElseThrow(() -> new GeneralException(GeneralErrorCode.POST_NOT_FOUND));
+
+    // 권한 확인 (작성자만 수정 가능)
+    if (!post.getMember().getId().equals(memberId)) {
+      throw new GeneralException(GeneralErrorCode.POST_FORBIDDEN);
+    }
+
+    // 기존 이미지 개수 확인
+    List<PostImage> existingImages = postImageRepository.findAllByPostId(postId);
+    int existingImageCount = existingImages.size();
+
+    // 삭제할 이미지 처리
+    if (request.getDeleteImageIds() != null && !request.getDeleteImageIds().isEmpty()) {
+      List<PostImage> imagesToDelete = postImageRepository.findAllById(request.getDeleteImageIds());
+
+      // S3에서 삭제
+      for (PostImage image : imagesToDelete) {
+        s3Service.deleteFile(image.getImageUrl());
+      }
+
+      // DB에서 삭제
+      postImageRepository.deleteAll(imagesToDelete);
+      existingImageCount -= imagesToDelete.size();
+    }
+
+    // 새 이미지 추가 검증
+    int newImageCount = (images != null) ? images.size() : 0;
+    if (existingImageCount + newImageCount > MAX_IMAGE_COUNT) {
+      throw new GeneralException(GeneralErrorCode.POST_IMAGE_LIMIT_EXCEEDED);
+    }
+
+    // 기존 이미지 순서 재배치
+    // 기존 이미지 순서 재배치
+    if (request.getImageOrders() != null && !request.getImageOrders().isEmpty()) {
+      List<PostImage> allImages = postImageRepository.findAllByPostId(postId);
+
+      for (PostImage img : allImages) {
+        img.updateOrderIndex(-img.getId().intValue());
+      }
+      postImageRepository.flush();
+
+      for (PostRequestDTO.UpdatePostRequest.ImageOrder order : request.getImageOrders()) {
+        allImages.stream()
+            .filter(img -> img.getId().equals(order.getImageId()))
+            .findFirst()
+            .ifPresent(img -> img.updateOrderIndex(order.getOrderIndex()));
+      }
+    }
+
+    // 새 이미지 업로드 및 저장
+    if (images != null && !images.isEmpty()) {
+      List<PostImage> newPostImages = new ArrayList<>();
+
+      // 현재 최대 orderIndex 찾기
+      int maxOrderIndex = postImageRepository.findAllByPostId(postId).stream()
+          .mapToInt(PostImage::getOrderIndex)
+          .max()
+          .orElse(0);
+
+      for (int i = 0; i < images.size(); i++) {
+        MultipartFile image = images.get(i);
+
+        // S3 업로드
+        String imageUrl = s3Service.uploadPostImage(image, postId);
+
+        // PostImage 엔티티 생성
+        PostImage postImage = PostConverter.toPostImage(post, imageUrl, maxOrderIndex + i + 1);
+        newPostImages.add(postImage);
+      }
+
+      postImageRepository.saveAll(newPostImages);
+    }
+
+    post.update(request);
+
+    return PostConverter.toUpdatePostResponse(post);
   }
 }

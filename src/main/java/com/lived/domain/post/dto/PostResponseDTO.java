@@ -18,4 +18,15 @@ public class PostResponseDTO {
     @Schema(description = "생성된 게시글 ID", example = "123")
     private Long postId;
   }
+
+  @Getter
+  @Builder
+  @NoArgsConstructor
+  @AllArgsConstructor
+  @Schema(description = "게시글 수정 응답")
+  public static class UpdatePostResponse {
+
+    @Schema(description = "수정된 게시글 ID", example = "123")
+    private Long postId;
+  }
 }

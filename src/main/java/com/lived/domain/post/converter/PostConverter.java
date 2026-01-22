@@ -37,4 +37,11 @@ public class PostConverter {
         .postId(post.getId())
         .build();
   }
+
+  // Post Entity → UpdatePostResponse
+  public static PostResponseDTO.UpdatePostResponse toUpdatePostResponse(Post post) {
+    return PostResponseDTO.UpdatePostResponse.builder()
+        .postId(post.getId())
+        .build();
+  }
 }
