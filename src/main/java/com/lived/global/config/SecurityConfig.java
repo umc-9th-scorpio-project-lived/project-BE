@@ -31,9 +31,17 @@ public class SecurityConfig {
                 .httpBasic(basic -> basic.disable()) // HTTP Basic 인증 비활성화
 
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/login/**", "/oauth2/**", "/signup/**").permitAll() // 로그인 관련은 허용
-                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll() // 스웨거 허용
+                        .requestMatchers(
+                                "/api/v1/auth/**",
+                                "/login/**",
+                                "/oauth2/**",
+                                "/v3/api-docs/**",
+                                "/swagger-ui/**",
+                                "/swagger-resources/**"
+                        ).permitAll() // 로그인 관련, 스웨거 허용
+
                         .anyRequest().authenticated() // 그 외는 인증 필요
                 )
 
