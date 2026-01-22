@@ -51,4 +51,15 @@ public class PostConverter {
         .postId(post.getId())
         .build();
   }
+
+  // 좋아요 토글 결과 → ToggleLikeResponse
+  public static PostResponseDTO.ToggleLikeResponse toToggleLikeResponse(
+      boolean isLiked,
+      int likeCount
+  ) {
+    return PostResponseDTO.ToggleLikeResponse.builder()
+        .isLiked(isLiked)
+        .likeCount(likeCount)
+        .build();
+  }
 }

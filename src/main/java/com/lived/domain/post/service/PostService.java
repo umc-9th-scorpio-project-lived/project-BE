@@ -7,11 +7,14 @@ import com.lived.domain.post.dto.PostRequestDTO;
 import com.lived.domain.post.dto.PostResponseDTO;
 import com.lived.domain.post.entity.Post;
 import com.lived.domain.post.entity.PostImage;
+import com.lived.domain.post.entity.mapping.PostLike;
 import com.lived.domain.post.repository.PostImageRepository;
+import com.lived.domain.post.repository.PostLikeRepository;
 import com.lived.domain.post.repository.PostRepository;
 import com.lived.global.apiPayload.code.GeneralErrorCode;
 import com.lived.global.apiPayload.exception.GeneralException;
 import com.lived.global.s3.S3Service;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -31,6 +34,7 @@ public class PostService {
   private final PostImageRepository postImageRepository;
   private final MemberRepository memberRepository;
   private final S3Service s3Service;
+  private final PostLikeRepository postLikeRepository;
 
   private static final int MAX_IMAGE_COUNT = 10;
 
@@ -196,5 +200,47 @@ public class PostService {
     postImageRepository.deleteAll(images);
 
     return PostConverter.toDeletePostResponse(post);
+  }
+
+  /**
+   * 게시글 좋아요 토글
+   */
+  @Transactional
+  public PostResponseDTO.ToggleLikeResponse toggleLike(Long postId, Long memberId) {
+    // Post 조회
+    Post post = postRepository.findById(postId)
+        .orElseThrow(() -> new GeneralException(GeneralErrorCode.POST_NOT_FOUND));
+
+    // 삭제된 게시글인지 확인
+    if (post.getDeletedAt() != null) {
+      throw new GeneralException(GeneralErrorCode.POST_NOT_FOUND);
+    }
+
+    // Member 조회
+    Member member = memberRepository.findById(memberId)
+        .orElseThrow(() -> new GeneralException(GeneralErrorCode.MEMBER_NOT_FOUND));
+
+    // 좋아요 존재 여부 확인
+    Optional<PostLike> existingLike = postLikeRepository.findByPostIdAndMemberId(postId, memberId);
+
+    boolean isLiked;
+
+    if (existingLike.isPresent()) {
+      // 좋아요 취소
+      postLikeRepository.delete(existingLike.get());
+      post.decrementLikeCount();
+      isLiked = false;
+    } else {
+      // 좋아요 추가
+      PostLike postLike = PostLike.builder()
+          .post(post)
+          .member(member)
+          .build();
+      postLikeRepository.save(postLike);
+      post.incrementLikeCount();
+      isLiked = true;
+    }
+
+    return PostConverter.toToggleLikeResponse(isLiked, post.getLikeCount());
   }
 }

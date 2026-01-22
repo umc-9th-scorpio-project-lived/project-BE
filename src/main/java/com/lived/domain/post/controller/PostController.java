@@ -99,4 +99,26 @@ public class PostController {
     PostResponseDTO.DeletePostResponse response = postService.deletePost(postId, memberId);
     return ApiResponse.onSuccess(GeneralSuccessCode.OK, response);
   }
+
+  @Operation(
+      summary = "게시글 좋아요 토글",
+      description = "게시글 좋아요를 추가하거나 취소합니다."
+  )
+  @ApiResponses({
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(
+          responseCode = "200",
+          description = "좋아요 토글 성공"
+      )
+  })
+  @PostMapping("/{postId}/like")
+  public ApiResponse<PostResponseDTO.ToggleLikeResponse> toggleLike(
+      @Parameter(description = "사용자 ID", required = true, example = "1")
+      @RequestHeader("Member-Id") Long memberId,
+
+      @Parameter(description = "게시글 ID", required = true, example = "1")
+      @PathVariable Long postId
+  ) {
+    PostResponseDTO.ToggleLikeResponse response = postService.toggleLike(postId, memberId);
+    return ApiResponse.onSuccess(GeneralSuccessCode.OK, response);
+  }
 }
