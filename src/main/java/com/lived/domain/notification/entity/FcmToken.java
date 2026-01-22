@@ -29,4 +29,8 @@ public class FcmToken extends BaseEntity {
     @Builder.Default
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
+
+    public void updateActive(Boolean status) {
+        this.isActive = status;
+    }
 }
