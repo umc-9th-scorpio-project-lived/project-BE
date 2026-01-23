@@ -1,0 +1,230 @@
+package com.lived.domain.post.service;
+
+import com.lived.domain.post.converter.CommentConverter;
+import com.lived.domain.post.dto.CommentRequestDTO;
+import com.lived.domain.post.dto.CommentResponseDTO;
+import com.lived.domain.comment.entity.Comment;
+import com.lived.domain.post.entity.mapping.CommentLike;
+import com.lived.domain.post.repository.CommentLikeRepository;
+import com.lived.domain.post.repository.CommentRepository;
+import com.lived.domain.member.entity.Member;
+import com.lived.domain.member.repository.MemberRepository;
+import com.lived.domain.post.entity.Post;
+import com.lived.domain.post.repository.PostRepository;
+import com.lived.global.apiPayload.code.GeneralErrorCode;
+import com.lived.global.apiPayload.exception.GeneralException;
+import java.util.Optional;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Slf4j
+@Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
+public class CommentService {
+
+  private final CommentRepository commentRepository;
+  private final PostRepository postRepository;
+  private final MemberRepository memberRepository;
+  private final CommentLikeRepository commentLikeRepository;
+
+  /**
+   * 댓글 작성
+   */
+  @Transactional
+  public CommentResponseDTO.CreateCommentResponse createComment(
+      Long postId,
+      Long memberId,
+      CommentRequestDTO.CreateCommentRequest request
+  ) {
+    // Post 조회
+    Post post = postRepository.findById(postId)
+        .orElseThrow(() -> new GeneralException(GeneralErrorCode.POST_NOT_FOUND));
+
+    // 삭제된 게시글인지 확인
+    if (post.getDeletedAt() != null) {
+      throw new GeneralException(GeneralErrorCode.POST_NOT_FOUND);
+    }
+
+    // Member 조회
+    Member member = memberRepository.findById(memberId)
+        .orElseThrow(() -> new GeneralException(GeneralErrorCode.MEMBER_NOT_FOUND));
+
+    // 부모 댓글 조회 (대댓글인 경우)
+    Comment parent = null;
+    if (request.getParentCommentId() != null) {
+      parent = commentRepository.findById(request.getParentCommentId())
+          .orElseThrow(() -> new GeneralException(GeneralErrorCode.COMMENT_NOT_FOUND));
+
+      // 부모 댓글이 같은 게시글에 속하는지 확인
+      if (!parent.getPost().getId().equals(postId)) {
+        throw new GeneralException(GeneralErrorCode.COMMENT_NOT_MATCH_POST);
+      }
+
+      // 부모 댓글이 삭제된 댓글인지 확인
+      if (parent.getDeletedAt() != null) {
+        throw new GeneralException(GeneralErrorCode.COMMENT_NOT_FOUND);
+      }
+    }
+
+    // Comment 생성
+    Comment comment = CommentConverter.toComment(request, post, member, parent);
+    Comment savedComment = commentRepository.save(comment);
+
+    // Post의 댓글 수 증가
+    post.incrementCommentCount();
+
+    return CommentConverter.toCreateCommentResponse(savedComment);
+  }
+
+  /**
+   * 댓글 수정
+   */
+  @Transactional
+  public CommentResponseDTO.UpdateCommentResponse updateComment(
+      Long postId,
+      Long commentId,
+      Long memberId,
+      CommentRequestDTO.UpdateCommentRequest request
+  ) {
+    // Post 조회
+    Post post = postRepository.findById(postId)
+        .orElseThrow(() -> new GeneralException(GeneralErrorCode.POST_NOT_FOUND));
+
+    // 삭제된 게시글인지 확인
+    if (post.getDeletedAt() != null) {
+      throw new GeneralException(GeneralErrorCode.POST_NOT_FOUND);
+    }
+
+    // Comment 조회
+    Comment comment = commentRepository.findById(commentId)
+        .orElseThrow(() -> new GeneralException(GeneralErrorCode.COMMENT_NOT_FOUND));
+
+    // 삭제된 댓글인지 확인
+    if (comment.getDeletedAt() != null) {
+      throw new GeneralException(GeneralErrorCode.COMMENT_NOT_FOUND);
+    }
+
+    // 댓글이 해당 게시글에 속하는지 확인
+    if (!comment.getPost().getId().equals(postId)) {
+      throw new GeneralException(GeneralErrorCode.COMMENT_NOT_MATCH_POST);
+    }
+
+    // 권한 확인 (작성자만 수정 가능)
+    if (!comment.getMember().getId().equals(memberId)) {
+      throw new GeneralException(GeneralErrorCode.COMMENT_FORBIDDEN);
+    }
+
+    // 댓글 수정
+    comment.updateContent(request.getContent());
+
+    return CommentConverter.toUpdateCommentResponse(comment);
+  }
+
+  /**
+   * 댓글 삭제
+   */
+  @Transactional
+  public CommentResponseDTO.DeleteCommentResponse deleteComment(
+      Long postId,
+      Long commentId,
+      Long memberId
+  ) {
+    // Post 조회
+    Post post = postRepository.findById(postId)
+        .orElseThrow(() -> new GeneralException(GeneralErrorCode.POST_NOT_FOUND));
+
+    // 삭제된 게시글인지 확인
+    if (post.getDeletedAt() != null) {
+      throw new GeneralException(GeneralErrorCode.POST_NOT_FOUND);
+    }
+
+    // Comment 조회
+    Comment comment = commentRepository.findById(commentId)
+        .orElseThrow(() -> new GeneralException(GeneralErrorCode.COMMENT_NOT_FOUND));
+
+    // 이미 삭제된 댓글인지 확인
+    if (comment.getDeletedAt() != null) {
+      throw new GeneralException(GeneralErrorCode.COMMENT_NOT_FOUND);
+    }
+
+    // 댓글이 해당 게시글에 속하는지 확인
+    if (!comment.getPost().getId().equals(postId)) {
+      throw new GeneralException(GeneralErrorCode.COMMENT_NOT_MATCH_POST);
+    }
+
+    // 권한 확인 (작성자만 삭제 가능)
+    if (!comment.getMember().getId().equals(memberId)) {
+      throw new GeneralException(GeneralErrorCode.COMMENT_FORBIDDEN);
+    }
+
+    comment.delete();
+
+    // Post의 댓글 수 감소
+    post.decrementCommentCount();
+
+    return CommentConverter.toDeleteCommentResponse(comment);
+  }
+
+  /**
+   * 댓글 좋아요 토글
+   */
+  @Transactional
+  public CommentResponseDTO.ToggleLikeResponse toggleCommentLike(
+      Long postId,
+      Long commentId,
+      Long memberId
+  ) {
+    // Post 조회
+    Post post = postRepository.findById(postId)
+        .orElseThrow(() -> new GeneralException(GeneralErrorCode.POST_NOT_FOUND));
+
+    // 삭제된 게시글인지 확인
+    if (post.getDeletedAt() != null) {
+      throw new GeneralException(GeneralErrorCode.POST_NOT_FOUND);
+    }
+
+    // Comment 조회
+    Comment comment = commentRepository.findById(commentId)
+        .orElseThrow(() -> new GeneralException(GeneralErrorCode.COMMENT_NOT_FOUND));
+
+    // 삭제된 댓글인지 확인
+    if (comment.getDeletedAt() != null) {
+      throw new GeneralException(GeneralErrorCode.COMMENT_NOT_FOUND);
+    }
+
+    // 댓글이 해당 게시글에 속하는지 확인
+    if (!comment.getPost().getId().equals(postId)) {
+      throw new GeneralException(GeneralErrorCode.COMMENT_NOT_MATCH_POST);
+    }
+
+    // Member 조회
+    Member member = memberRepository.findById(memberId)
+        .orElseThrow(() -> new GeneralException(GeneralErrorCode.MEMBER_NOT_FOUND));
+
+    // 좋아요 존재 여부 확인
+    Optional<CommentLike> existingLike = commentLikeRepository.findByCommentIdAndMemberId(commentId, memberId);
+
+    boolean isLiked;
+
+    if (existingLike.isPresent()) {
+      // 좋아요 취소
+      commentLikeRepository.delete(existingLike.get());
+      comment.decrementLikeCount();
+      isLiked = false;
+    } else {
+      // 좋아요 추가
+      CommentLike commentLike = CommentLike.builder()
+          .comment(comment)
+          .member(member)
+          .build();
+      commentLikeRepository.save(commentLike);
+      comment.incrementLikeCount();
+      isLiked = true;
+    }
+
+    return CommentConverter.toToggleLikeResponse(isLiked, comment.getLikeCount());
+  }
+}
