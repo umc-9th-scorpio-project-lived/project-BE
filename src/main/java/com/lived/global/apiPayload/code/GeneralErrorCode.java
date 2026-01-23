@@ -28,7 +28,12 @@ public enum GeneralErrorCode implements BaseErrorCode {
     POST_NOT_FOUND(HttpStatus.NOT_FOUND, "COMMUNITY404_1", "게시글을 찾을 수 없습니다."),
     COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "COMMUNITY404_2", "댓글을 찾을 수 없습니다."),
     REPORT_TARGET_NOT_FOUND(HttpStatus.NOT_FOUND, "COMMUNITY404_3", "신고 대상을 찾을 수 없습니다."),
-    REPORT_ALREADY_EXISTS(HttpStatus.CONFLICT, "COMMUNITY409_1", "신고가 이미 접수되었습니다.");
+    REPORT_ALREADY_EXISTS(HttpStatus.CONFLICT, "COMMUNITY409_1", "신고가 이미 접수되었습니다."),
+
+    // 사용자 차단 관련 에러 코드
+    BLOCK_ALREADY_EXISTS(HttpStatus.CONFLICT, "BLOCK409_1", "이미 차단한 사용자입니다."),
+    BLOCK_SELF_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "BLOCK400_1", "자기 자신을 차단할 수 없습니다."),
+    BLOCK_NOT_FOUND(HttpStatus.NOT_FOUND, "BLOCK404_1", "차단 정보를 찾을 수 없습니다.");
 
     private final HttpStatus status;
     private final String code;
