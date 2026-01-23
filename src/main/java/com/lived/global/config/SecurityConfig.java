@@ -34,7 +34,7 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/api/v1/auth/**",
+                                "/api/auth/**",
                                 "/login/**",
                                 "/oauth2/**",
                                 "/v3/api-docs/**",
@@ -65,6 +65,9 @@ public class SecurityConfig {
 
                 // OAuth2 로그인 설정 추가
                 .oauth2Login(oauth2 -> oauth2
+                        .authorizationEndpoint(authorization -> authorization
+                                .baseUri("/api/auth/login") //  /api/auth/login/{provider}로 매핑
+                        )
                         .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
                         .successHandler(oAuth2SuccessHandler)
                 );

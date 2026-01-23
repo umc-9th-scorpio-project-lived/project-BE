@@ -2,6 +2,8 @@ package com.lived.global.auth;
 
 import com.lived.domain.member.service.MemberService;
 import com.lived.global.jwt.JwtTokenProvider;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -15,8 +17,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Arrays;
 
+@Tag(name = "인증/로그인", description = "소셜 로그인 및 토큰 관리 API")
 @RestController
-@RequestMapping("/api/v1/auth")
+@RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthController {
 
@@ -24,6 +27,7 @@ public class AuthController {
     private final JwtTokenProvider jwtTokenProvider;
 
     @PostMapping("/reissue")
+    @Operation(summary = "액세스 토큰 재발급", description = "쿠키에 저장된 refreshToken을 검증하여, 만료된 액세스 토큰을 새로 발급하고 쿠키를 갱신합니다.")
     public ResponseEntity<?> reissue(HttpServletRequest request, HttpServletResponse response) {
         // 쿠키에서 refreshToken 꺼내기
         String refreshToken = getCookieValue(request, "refreshToken");
