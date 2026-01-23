@@ -74,4 +74,48 @@ public class CommentService {
 
     return CommentConverter.toCreateCommentResponse(savedComment);
   }
+
+  /**
+   * 댓글 수정
+   */
+  @Transactional
+  public CommentResponseDTO.UpdateCommentResponse updateComment(
+      Long postId,
+      Long commentId,
+      Long memberId,
+      CommentRequestDTO.UpdateCommentRequest request
+  ) {
+    // Post 조회
+    Post post = postRepository.findById(postId)
+        .orElseThrow(() -> new GeneralException(GeneralErrorCode.POST_NOT_FOUND));
+
+    // 삭제된 게시글인지 확인
+    if (post.getDeletedAt() != null) {
+      throw new GeneralException(GeneralErrorCode.POST_NOT_FOUND);
+    }
+
+    // Comment 조회
+    Comment comment = commentRepository.findById(commentId)
+        .orElseThrow(() -> new GeneralException(GeneralErrorCode.COMMENT_NOT_FOUND));
+
+    // 삭제된 댓글인지 확인
+    if (comment.getDeletedAt() != null) {
+      throw new GeneralException(GeneralErrorCode.COMMENT_NOT_FOUND);
+    }
+
+    // 댓글이 해당 게시글에 속하는지 확인
+    if (!comment.getPost().getId().equals(postId)) {
+      throw new GeneralException(GeneralErrorCode.COMMENT_NOT_MATCH_POST);
+    }
+
+    // 권한 확인 (작성자만 수정 가능)
+    if (!comment.getMember().getId().equals(memberId)) {
+      throw new GeneralException(GeneralErrorCode.COMMENT_FORBIDDEN);
+    }
+
+    // 댓글 수정
+    comment.updateContent(request.getContent());
+
+    return CommentConverter.toUpdateCommentResponse(comment);
+  }
 }

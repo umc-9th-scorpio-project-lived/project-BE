@@ -46,4 +46,33 @@ public class CommentController {
         commentService.createComment(postId, memberId, request);
     return ApiResponse.onSuccess(GeneralSuccessCode.CREATED, response);
   }
+
+  @Operation(
+      summary = "댓글 수정",
+      description = "댓글 내용을 수정합니다."
+  )
+  @ApiResponses({
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(
+          responseCode = "200",
+          description = "댓글 수정 성공"
+      )
+  })
+  @PatchMapping("/{commentId}")
+  public ApiResponse<CommentResponseDTO.UpdateCommentResponse> updateComment(
+      @Parameter(description = "사용자 ID", required = true, example = "1")
+      @RequestHeader("Member-Id") Long memberId,
+
+      @Parameter(description = "게시글 ID", required = true, example = "123")
+      @PathVariable Long postId,
+
+      @Parameter(description = "댓글 ID", required = true, example = "78")
+      @PathVariable Long commentId,
+
+      @Parameter(description = "댓글 수정 요청 데이터", required = true)
+      @Valid @RequestBody CommentRequestDTO.UpdateCommentRequest request
+  ) {
+    CommentResponseDTO.UpdateCommentResponse response =
+        commentService.updateComment(postId, commentId, memberId, request);
+    return ApiResponse.onSuccess(GeneralSuccessCode.OK, response);
+  }
 }

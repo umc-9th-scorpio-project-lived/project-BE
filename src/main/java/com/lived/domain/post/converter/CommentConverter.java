@@ -31,4 +31,11 @@ public class CommentConverter {
         .createdAt(comment.getCreatedAt())
         .build();
   }
+
+  // Comment Entity → UpdateCommentResponse
+  public static CommentResponseDTO.UpdateCommentResponse toUpdateCommentResponse(Comment comment) {
+    return CommentResponseDTO.UpdateCommentResponse.builder()
+        .commentId(comment.getId())
+        .build();
+  }
 }
