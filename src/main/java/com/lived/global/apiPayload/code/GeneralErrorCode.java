@@ -26,7 +26,9 @@ public enum GeneralErrorCode implements BaseErrorCode {
     POST_FORBIDDEN(HttpStatus.FORBIDDEN, "COMMUNITY403_1", "게시글에 대한 권한이 없습니다."),
     COMMENT_FORBIDDEN(HttpStatus.FORBIDDEN, "COMMUNITY403_2", "댓글에 대한 권한이 없습니다."),
     POST_NOT_FOUND(HttpStatus.NOT_FOUND, "COMMUNITY404_1", "게시글을 찾을 수 없습니다."),
-    COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "COMMENT404_2", "댓글을 찾을 수 없습니다.");
+    COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "COMMUNITY404_2", "댓글을 찾을 수 없습니다."),
+    REPORT_TARGET_NOT_FOUND(HttpStatus.NOT_FOUND, "COMMUNITY404_3", "신고 대상을 찾을 수 없습니다."),
+    REPORT_ALREADY_EXISTS(HttpStatus.CONFLICT, "COMMUNITY409_1", "신고가 이미 접수되었습니다.");
 
     private final HttpStatus status;
     private final String code;
