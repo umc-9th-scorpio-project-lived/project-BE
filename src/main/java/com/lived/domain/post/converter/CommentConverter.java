@@ -38,4 +38,11 @@ public class CommentConverter {
         .commentId(comment.getId())
         .build();
   }
+
+  // Comment Entity → DeleteCommentResponse
+  public static CommentResponseDTO.DeleteCommentResponse toDeleteCommentResponse(Comment comment) {
+    return CommentResponseDTO.DeleteCommentResponse.builder()
+        .commentId(comment.getId())
+        .build();
+  }
 }

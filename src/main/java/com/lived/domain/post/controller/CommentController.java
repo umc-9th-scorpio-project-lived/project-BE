@@ -75,4 +75,30 @@ public class CommentController {
         commentService.updateComment(postId, commentId, memberId, request);
     return ApiResponse.onSuccess(GeneralSuccessCode.OK, response);
   }
+
+  @Operation(
+      summary = "댓글 삭제",
+      description = "댓글을 삭제합니다. (Soft Delete)"
+  )
+  @ApiResponses({
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(
+          responseCode = "200",
+          description = "댓글 삭제 성공"
+      )
+  })
+  @DeleteMapping("/{commentId}")
+  public ApiResponse<CommentResponseDTO.DeleteCommentResponse> deleteComment(
+      @Parameter(description = "사용자 ID", required = true, example = "1")
+      @RequestHeader("Member-Id") Long memberId,
+
+      @Parameter(description = "게시글 ID", required = true, example = "123")
+      @PathVariable Long postId,
+
+      @Parameter(description = "댓글 ID", required = true, example = "78")
+      @PathVariable Long commentId
+  ) {
+    CommentResponseDTO.DeleteCommentResponse response =
+        commentService.deleteComment(postId, commentId, memberId);
+    return ApiResponse.onSuccess(GeneralSuccessCode.OK, response);
+  }
 }

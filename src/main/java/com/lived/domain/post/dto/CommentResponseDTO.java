@@ -33,4 +33,15 @@ public class CommentResponseDTO {
     @Schema(description = "수정된 댓글 ID", example = "78")
     private Long commentId;
   }
+
+  @Getter
+  @Builder
+  @NoArgsConstructor
+  @AllArgsConstructor
+  @Schema(description = "댓글 삭제 응답")
+  public static class DeleteCommentResponse {
+
+    @Schema(description = "삭제된 댓글 ID", example = "78")
+    private Long commentId;
+  }
 }
