@@ -101,4 +101,30 @@ public class CommentController {
         commentService.deleteComment(postId, commentId, memberId);
     return ApiResponse.onSuccess(GeneralSuccessCode.OK, response);
   }
+
+  @Operation(
+      summary = "댓글 좋아요 토글",
+      description = "댓글 좋아요를 추가하거나 취소합니다."
+  )
+  @ApiResponses({
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(
+          responseCode = "200",
+          description = "좋아요 토글 성공"
+      )
+  })
+  @PostMapping("/{commentId}/like")
+  public ApiResponse<CommentResponseDTO.ToggleLikeResponse> toggleCommentLike(
+      @Parameter(description = "사용자 ID", required = true, example = "1")
+      @RequestHeader("Member-Id") Long memberId,
+
+      @Parameter(description = "게시글 ID", required = true, example = "123")
+      @PathVariable Long postId,
+
+      @Parameter(description = "댓글 ID", required = true, example = "78")
+      @PathVariable Long commentId
+  ) {
+    CommentResponseDTO.ToggleLikeResponse response =
+        commentService.toggleCommentLike(postId, commentId, memberId);
+    return ApiResponse.onSuccess(GeneralSuccessCode.OK, response);
+  }
 }

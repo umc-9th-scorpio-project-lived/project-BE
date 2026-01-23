@@ -45,4 +45,15 @@ public class CommentConverter {
         .commentId(comment.getId())
         .build();
   }
+
+  // 좋아요 토글 결과 → ToggleLikeResponse
+  public static CommentResponseDTO.ToggleLikeResponse toToggleLikeResponse(
+      boolean isLiked,
+      int likeCount
+  ) {
+    return CommentResponseDTO.ToggleLikeResponse.builder()
+        .isLiked(isLiked)
+        .likeCount(likeCount)
+        .build();
+  }
 }

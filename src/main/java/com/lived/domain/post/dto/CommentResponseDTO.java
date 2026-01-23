@@ -44,4 +44,18 @@ public class CommentResponseDTO {
     @Schema(description = "삭제된 댓글 ID", example = "78")
     private Long commentId;
   }
+
+  @Getter
+  @Builder
+  @NoArgsConstructor
+  @AllArgsConstructor
+  @Schema(description = "댓글 좋아요 토글 응답")
+  public static class ToggleLikeResponse {
+
+    @Schema(description = "토글 후 좋아요 여부", example = "true")
+    private Boolean isLiked;
+
+    @Schema(description = "토글 후 좋아요 수", example = "5")
+    private Integer likeCount;
+  }
 }
