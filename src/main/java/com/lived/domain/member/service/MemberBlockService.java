@@ -3,14 +3,18 @@ package com.lived.domain.member.service;
 import com.lived.domain.member.converter.MemberBlockConverter;
 import com.lived.domain.member.dto.MemberBlockRequestDTO;
 import com.lived.domain.member.dto.MemberBlockResponseDTO;
+import com.lived.domain.member.dto.MemberBlockResponseDTO.BlockedMemberInfo;
 import com.lived.domain.member.entity.Block;
 import com.lived.domain.member.entity.Member;
 import com.lived.domain.member.repository.MemberBlockRepository;
 import com.lived.domain.member.repository.MemberRepository;
 import com.lived.global.apiPayload.code.GeneralErrorCode;
 import com.lived.global.apiPayload.exception.GeneralException;
+import com.lived.global.dto.CursorPageResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +26,8 @@ public class MemberBlockService {
 
   private final MemberBlockRepository memberBlockRepository;
   private final MemberRepository memberRepository;
+
+  private static final int PAGE_SIZE = 20;
 
   /**
    * 사용자 차단
@@ -60,5 +66,26 @@ public class MemberBlockService {
     Block savedBlock = memberBlockRepository.save(memberBlock);
 
     return MemberBlockConverter.toBlockMemberResponse(savedBlock);
+  }
+
+  /**
+   * 차단 목록 조회 (커서 페이징)
+   */
+  public CursorPageResponse<BlockedMemberInfo> getBlockList(
+      Long memberId,
+      Long cursor
+  ) {
+    PageRequest pageRequest = PageRequest.of(0, PAGE_SIZE);
+
+    Slice<Block> blockSlice;
+    if (cursor == null) {
+      // 첫 페이지
+      blockSlice = memberBlockRepository.findBlockListFirstPage(memberId, pageRequest);
+    } else {
+      // 다음 페이지
+      blockSlice = memberBlockRepository.findBlockListWithCursor(memberId, cursor, pageRequest);
+    }
+
+    return MemberBlockConverter.toBlockListResponse(blockSlice);
   }
 }
