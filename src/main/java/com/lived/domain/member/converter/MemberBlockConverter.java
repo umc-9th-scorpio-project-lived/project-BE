@@ -49,4 +49,11 @@ public class MemberBlockConverter {
         .nextCursor(nextCursor)
         .build();
   }
+
+  // Member Entity → UnblockMemberResponse
+  public static MemberBlockResponseDTO.UnblockMemberResponse toUnblockMemberResponse(Long unblockedMemberId) {
+    return MemberBlockResponseDTO.UnblockMemberResponse.builder()
+        .unblockedMemberId(unblockedMemberId)
+        .build();
+  }
 }

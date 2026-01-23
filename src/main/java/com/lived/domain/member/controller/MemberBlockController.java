@@ -67,4 +67,27 @@ public class MemberBlockController {
         memberBlockService.getBlockList(memberId, cursor);
     return ApiResponse.onSuccess(GeneralSuccessCode.OK, response);
   }
+
+  @Operation(
+      summary = "차단 해제",
+      description = "차단한 사용자를 차단 해제합니다."
+  )
+  @ApiResponses({
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(
+          responseCode = "200",
+          description = "차단 해제 성공"
+      )
+  })
+  @DeleteMapping("/{blockedMemberId}")
+  public ApiResponse<MemberBlockResponseDTO.UnblockMemberResponse> unblockMember(
+      @Parameter(description = "사용자 ID", required = true, example = "1")
+      @RequestHeader("Member-Id") Long memberId,
+
+      @Parameter(description = "차단 해제할 사용자 ID", required = true, example = "5")
+      @PathVariable Long blockedMemberId
+  ) {
+    MemberBlockResponseDTO.UnblockMemberResponse response =
+        memberBlockService.unblockMember(memberId, blockedMemberId);
+    return ApiResponse.onSuccess(GeneralSuccessCode.OK, response);
+  }
 }

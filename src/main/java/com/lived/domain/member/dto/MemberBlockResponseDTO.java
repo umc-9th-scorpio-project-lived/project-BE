@@ -38,4 +38,15 @@ public class MemberBlockResponseDTO {
     @Schema(description = "프로필 이미지 URL", example = "https://...")
     private String profileImageUrl;
   }
+
+  @Getter
+  @Builder
+  @NoArgsConstructor
+  @AllArgsConstructor
+  @Schema(description = "차단 해제 응답")
+  public static class UnblockMemberResponse {
+
+    @Schema(description = "차단 해제된 사용자 ID", example = "5")
+    private Long unblockedMemberId;
+  }
 }

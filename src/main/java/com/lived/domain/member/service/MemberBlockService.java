@@ -88,4 +88,22 @@ public class MemberBlockService {
 
     return MemberBlockConverter.toBlockListResponse(blockSlice);
   }
+
+  /**
+   * 차단 해제
+   */
+  @Transactional
+  public MemberBlockResponseDTO.UnblockMemberResponse unblockMember(
+      Long blockerId,
+      Long blockedMemberId
+  ) {
+    // MemberBlock 조회
+    Block memberBlock = memberBlockRepository.findByBlockerIdAndBlockedId(blockerId, blockedMemberId)
+        .orElseThrow(() -> new GeneralException(GeneralErrorCode.BLOCK_NOT_FOUND));
+
+    // 차단 해제
+    memberBlockRepository.delete(memberBlock);
+
+    return MemberBlockConverter.toUnblockMemberResponse(blockedMemberId);
+  }
 }
