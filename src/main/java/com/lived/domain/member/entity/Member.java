@@ -55,9 +55,10 @@ public class Member extends BaseEntity {
     @Column(name = "agreement_date")
     private LocalDateTime agreementDate; // 알림수신 상태 변경 시점
 
+    @Builder.Default
     @Enumerated(EnumType.STRING)
-    @Column(name = "tree_visibility")
-    private TreeVisibility treeVisibility; // 루틴나무 공개 범위
+    @Column(name = "tree_visibility", nullable = false)
+    private TreeVisibility treeVisibility = TreeVisibility.PUBLIC; // 루틴나무 공개 범위
 
     @Column(name = "status", length = 32)
     private String status; // 활성화 상태
