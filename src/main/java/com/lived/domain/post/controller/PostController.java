@@ -2,9 +2,12 @@ package com.lived.domain.post.controller;
 
 import com.lived.domain.post.dto.PostRequestDTO;
 import com.lived.domain.post.dto.PostResponseDTO;
+import com.lived.domain.post.dto.PostResponseDTO.PostListItem;
+import com.lived.domain.post.entity.enums.PostCategory;
 import com.lived.domain.post.service.PostService;
 import com.lived.global.apiPayload.ApiResponse;
 import com.lived.global.apiPayload.code.GeneralSuccessCode;
+import com.lived.global.dto.CursorPageResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -141,6 +144,154 @@ public class PostController {
       @PathVariable Long postId
   ) {
     PostResponseDTO.ToggleScrapResponse response = postService.toggleScrap(postId, memberId);
+    return ApiResponse.onSuccess(GeneralSuccessCode.OK, response);
+  }
+
+  @Operation(
+      summary = "게시글 목록 조회",
+      description = "게시글 목록을 커서 페이징 방식으로 조회합니다."
+  )
+  @ApiResponses({
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(
+          responseCode = "200",
+          description = "조회 성공"
+      )
+  })
+  @GetMapping
+  public ApiResponse<CursorPageResponse<PostResponseDTO.PostListItem>> getPostList(
+      @Parameter(description = "사용자 ID", required = true, example = "1")
+      @RequestHeader("Member-Id") Long memberId,
+
+      @Parameter(description = "검색 키워드", required = false)
+      @RequestParam(required = false) String keyword,
+
+      @Parameter(description = "카테고리", required = false)
+      @RequestParam(required = false) PostCategory category,
+
+      @Parameter(description = "커서", required = false)
+      @RequestParam(required = false) Long cursor,
+
+      @Parameter(description = "페이지 크기", required = false)
+      @RequestParam(defaultValue = "20") int size
+  ) {
+    CursorPageResponse<PostListItem> response =
+        postService.getPostList(memberId, keyword, category, cursor, size);
+    return ApiResponse.onSuccess(GeneralSuccessCode.OK, response);
+  }
+
+  @Operation(
+      summary = "실시간 인기글 조회",
+      description = "24시간 내에 좋아요 15개 이상 받은 게시글을 최신순으로 최대 5개 조회합니다."
+  )
+  @ApiResponses({
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(
+          responseCode = "200",
+          description = "조회 성공"
+      )
+  })
+  @GetMapping("/popular")
+  public ApiResponse<PostResponseDTO.PopularPostListResponse> getPopularPosts() {
+    PostResponseDTO.PopularPostListResponse response = postService.getPopularPosts();
+    return ApiResponse.onSuccess(GeneralSuccessCode.OK, response);
+  }
+
+  @Operation(
+      summary = "게시글 상세 조회",
+      description = "게시글 상세 정보를 조회합니다. 조회 시 조회수가 증가합니다."
+  )
+  @ApiResponses({
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(
+          responseCode = "200",
+          description = "조회 성공"
+      )
+  })
+  @GetMapping("/{postId}")
+  public ApiResponse<PostResponseDTO.PostDetailResponse> getPostDetail(
+      @Parameter(description = "사용자 ID", required = true, example = "1")
+      @RequestHeader("Member-Id") Long memberId,
+
+      @Parameter(description = "게시글 ID", required = true, example = "123")
+      @PathVariable Long postId
+  ) {
+    PostResponseDTO.PostDetailResponse response = postService.getPostDetail(postId, memberId);
+    return ApiResponse.onSuccess(GeneralSuccessCode.OK, response);
+  }
+
+  @Operation(
+      summary = "내가 작성한 게시글 목록 조회",
+      description = "내가 작성한 게시글 목록을 최신순으로 조회합니다."
+  )
+  @ApiResponses({
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(
+          responseCode = "200",
+          description = "조회 성공"
+      )
+  })
+  @GetMapping("/me")
+  public ApiResponse<CursorPageResponse<PostResponseDTO.PostListItem>> getMyPosts(
+      @Parameter(description = "사용자 ID", required = true, example = "1")
+      @RequestHeader("Member-Id") Long memberId,
+
+      @Parameter(description = "커서", required = false)
+      @RequestParam(required = false) Long cursor,
+
+      @Parameter(description = "페이지 크기", required = false)
+      @RequestParam(defaultValue = "20") int size
+  ) {
+    CursorPageResponse<PostResponseDTO.PostListItem> response =
+        postService.getMyPosts(memberId, cursor, size);
+    return ApiResponse.onSuccess(GeneralSuccessCode.OK, response);
+  }
+
+  @Operation(
+      summary = "내가 댓글 단 게시글 목록 조회",
+      description = "내가 댓글을 작성한 게시글 목록을 최신순으로 조회합니다."
+  )
+  @ApiResponses({
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(
+          responseCode = "200",
+          description = "조회 성공"
+      )
+  })
+  @GetMapping("/me/comments")
+  public ApiResponse<CursorPageResponse<PostResponseDTO.PostListItem>> getMyCommentedPosts(
+      @Parameter(description = "사용자 ID", required = true, example = "1")
+      @RequestHeader("Member-Id") Long memberId,
+
+      @Parameter(description = "커서", required = false)
+      @RequestParam(required = false) Long cursor,
+
+      @Parameter(description = "페이지 크기", required = false)
+      @RequestParam(defaultValue = "20") int size
+  ) {
+    CursorPageResponse<PostResponseDTO.PostListItem> response =
+        postService.getMyCommentedPosts(memberId, cursor, size);
+    return ApiResponse.onSuccess(GeneralSuccessCode.OK, response);
+  }
+
+  @Operation(
+      summary = "내가 스크랩한 게시글 목록 조회",
+      description = "내가 스크랩한 게시글 목록을 최신순으로 조회합니다."
+  )
+  @ApiResponses({
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(
+          responseCode = "200",
+          description = "조회 성공"
+      )
+  })
+  @GetMapping("/me/scraps")
+  public ApiResponse<CursorPageResponse<PostResponseDTO.PostListItem>> getMyScrappedPosts(
+      @Parameter(description = "사용자 ID", required = true, example = "1")
+      @RequestHeader("Member-Id") Long memberId,
+
+      @Parameter(description = "커서", required = false)
+      @RequestParam(required = false) Long cursor,
+
+      @Parameter(description = "페이지 크기", required = false)
+      @RequestParam(defaultValue = "20") int size
+  ) {
+    CursorPageResponse<PostResponseDTO.PostListItem> response =
+        postService.getMyScrappedPosts(memberId, cursor, size);
     return ApiResponse.onSuccess(GeneralSuccessCode.OK, response);
   }
 }

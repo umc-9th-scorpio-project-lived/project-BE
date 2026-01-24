@@ -104,4 +104,8 @@ public class Post extends BaseEntity {
       this.commentCount--;
     }
   }
+
+  public void incrementViewCount() {
+    this.viewCount++;
+  }
 }

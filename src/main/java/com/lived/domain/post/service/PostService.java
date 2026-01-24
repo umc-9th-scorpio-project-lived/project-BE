@@ -1,21 +1,22 @@
 package com.lived.domain.post.service;
 
 import com.lived.domain.member.entity.Member;
+import com.lived.domain.member.repository.MemberBlockRepository;
 import com.lived.domain.member.repository.MemberRepository;
 import com.lived.domain.post.converter.PostConverter;
 import com.lived.domain.post.dto.PostRequestDTO;
 import com.lived.domain.post.dto.PostResponseDTO;
 import com.lived.domain.post.entity.Post;
 import com.lived.domain.post.entity.PostImage;
+import com.lived.domain.post.entity.enums.PostCategory;
 import com.lived.domain.post.entity.mapping.PostLike;
 import com.lived.domain.post.entity.mapping.PostScrap;
-import com.lived.domain.post.repository.PostImageRepository;
-import com.lived.domain.post.repository.PostLikeRepository;
-import com.lived.domain.post.repository.PostRepository;
-import com.lived.domain.post.repository.PostScrapRepository;
+import com.lived.domain.post.repository.*;
 import com.lived.global.apiPayload.code.GeneralErrorCode;
 import com.lived.global.apiPayload.exception.GeneralException;
+import com.lived.global.dto.CursorPageResponse;
 import com.lived.global.s3.S3Service;
+import java.time.LocalDateTime;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,6 +39,8 @@ public class PostService {
   private final S3Service s3Service;
   private final PostLikeRepository postLikeRepository;
   private final PostScrapRepository postScrapRepository;
+  private final MemberBlockRepository memberBlockRepository;
+  private final CommentRepository commentRepository;
 
   private static final int MAX_IMAGE_COUNT = 10;
 
@@ -266,7 +269,8 @@ public class PostService {
         .orElseThrow(() -> new GeneralException(GeneralErrorCode.MEMBER_NOT_FOUND));
 
     // 스크랩 존재 여부 확인
-    Optional<PostScrap> existingScrap = postScrapRepository.findByPostIdAndMemberId(postId, memberId);
+    Optional<PostScrap> existingScrap = postScrapRepository.findByPostIdAndMemberId(postId,
+        memberId);
 
     boolean isScrapped;
 
@@ -287,5 +291,354 @@ public class PostService {
     }
 
     return PostConverter.toToggleScrapResponse(isScrapped);
+  }
+
+  /**
+   * 게시글 목록 조회
+   */
+  public CursorPageResponse<PostResponseDTO.PostListItem> getPostList(
+      Long memberId,
+      String keyword,
+      PostCategory category,
+      Long cursor,
+      int size
+  ) {
+    List<Post> posts = postRepository.findAll();
+
+    // 필터링
+    List<PostResponseDTO.PostListItem> filteredPosts = posts.stream()
+        .filter(p -> p.getDeletedAt() == null)
+        .filter(p -> category == null || p.getCategory() == category)
+        .filter(p -> keyword == null || keyword.isBlank() ||
+            p.getTitle().toLowerCase().contains(keyword.toLowerCase()) ||
+            p.getContent().toLowerCase().contains(keyword.toLowerCase()))
+        .filter(p -> cursor == null || p.getId() < cursor)
+        .sorted((a, b) -> b.getId().compareTo(a.getId()))
+        .limit(size + 1)
+        .map(p -> {
+          // 차단 여부 확인
+          boolean isBlocked = memberBlockRepository.existsByBlockerIdAndBlockedId(memberId,
+              p.getMember().getId());
+
+          // 썸네일 조회 (orderIndex = 1)
+          String thumbnailUrl = postImageRepository.findFirstByPostIdAndOrderIndex(p.getId(), 1)
+              .map(PostImage::getImageUrl)
+              .orElse(null);
+
+          // 전체 이미지 개수
+          int imageCount = postImageRepository.findAllByPostId(p.getId()).size();
+
+          return PostResponseDTO.PostListItem.builder()
+              .postId(p.getId())
+              .category(p.getCategory())
+              .categoryLabel(p.getCategory().getLabel())
+              .title(isBlocked ? "차단한 사용자의 게시글입니다." : p.getTitle())
+              .content(isBlocked ? "차단한 사용자의 게시글입니다." : p.getContent())
+              .likeCount(p.getLikeCount())
+              .commentCount(p.getCommentCount())
+              .thumbnailUrl(thumbnailUrl)
+              .imageCount(imageCount)
+              .isBlocked(isBlocked)
+              .createdAt(p.getCreatedAt())
+              .build();
+        })
+        .toList();
+
+    boolean hasNext = filteredPosts.size() > size;
+    List<PostResponseDTO.PostListItem> content = hasNext
+        ? filteredPosts.subList(0, size)
+        : filteredPosts;
+
+    Long nextCursor = hasNext && !content.isEmpty()
+        ? content.get(content.size() - 1).getPostId()
+        : null;
+
+    return CursorPageResponse.<PostResponseDTO.PostListItem>builder()
+        .content(content)
+        .hasNext(hasNext)
+        .nextCursor(nextCursor)
+        .build();
+  }
+
+  /**
+   * 실시간 인기글 조회
+   * 조건: 24시간 내 작성, 좋아요 15개 이상, 최대 5개 반환
+   */
+  public PostResponseDTO.PopularPostListResponse getPopularPosts() {
+    LocalDateTime oneDayAgo = LocalDateTime.now().minusDays(1);
+
+    List<PostResponseDTO.PopularPostItem> popularPosts = postRepository.findAll().stream()
+        .filter(p -> p.getDeletedAt() == null)
+        .filter(p -> p.getCreatedAt().isAfter(oneDayAgo))
+        .filter(p -> p.getLikeCount() >= 15)
+        .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
+        .limit(5)
+        .map(p -> PostResponseDTO.PopularPostItem.builder()
+            .postId(p.getId())
+            .title(p.getTitle())
+            .content(p.getContent())
+            .likeCount(p.getLikeCount())
+            .commentCount(p.getCommentCount())
+            .createdAt(p.getCreatedAt())
+            .build())
+        .toList();
+
+    return PostResponseDTO.PopularPostListResponse.builder()
+        .content(popularPosts)
+        .build();
+  }
+
+  /**
+   * 게시글 상세 조회
+   */
+  @Transactional
+  public PostResponseDTO.PostDetailResponse getPostDetail(Long postId, Long memberId) {
+    // Post 조회
+    Post post = postRepository.findById(postId)
+        .orElseThrow(() -> new GeneralException(GeneralErrorCode.POST_NOT_FOUND));
+
+    // 삭제된 게시글인지 확인
+    if (post.getDeletedAt() != null) {
+      throw new GeneralException(GeneralErrorCode.POST_NOT_FOUND);
+    }
+
+    // 조회수 증가
+    post.incrementViewCount();
+
+    // 차단 여부 확인
+    boolean isBlocked = memberBlockRepository.existsByBlockerIdAndBlockedId(memberId, post.getMember().getId());
+
+    // 좋아요 여부 확인
+    boolean isLiked = postLikeRepository.existsByPostIdAndMemberId(postId, memberId);
+
+    // 스크랩 여부 확인
+    boolean isScrapped = postScrapRepository.existsByPostIdAndMemberId(postId, memberId);
+
+    // 이미지 목록 조회
+    List<PostResponseDTO.PostImageInfo> images = postImageRepository.findAllByPostId(postId).stream()
+        .sorted((a, b) -> a.getOrderIndex().compareTo(b.getOrderIndex()))
+        .map(img -> PostResponseDTO.PostImageInfo.builder()
+            .imageId(img.getId())
+            .imageUrl(img.getImageUrl())
+            .orderIndex(img.getOrderIndex())
+            .build())
+        .toList();
+
+    // 작성자 정보
+    PostResponseDTO.AuthorInfo authorInfo = PostResponseDTO.AuthorInfo.builder()
+        .userId(post.getMember().getId())
+        .nickname(post.getMember().getNickname())
+        .profileImageUrl(post.getMember().getProfileImageUrl())
+        .build();
+
+    return PostResponseDTO.PostDetailResponse.builder()
+        .postId(post.getId())
+        .category(post.getCategory())
+        .categoryLabel(post.getCategory().getLabel())
+        .title(isBlocked ? "차단한 사용자의 게시글입니다." : post.getTitle())
+        .content(isBlocked ? "차단한 사용자의 게시글입니다." : post.getContent())
+        .viewCount(post.getViewCount())
+        .likeCount(post.getLikeCount())
+        .commentCount(post.getCommentCount())
+        .isLiked(isLiked)
+        .isScrapped(isScrapped)
+        .createdAt(post.getCreatedAt())
+        .author(authorInfo)
+        .images(images)
+        .build();
+  }
+
+  /**
+   * 내가 작성한 게시글 목록 조회
+   */
+  public CursorPageResponse<PostResponseDTO.PostListItem> getMyPosts(
+      Long memberId,
+      Long cursor,
+      int size
+  ) {
+    List<Post> posts = postRepository.findAll();
+
+    // 필터링
+    List<PostResponseDTO.PostListItem> myPosts = posts.stream()
+        .filter(p -> p.getDeletedAt() == null)
+        .filter(p -> p.getMember().getId().equals(memberId))
+        .filter(p -> cursor == null || p.getId() < cursor)
+        .sorted((a, b) -> b.getId().compareTo(a.getId()))
+        .limit(size + 1)
+        .map(p -> {
+          // 썸네일 조회 (orderIndex = 1)
+          String thumbnailUrl = postImageRepository.findFirstByPostIdAndOrderIndex(p.getId(), 1)
+              .map(PostImage::getImageUrl)
+              .orElse(null);
+
+          // 전체 이미지 개수
+          int imageCount = postImageRepository.findAllByPostId(p.getId()).size();
+
+          return PostResponseDTO.PostListItem.builder()
+              .postId(p.getId())
+              .category(p.getCategory())
+              .categoryLabel(p.getCategory().getLabel())
+              .title(p.getTitle())
+              .content(p.getContent())
+              .likeCount(p.getLikeCount())
+              .commentCount(p.getCommentCount())
+              .thumbnailUrl(thumbnailUrl)
+              .imageCount(imageCount)
+              .isBlocked(false)
+              .createdAt(p.getCreatedAt())
+              .build();
+        })
+        .toList();
+
+    boolean hasNext = myPosts.size() > size;
+    List<PostResponseDTO.PostListItem> content = hasNext
+        ? myPosts.subList(0, size)
+        : myPosts;
+
+    Long nextCursor = hasNext && !content.isEmpty()
+        ? content.get(content.size() - 1).getPostId()
+        : null;
+
+    return CursorPageResponse.<PostResponseDTO.PostListItem>builder()
+        .content(content)
+        .hasNext(hasNext)
+        .nextCursor(nextCursor)
+        .build();
+  }
+
+  /**
+   * 내가 댓글 단 게시글 목록 조회
+   */
+  public CursorPageResponse<PostResponseDTO.PostListItem> getMyCommentedPosts(
+      Long memberId,
+      Long cursor,
+      int size
+  ) {
+    // 내가 댓글 단 게시글 ID 목록 (중복 제거)
+    List<Long> commentedPostIds = commentRepository.findAll().stream()
+        .filter(c -> c.getMember().getId().equals(memberId))
+        .filter(c -> c.getDeletedAt() == null)
+        .map(c -> c.getPost().getId())
+        .distinct()
+        .toList();
+
+    List<Post> posts = postRepository.findAll();
+
+    // 필터링
+    List<PostResponseDTO.PostListItem> commentedPosts = posts.stream()
+        .filter(p -> p.getDeletedAt() == null)
+        .filter(p -> commentedPostIds.contains(p.getId()))
+        .filter(p -> cursor == null || p.getId() < cursor)
+        .sorted((a, b) -> b.getId().compareTo(a.getId()))
+        .limit(size + 1)
+        .map(p -> {
+          // 차단 여부 확인
+          boolean isBlocked = memberBlockRepository.existsByBlockerIdAndBlockedId(memberId, p.getMember().getId());
+
+          // 썸네일 조회 (orderIndex = 1)
+          String thumbnailUrl = postImageRepository.findFirstByPostIdAndOrderIndex(p.getId(), 1)
+              .map(PostImage::getImageUrl)
+              .orElse(null);
+
+          // 전체 이미지 개수
+          int imageCount = postImageRepository.findAllByPostId(p.getId()).size();
+
+          return PostResponseDTO.PostListItem.builder()
+              .postId(p.getId())
+              .category(p.getCategory())
+              .categoryLabel(p.getCategory().getLabel())
+              .title(isBlocked ? "차단한 사용자의 게시글입니다." : p.getTitle())
+              .content(isBlocked ? "차단한 사용자의 게시글입니다." : p.getContent())
+              .likeCount(p.getLikeCount())
+              .commentCount(p.getCommentCount())
+              .thumbnailUrl(thumbnailUrl)
+              .imageCount(imageCount)
+              .isBlocked(isBlocked)
+              .createdAt(p.getCreatedAt())
+              .build();
+        })
+        .toList();
+
+    boolean hasNext = commentedPosts.size() > size;
+    List<PostResponseDTO.PostListItem> content = hasNext
+        ? commentedPosts.subList(0, size)
+        : commentedPosts;
+
+    Long nextCursor = hasNext && !content.isEmpty()
+        ? content.get(content.size() - 1).getPostId()
+        : null;
+
+    return CursorPageResponse.<PostResponseDTO.PostListItem>builder()
+        .content(content)
+        .hasNext(hasNext)
+        .nextCursor(nextCursor)
+        .build();
+  }
+
+  /**
+   * 내가 스크랩한 게시글 목록 조회
+   */
+  public CursorPageResponse<PostResponseDTO.PostListItem> getMyScrappedPosts(
+      Long memberId,
+      Long cursor,
+      int size
+  ) {
+    // 내가 스크랩한 게시글 ID 목록
+    List<Long> scrappedPostIds = postScrapRepository.findAll().stream()
+        .filter(s -> s.getMember().getId().equals(memberId))
+        .map(s -> s.getPost().getId())
+        .toList();
+
+    List<Post> posts = postRepository.findAll();
+
+    // 필터링
+    List<PostResponseDTO.PostListItem> scrappedPosts = posts.stream()
+        .filter(p -> p.getDeletedAt() == null)
+        .filter(p -> scrappedPostIds.contains(p.getId()))
+        .filter(p -> cursor == null || p.getId() < cursor)
+        .sorted((a, b) -> b.getId().compareTo(a.getId()))
+        .limit(size + 1)
+        .map(p -> {
+          // 차단 여부 확인
+          boolean isBlocked = memberBlockRepository.existsByBlockerIdAndBlockedId(memberId, p.getMember().getId());
+
+          // 썸네일 조회 (orderIndex = 1)
+          String thumbnailUrl = postImageRepository.findFirstByPostIdAndOrderIndex(p.getId(), 1)
+              .map(PostImage::getImageUrl)
+              .orElse(null);
+
+          // 전체 이미지 개수
+          int imageCount = postImageRepository.findAllByPostId(p.getId()).size();
+
+          return PostResponseDTO.PostListItem.builder()
+              .postId(p.getId())
+              .category(p.getCategory())
+              .categoryLabel(p.getCategory().getLabel())
+              .title(isBlocked ? "차단한 사용자의 게시글입니다." : p.getTitle())
+              .content(isBlocked ? "차단한 사용자의 게시글입니다." : p.getContent())
+              .likeCount(p.getLikeCount())
+              .commentCount(p.getCommentCount())
+              .thumbnailUrl(thumbnailUrl)
+              .imageCount(imageCount)
+              .isBlocked(isBlocked)
+              .createdAt(p.getCreatedAt())
+              .build();
+        })
+        .toList();
+
+    boolean hasNext = scrappedPosts.size() > size;
+    List<PostResponseDTO.PostListItem> content = hasNext
+        ? scrappedPosts.subList(0, size)
+        : scrappedPosts;
+
+    Long nextCursor = hasNext && !content.isEmpty()
+        ? content.get(content.size() - 1).getPostId()
+        : null;
+
+    return CursorPageResponse.<PostResponseDTO.PostListItem>builder()
+        .content(content)
+        .hasNext(hasNext)
+        .nextCursor(nextCursor)
+        .build();
   }
 }
