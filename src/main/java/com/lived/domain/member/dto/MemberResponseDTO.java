@@ -1,14 +1,64 @@
 package com.lived.domain.member.dto;
 
-import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import java.time.LocalDateTime;
 
 public class MemberResponseDTO {
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class MyProfileDTO {
+        private String name;
+    }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class CommunityProfileDTO {
+        private String nickname;
+        private String livingPeriod;
+        private List<MemberRoutineFruitDTO> fruits;
+
+        private List<MemberPostPreviewDTO> writtenPosts;
+        private List<MemberPostPreviewDTO> commentedPosts;
+        private List<MemberPostPreviewDTO> scrappedPosts;
+    }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class MemberRoutineFruitDTO {
+        private Long fruitId;
+        private Long memberRoutine;
+        private String fruitImageUrl;
+    }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class MemberPostPreviewDTO {
+        private Long postId;
+        private String category;
+        private String title;
+        private String contentSummary;
+        private Integer likeCount;
+        private Integer commentCount;
+        private String createdAt;
+        private String firstImageUrl;
+    }
 
     @Builder
     @Getter
