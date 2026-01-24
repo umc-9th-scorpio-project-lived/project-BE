@@ -268,4 +268,30 @@ public class PostController {
         postService.getMyCommentedPosts(memberId, cursor, size);
     return ApiResponse.onSuccess(GeneralSuccessCode.OK, response);
   }
+
+  @Operation(
+      summary = "내가 스크랩한 게시글 목록 조회",
+      description = "내가 스크랩한 게시글 목록을 최신순으로 조회합니다."
+  )
+  @ApiResponses({
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(
+          responseCode = "200",
+          description = "조회 성공"
+      )
+  })
+  @GetMapping("/me/scraps")
+  public ApiResponse<CursorPageResponse<PostResponseDTO.PostListItem>> getMyScrappedPosts(
+      @Parameter(description = "사용자 ID", required = true, example = "1")
+      @RequestHeader("Member-Id") Long memberId,
+
+      @Parameter(description = "커서", required = false)
+      @RequestParam(required = false) Long cursor,
+
+      @Parameter(description = "페이지 크기", required = false)
+      @RequestParam(defaultValue = "20") int size
+  ) {
+    CursorPageResponse<PostResponseDTO.PostListItem> response =
+        postService.getMyScrappedPosts(memberId, cursor, size);
+    return ApiResponse.onSuccess(GeneralSuccessCode.OK, response);
+  }
 }

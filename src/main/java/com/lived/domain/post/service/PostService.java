@@ -574,4 +574,71 @@ public class PostService {
         .nextCursor(nextCursor)
         .build();
   }
+
+  /**
+   * 내가 스크랩한 게시글 목록 조회
+   */
+  public CursorPageResponse<PostResponseDTO.PostListItem> getMyScrappedPosts(
+      Long memberId,
+      Long cursor,
+      int size
+  ) {
+    // 내가 스크랩한 게시글 ID 목록
+    List<Long> scrappedPostIds = postScrapRepository.findAll().stream()
+        .filter(s -> s.getMember().getId().equals(memberId))
+        .map(s -> s.getPost().getId())
+        .toList();
+
+    List<Post> posts = postRepository.findAll();
+
+    // 필터링
+    List<PostResponseDTO.PostListItem> scrappedPosts = posts.stream()
+        .filter(p -> p.getDeletedAt() == null)
+        .filter(p -> scrappedPostIds.contains(p.getId()))
+        .filter(p -> cursor == null || p.getId() < cursor)
+        .sorted((a, b) -> b.getId().compareTo(a.getId()))
+        .limit(size + 1)
+        .map(p -> {
+          // 차단 여부 확인
+          boolean isBlocked = memberBlockRepository.existsByBlockerIdAndBlockedId(memberId, p.getMember().getId());
+
+          // 썸네일 조회 (orderIndex = 1)
+          String thumbnailUrl = postImageRepository.findFirstByPostIdAndOrderIndex(p.getId(), 1)
+              .map(PostImage::getImageUrl)
+              .orElse(null);
+
+          // 전체 이미지 개수
+          int imageCount = postImageRepository.findAllByPostId(p.getId()).size();
+
+          return PostResponseDTO.PostListItem.builder()
+              .postId(p.getId())
+              .category(p.getCategory())
+              .categoryLabel(p.getCategory().getLabel())
+              .title(isBlocked ? "차단한 사용자의 게시글입니다." : p.getTitle())
+              .content(isBlocked ? "차단한 사용자의 게시글입니다." : p.getContent())
+              .likeCount(p.getLikeCount())
+              .commentCount(p.getCommentCount())
+              .thumbnailUrl(thumbnailUrl)
+              .imageCount(imageCount)
+              .isBlocked(isBlocked)
+              .createdAt(p.getCreatedAt())
+              .build();
+        })
+        .toList();
+
+    boolean hasNext = scrappedPosts.size() > size;
+    List<PostResponseDTO.PostListItem> content = hasNext
+        ? scrappedPosts.subList(0, size)
+        : scrappedPosts;
+
+    Long nextCursor = hasNext && !content.isEmpty()
+        ? content.get(content.size() - 1).getPostId()
+        : null;
+
+    return CursorPageResponse.<PostResponseDTO.PostListItem>builder()
+        .content(content)
+        .hasNext(hasNext)
+        .nextCursor(nextCursor)
+        .build();
+  }
 }
