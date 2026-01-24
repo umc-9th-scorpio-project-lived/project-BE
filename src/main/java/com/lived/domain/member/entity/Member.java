@@ -68,6 +68,9 @@ public class Member extends BaseEntity {
     @Column(name = "refresh_token", length = 512)
     private String refreshToken;    // ReFresh 토큰 저장
 
+    @Column(name = "profile_image_url")
+    private String profileImageUrl; // 프로필 사진
+
     public void updateRefreshToken(String refreshToken) {
         this.refreshToken = refreshToken;
     }
