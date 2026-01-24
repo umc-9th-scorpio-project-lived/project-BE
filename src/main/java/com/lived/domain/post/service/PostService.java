@@ -449,4 +449,62 @@ public class PostService {
         .images(images)
         .build();
   }
+
+  /**
+   * 내가 작성한 게시글 목록 조회
+   */
+  public CursorPageResponse<PostResponseDTO.PostListItem> getMyPosts(
+      Long memberId,
+      Long cursor,
+      int size
+  ) {
+    List<Post> posts = postRepository.findAll();
+
+    // 필터링
+    List<PostResponseDTO.PostListItem> myPosts = posts.stream()
+        .filter(p -> p.getDeletedAt() == null)
+        .filter(p -> p.getMember().getId().equals(memberId))
+        .filter(p -> cursor == null || p.getId() < cursor)
+        .sorted((a, b) -> b.getId().compareTo(a.getId()))
+        .limit(size + 1)
+        .map(p -> {
+          // 썸네일 조회 (orderIndex = 1)
+          String thumbnailUrl = postImageRepository.findFirstByPostIdAndOrderIndex(p.getId(), 1)
+              .map(PostImage::getImageUrl)
+              .orElse(null);
+
+          // 전체 이미지 개수
+          int imageCount = postImageRepository.findAllByPostId(p.getId()).size();
+
+          return PostResponseDTO.PostListItem.builder()
+              .postId(p.getId())
+              .category(p.getCategory())
+              .categoryLabel(p.getCategory().getLabel())
+              .title(p.getTitle())
+              .content(p.getContent())
+              .likeCount(p.getLikeCount())
+              .commentCount(p.getCommentCount())
+              .thumbnailUrl(thumbnailUrl)
+              .imageCount(imageCount)
+              .isBlocked(false)
+              .createdAt(p.getCreatedAt())
+              .build();
+        })
+        .toList();
+
+    boolean hasNext = myPosts.size() > size;
+    List<PostResponseDTO.PostListItem> content = hasNext
+        ? myPosts.subList(0, size)
+        : myPosts;
+
+    Long nextCursor = hasNext && !content.isEmpty()
+        ? content.get(content.size() - 1).getPostId()
+        : null;
+
+    return CursorPageResponse.<PostResponseDTO.PostListItem>builder()
+        .content(content)
+        .hasNext(hasNext)
+        .nextCursor(nextCursor)
+        .build();
+  }
 }
