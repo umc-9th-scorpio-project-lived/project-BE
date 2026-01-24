@@ -8,6 +8,7 @@ import com.lived.domain.post.dto.PostRequestDTO;
 import com.lived.domain.post.dto.PostResponseDTO;
 import com.lived.domain.post.entity.Post;
 import com.lived.domain.post.entity.PostImage;
+import com.lived.domain.post.entity.SearchHistory;
 import com.lived.domain.post.entity.enums.PostCategory;
 import com.lived.domain.post.entity.mapping.PostLike;
 import com.lived.domain.post.entity.mapping.PostScrap;
@@ -41,6 +42,7 @@ public class PostService {
   private final PostScrapRepository postScrapRepository;
   private final MemberBlockRepository memberBlockRepository;
   private final CommentRepository commentRepository;
+  private final SearchService searchService;
 
   private static final int MAX_IMAGE_COUNT = 10;
 
@@ -296,6 +298,7 @@ public class PostService {
   /**
    * 게시글 목록 조회
    */
+  @Transactional
   public CursorPageResponse<PostResponseDTO.PostListItem> getPostList(
       Long memberId,
       String keyword,
@@ -303,6 +306,11 @@ public class PostService {
       Long cursor,
       int size
   ) {
+    // 검색어 저장
+    if (keyword != null && !keyword.isBlank()) {
+      searchService.saveSearchHistory(memberId, keyword);
+    }
+
     List<Post> posts = postRepository.findAll();
 
     // 필터링

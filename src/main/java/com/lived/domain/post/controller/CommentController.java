@@ -127,4 +127,33 @@ public class CommentController {
         commentService.toggleCommentLike(postId, commentId, memberId);
     return ApiResponse.onSuccess(GeneralSuccessCode.OK, response);
   }
+
+  @Operation(
+      summary = "댓글 목록 조회",
+      description = "게시글의 댓글 목록을 조회합니다. 최상위 댓글은 최신순, 답글은 오래된순으로 정렬됩니다."
+  )
+  @ApiResponses({
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(
+          responseCode = "200",
+          description = "조회 성공"
+      )
+  })
+  @GetMapping
+  public ApiResponse<CommentResponseDTO.CommentListResponse> getCommentList(
+      @Parameter(description = "사용자 ID", required = true, example = "1")
+      @RequestHeader("Member-Id") Long memberId,
+
+      @Parameter(description = "게시글 ID", required = true, example = "123")
+      @PathVariable Long postId,
+
+      @Parameter(description = "커서", required = false)
+      @RequestParam(required = false) Long cursor,
+
+      @Parameter(description = "페이지 크기", required = false)
+      @RequestParam(defaultValue = "20") int size
+  ) {
+    CommentResponseDTO.CommentListResponse response =
+        commentService.getCommentList(postId, memberId, cursor, size);
+    return ApiResponse.onSuccess(GeneralSuccessCode.OK, response);
+  }
 }

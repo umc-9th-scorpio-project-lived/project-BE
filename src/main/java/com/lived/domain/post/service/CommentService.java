@@ -1,5 +1,6 @@
 package com.lived.domain.post.service;
 
+import com.lived.domain.member.repository.MemberBlockRepository;
 import com.lived.domain.post.converter.CommentConverter;
 import com.lived.domain.post.dto.CommentRequestDTO;
 import com.lived.domain.post.dto.CommentResponseDTO;
@@ -13,6 +14,7 @@ import com.lived.domain.post.entity.Post;
 import com.lived.domain.post.repository.PostRepository;
 import com.lived.global.apiPayload.code.GeneralErrorCode;
 import com.lived.global.apiPayload.exception.GeneralException;
+import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +31,7 @@ public class CommentService {
   private final PostRepository postRepository;
   private final MemberRepository memberRepository;
   private final CommentLikeRepository commentLikeRepository;
+  private final MemberBlockRepository memberBlockRepository;
 
   /**
    * 댓글 작성
@@ -226,5 +229,115 @@ public class CommentService {
     }
 
     return CommentConverter.toToggleLikeResponse(isLiked, comment.getLikeCount());
+  }
+
+  /**
+   * 게시글 댓글 목록 조회
+   */
+  public CommentResponseDTO.CommentListResponse getCommentList(
+      Long postId,
+      Long memberId,
+      Long cursor,
+      int size
+  ) {
+    // Post 조회
+    Post post = postRepository.findById(postId)
+        .orElseThrow(() -> new GeneralException(GeneralErrorCode.POST_NOT_FOUND));
+
+    // 삭제된 게시글인지 확인
+    if (post.getDeletedAt() != null) {
+      throw new GeneralException(GeneralErrorCode.POST_NOT_FOUND);
+    }
+
+    // 모든 댓글 조회 (삭제된 것 포함 - 답글 있는 경우 "삭제된 댓글입니다" 표시용)
+    List<Comment> allComments = commentRepository.findAll().stream()
+        .filter(c -> c.getPost().getId().equals(postId))
+        .toList();
+
+    // 최상위 댓글만 필터링 (parentCommentId가 null인 것)
+    List<Comment> parentComments = allComments.stream()
+        .filter(c -> c.getParent() == null)
+        .filter(c -> cursor == null || c.getId() < cursor)
+        .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt())) // 최신순
+        .limit(size + 1)
+        .toList();
+
+    boolean hasNext = parentComments.size() > size;
+    List<Comment> content = hasNext
+        ? parentComments.subList(0, size)
+        : parentComments;
+
+    Long nextCursor = hasNext && !content.isEmpty()
+        ? content.get(content.size() - 1).getId()
+        : null;
+
+    // 댓글 -> DTO 변환
+    List<CommentResponseDTO.CommentDetail> commentDetails = content.stream()
+        .map(c -> buildCommentDetail(c, allComments, memberId))
+        .toList();
+
+    return CommentResponseDTO.CommentListResponse.builder()
+        .comments(commentDetails)
+        .hasNext(hasNext)
+        .nextCursor(nextCursor)
+        .build();
+  }
+
+  /**
+   * 댓글 DTO 생성
+   */
+  private CommentResponseDTO.CommentDetail buildCommentDetail(
+      Comment comment,
+      List<Comment> allComments,
+      Long memberId
+  ) {
+    // 차단 여부 확인
+    boolean isBlocked = memberBlockRepository.existsByBlockerIdAndBlockedId(
+        memberId, comment.getMember().getId()
+    );
+
+    // 좋아요 여부 확인
+    boolean isLiked = commentLikeRepository.existsByCommentIdAndMemberId(
+        comment.getId(), memberId
+    );
+
+    // 답글 조회 (오래된순)
+    List<CommentResponseDTO.CommentDetail> replies = allComments.stream()
+        .filter(c -> c.getParent() != null && c.getParent().getId().equals(comment.getId()))
+        .sorted((a, b) -> a.getCreatedAt().compareTo(b.getCreatedAt())) // 오래된순
+        .map(reply -> buildCommentDetail(reply, allComments, memberId))
+        .toList();
+
+    // 삭제된 댓글이면서 답글이 있는 경우
+    String content;
+    if (comment.getDeletedAt() != null && !replies.isEmpty()) {
+      content = "삭제된 댓글입니다.";
+    } else if (comment.getDeletedAt() != null) {
+      // 삭제되고 답글도 없으면 표시 안함
+      return null;
+    } else if (isBlocked) {
+      content = "차단한 사용자의 댓글입니다.";
+    } else {
+      content = comment.getContent();
+    }
+
+    // 작성자 정보
+    CommentResponseDTO.CommentAuthorInfo authorInfo =
+        CommentResponseDTO.CommentAuthorInfo.builder()
+            .userId(comment.getMember().getId())
+            .nickname(comment.getMember().getNickname())
+            .profileImageUrl(comment.getMember().getProfileImageUrl())
+            .build();
+
+    return CommentResponseDTO.CommentDetail.builder()
+        .commentId(comment.getId())
+        .parentCommentId(comment.getParent() != null ? comment.getParent().getId() : null)
+        .content(content)
+        .likeCount(comment.getLikeCount())
+        .isLiked(isLiked)
+        .createdAt(comment.getCreatedAt())
+        .author(authorInfo)
+        .replies(replies)
+        .build();
   }
 }
