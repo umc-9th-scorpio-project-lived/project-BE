@@ -389,4 +389,64 @@ public class PostService {
         .content(popularPosts)
         .build();
   }
+
+  /**
+   * 게시글 상세 조회
+   */
+  @Transactional
+  public PostResponseDTO.PostDetailResponse getPostDetail(Long postId, Long memberId) {
+    // Post 조회
+    Post post = postRepository.findById(postId)
+        .orElseThrow(() -> new GeneralException(GeneralErrorCode.POST_NOT_FOUND));
+
+    // 삭제된 게시글인지 확인
+    if (post.getDeletedAt() != null) {
+      throw new GeneralException(GeneralErrorCode.POST_NOT_FOUND);
+    }
+
+    // 조회수 증가
+    post.incrementViewCount();
+
+    // 차단 여부 확인
+    boolean isBlocked = memberBlockRepository.existsByBlockerIdAndBlockedId(memberId, post.getMember().getId());
+
+    // 좋아요 여부 확인
+    boolean isLiked = postLikeRepository.existsByPostIdAndMemberId(postId, memberId);
+
+    // 스크랩 여부 확인
+    boolean isScrapped = postScrapRepository.existsByPostIdAndMemberId(postId, memberId);
+
+    // 이미지 목록 조회
+    List<PostResponseDTO.PostImageInfo> images = postImageRepository.findAllByPostId(postId).stream()
+        .sorted((a, b) -> a.getOrderIndex().compareTo(b.getOrderIndex()))
+        .map(img -> PostResponseDTO.PostImageInfo.builder()
+            .imageId(img.getId())
+            .imageUrl(img.getImageUrl())
+            .orderIndex(img.getOrderIndex())
+            .build())
+        .toList();
+
+    // 작성자 정보
+    PostResponseDTO.AuthorInfo authorInfo = PostResponseDTO.AuthorInfo.builder()
+        .userId(post.getMember().getId())
+        .nickname(post.getMember().getNickname())
+        .profileImageUrl(post.getMember().getProfileImageUrl())
+        .build();
+
+    return PostResponseDTO.PostDetailResponse.builder()
+        .postId(post.getId())
+        .category(post.getCategory())
+        .categoryLabel(post.getCategory().getLabel())
+        .title(isBlocked ? "차단한 사용자의 게시글입니다." : post.getTitle())
+        .content(isBlocked ? "차단한 사용자의 게시글입니다." : post.getContent())
+        .viewCount(post.getViewCount())
+        .likeCount(post.getLikeCount())
+        .commentCount(post.getCommentCount())
+        .isLiked(isLiked)
+        .isScrapped(isScrapped)
+        .createdAt(post.getCreatedAt())
+        .author(authorInfo)
+        .images(images)
+        .build();
+  }
 }

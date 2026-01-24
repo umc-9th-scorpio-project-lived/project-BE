@@ -194,4 +194,26 @@ public class PostController {
     PostResponseDTO.PopularPostListResponse response = postService.getPopularPosts();
     return ApiResponse.onSuccess(GeneralSuccessCode.OK, response);
   }
+
+  @Operation(
+      summary = "게시글 상세 조회",
+      description = "게시글 상세 정보를 조회합니다. 조회 시 조회수가 증가합니다."
+  )
+  @ApiResponses({
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(
+          responseCode = "200",
+          description = "조회 성공"
+      )
+  })
+  @GetMapping("/{postId}")
+  public ApiResponse<PostResponseDTO.PostDetailResponse> getPostDetail(
+      @Parameter(description = "사용자 ID", required = true, example = "1")
+      @RequestHeader("Member-Id") Long memberId,
+
+      @Parameter(description = "게시글 ID", required = true, example = "123")
+      @PathVariable Long postId
+  ) {
+    PostResponseDTO.PostDetailResponse response = postService.getPostDetail(postId, memberId);
+    return ApiResponse.onSuccess(GeneralSuccessCode.OK, response);
+  }
 }
