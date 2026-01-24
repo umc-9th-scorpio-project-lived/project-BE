@@ -73,4 +73,42 @@ public class SearchService {
         .histories(histories)
         .build();
   }
+
+  /**
+   * 검색어 개별 삭제
+   */
+  @Transactional
+  public SearchResponseDTO.DeleteSearchHistoryResponse deleteSearchHistory(
+      Long historyId,
+      Long memberId
+  ) {
+    SearchHistory searchHistory = searchHistoryRepository.findById(historyId)
+        .orElseThrow(() -> new GeneralException(GeneralErrorCode.NOT_FOUND));
+
+    // 본인의 검색어인지 확인
+    if (!searchHistory.getMember().getId().equals(memberId)) {
+      throw new GeneralException(GeneralErrorCode.FORBIDDEN);
+    }
+
+    searchHistoryRepository.delete(searchHistory);
+
+    return SearchResponseDTO.DeleteSearchHistoryResponse.builder()
+        .historyId(historyId)
+        .build();
+  }
+
+  /**
+   * 검색어 전체 삭제
+   */
+  @Transactional
+  public SearchResponseDTO.DeleteAllSearchHistoryResponse deleteAllSearchHistory(Long memberId) {
+    List<SearchHistory> histories = searchHistoryRepository.findByMemberIdOrderBySearchedAtDesc(memberId);
+
+    int deletedCount = histories.size();
+    searchHistoryRepository.deleteAll(histories);
+
+    return SearchResponseDTO.DeleteAllSearchHistoryResponse.builder()
+        .deletedCount(deletedCount)
+        .build();
+  }
 }

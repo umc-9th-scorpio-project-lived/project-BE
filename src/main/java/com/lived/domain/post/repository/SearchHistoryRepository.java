@@ -12,4 +12,6 @@ public interface SearchHistoryRepository extends JpaRepository<SearchHistory, Lo
   Optional<SearchHistory> findByMemberIdAndKeyword(Long memberId, String keyword);
 
   long countByMemberId(Long memberId);
+
+  void deleteByMemberId(Long memberId);
 }

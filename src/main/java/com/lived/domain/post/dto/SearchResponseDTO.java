@@ -37,4 +37,26 @@ public class SearchResponseDTO {
     @Schema(description = "검색어 기록 목록 (최대 10개)")
     private List<SearchHistoryItem> histories;
   }
+
+  @Getter
+  @Builder
+  @NoArgsConstructor
+  @AllArgsConstructor
+  @Schema(description = "검색어 삭제 응답")
+  public static class DeleteSearchHistoryResponse {
+
+    @Schema(description = "삭제된 검색 기록 ID", example = "1")
+    private Long historyId;
+  }
+
+  @Getter
+  @Builder
+  @NoArgsConstructor
+  @AllArgsConstructor
+  @Schema(description = "검색어 전체 삭제 응답")
+  public static class DeleteAllSearchHistoryResponse {
+
+    @Schema(description = "삭제된 검색어 개수", example = "5")
+    private Integer deletedCount;
+  }
 }

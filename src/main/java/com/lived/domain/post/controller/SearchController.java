@@ -38,4 +38,47 @@ public class SearchController {
         searchService.getSearchHistory(memberId);
     return ApiResponse.onSuccess(GeneralSuccessCode.OK, response);
   }
+
+  @Operation(
+      summary = "검색어 개별 삭제",
+      description = "특정 검색어 기록을 삭제합니다."
+  )
+  @ApiResponses({
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(
+          responseCode = "200",
+          description = "삭제 성공"
+      )
+  })
+  @DeleteMapping("/history/{historyId}")
+  public ApiResponse<SearchResponseDTO.DeleteSearchHistoryResponse> deleteSearchHistory(
+      @Parameter(description = "사용자 ID", required = true, example = "1")
+      @RequestHeader("Member-Id") Long memberId,
+
+      @Parameter(description = "검색 기록 ID", required = true, example = "1")
+      @PathVariable Long historyId
+  ) {
+    SearchResponseDTO.DeleteSearchHistoryResponse response =
+        searchService.deleteSearchHistory(historyId, memberId);
+    return ApiResponse.onSuccess(GeneralSuccessCode.OK, response);
+  }
+
+  @Operation(
+      summary = "검색어 전체 삭제",
+      description = "모든 검색어 기록을 삭제합니다."
+  )
+  @ApiResponses({
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(
+          responseCode = "200",
+          description = "전체 삭제 성공"
+      )
+  })
+  @DeleteMapping("/history")
+  public ApiResponse<SearchResponseDTO.DeleteAllSearchHistoryResponse> deleteAllSearchHistory(
+      @Parameter(description = "사용자 ID", required = true, example = "1")
+      @RequestHeader("Member-Id") Long memberId
+  ) {
+    SearchResponseDTO.DeleteAllSearchHistoryResponse response =
+        searchService.deleteAllSearchHistory(memberId);
+    return ApiResponse.onSuccess(GeneralSuccessCode.OK, response);
+  }
 }
