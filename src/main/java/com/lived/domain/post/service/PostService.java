@@ -11,10 +11,7 @@ import com.lived.domain.post.entity.PostImage;
 import com.lived.domain.post.entity.enums.PostCategory;
 import com.lived.domain.post.entity.mapping.PostLike;
 import com.lived.domain.post.entity.mapping.PostScrap;
-import com.lived.domain.post.repository.PostImageRepository;
-import com.lived.domain.post.repository.PostLikeRepository;
-import com.lived.domain.post.repository.PostRepository;
-import com.lived.domain.post.repository.PostScrapRepository;
+import com.lived.domain.post.repository.*;
 import com.lived.global.apiPayload.code.GeneralErrorCode;
 import com.lived.global.apiPayload.exception.GeneralException;
 import com.lived.global.dto.CursorPageResponse;
@@ -43,6 +40,7 @@ public class PostService {
   private final PostLikeRepository postLikeRepository;
   private final PostScrapRepository postScrapRepository;
   private final MemberBlockRepository memberBlockRepository;
+  private final CommentRepository commentRepository;
 
   private static final int MAX_IMAGE_COUNT = 10;
 
@@ -496,6 +494,75 @@ public class PostService {
     List<PostResponseDTO.PostListItem> content = hasNext
         ? myPosts.subList(0, size)
         : myPosts;
+
+    Long nextCursor = hasNext && !content.isEmpty()
+        ? content.get(content.size() - 1).getPostId()
+        : null;
+
+    return CursorPageResponse.<PostResponseDTO.PostListItem>builder()
+        .content(content)
+        .hasNext(hasNext)
+        .nextCursor(nextCursor)
+        .build();
+  }
+
+  /**
+   * 내가 댓글 단 게시글 목록 조회
+   */
+  public CursorPageResponse<PostResponseDTO.PostListItem> getMyCommentedPosts(
+      Long memberId,
+      Long cursor,
+      int size
+  ) {
+    // 내가 댓글 단 게시글 ID 목록 (중복 제거)
+    List<Long> commentedPostIds = commentRepository.findAll().stream()
+        .filter(c -> c.getMember().getId().equals(memberId))
+        .filter(c -> c.getDeletedAt() == null)
+        .map(c -> c.getPost().getId())
+        .distinct()
+        .toList();
+
+    List<Post> posts = postRepository.findAll();
+
+    // 필터링
+    List<PostResponseDTO.PostListItem> commentedPosts = posts.stream()
+        .filter(p -> p.getDeletedAt() == null)
+        .filter(p -> commentedPostIds.contains(p.getId()))
+        .filter(p -> cursor == null || p.getId() < cursor)
+        .sorted((a, b) -> b.getId().compareTo(a.getId()))
+        .limit(size + 1)
+        .map(p -> {
+          // 차단 여부 확인
+          boolean isBlocked = memberBlockRepository.existsByBlockerIdAndBlockedId(memberId, p.getMember().getId());
+
+          // 썸네일 조회 (orderIndex = 1)
+          String thumbnailUrl = postImageRepository.findFirstByPostIdAndOrderIndex(p.getId(), 1)
+              .map(PostImage::getImageUrl)
+              .orElse(null);
+
+          // 전체 이미지 개수
+          int imageCount = postImageRepository.findAllByPostId(p.getId()).size();
+
+          return PostResponseDTO.PostListItem.builder()
+              .postId(p.getId())
+              .category(p.getCategory())
+              .categoryLabel(p.getCategory().getLabel())
+              .title(isBlocked ? "차단한 사용자의 게시글입니다." : p.getTitle())
+              .content(isBlocked ? "차단한 사용자의 게시글입니다." : p.getContent())
+              .likeCount(p.getLikeCount())
+              .commentCount(p.getCommentCount())
+              .thumbnailUrl(thumbnailUrl)
+              .imageCount(imageCount)
+              .isBlocked(isBlocked)
+              .createdAt(p.getCreatedAt())
+              .build();
+        })
+        .toList();
+
+    boolean hasNext = commentedPosts.size() > size;
+    List<PostResponseDTO.PostListItem> content = hasNext
+        ? commentedPosts.subList(0, size)
+        : commentedPosts;
 
     Long nextCursor = hasNext && !content.isEmpty()
         ? content.get(content.size() - 1).getPostId()
