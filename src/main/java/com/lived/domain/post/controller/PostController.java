@@ -178,4 +178,20 @@ public class PostController {
         postService.getPostList(memberId, keyword, category, cursor, size);
     return ApiResponse.onSuccess(GeneralSuccessCode.OK, response);
   }
+
+  @Operation(
+      summary = "실시간 인기글 조회",
+      description = "24시간 내에 좋아요 15개 이상 받은 게시글을 최신순으로 최대 5개 조회합니다."
+  )
+  @ApiResponses({
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(
+          responseCode = "200",
+          description = "조회 성공"
+      )
+  })
+  @GetMapping("/popular")
+  public ApiResponse<PostResponseDTO.PopularPostListResponse> getPopularPosts() {
+    PostResponseDTO.PopularPostListResponse response = postService.getPopularPosts();
+    return ApiResponse.onSuccess(GeneralSuccessCode.OK, response);
+  }
 }

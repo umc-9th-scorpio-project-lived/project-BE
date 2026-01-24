@@ -19,6 +19,7 @@ import com.lived.global.apiPayload.code.GeneralErrorCode;
 import com.lived.global.apiPayload.exception.GeneralException;
 import com.lived.global.dto.CursorPageResponse;
 import com.lived.global.s3.S3Service;
+import java.time.LocalDateTime;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -358,6 +359,34 @@ public class PostService {
         .content(content)
         .hasNext(hasNext)
         .nextCursor(nextCursor)
+        .build();
+  }
+
+  /**
+   * 실시간 인기글 조회
+   * 조건: 24시간 내 작성, 좋아요 15개 이상, 최대 5개 반환
+   */
+  public PostResponseDTO.PopularPostListResponse getPopularPosts() {
+    LocalDateTime oneDayAgo = LocalDateTime.now().minusDays(1);
+
+    List<PostResponseDTO.PopularPostItem> popularPosts = postRepository.findAll().stream()
+        .filter(p -> p.getDeletedAt() == null)
+        .filter(p -> p.getCreatedAt().isAfter(oneDayAgo))
+        .filter(p -> p.getLikeCount() >= 15)
+        .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
+        .limit(5)
+        .map(p -> PostResponseDTO.PopularPostItem.builder()
+            .postId(p.getId())
+            .title(p.getTitle())
+            .content(p.getContent())
+            .likeCount(p.getLikeCount())
+            .commentCount(p.getCommentCount())
+            .createdAt(p.getCreatedAt())
+            .build())
+        .toList();
+
+    return PostResponseDTO.PopularPostListResponse.builder()
+        .content(popularPosts)
         .build();
   }
 }

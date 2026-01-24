@@ -3,6 +3,7 @@ package com.lived.domain.post.dto;
 import com.lived.domain.post.entity.enums.PostCategory;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
+import java.util.List;
 import lombok.*;
 
 public class PostResponseDTO {
@@ -105,5 +106,42 @@ public class PostResponseDTO {
 
     @Schema(description = "작성 시각", example = "2026-01-12T09:17:00+09:00")
     private LocalDateTime createdAt;
+  }
+
+  @Getter
+  @Builder
+  @NoArgsConstructor
+  @AllArgsConstructor
+  @Schema(description = "실시간 인기글 아이템")
+  public static class PopularPostItem {
+
+    @Schema(description = "게시글 ID", example = "101")
+    private Long postId;
+
+    @Schema(description = "제목", example = "제목")
+    private String title;
+
+    @Schema(description = "내용", example = "내용")
+    private String content;
+
+    @Schema(description = "좋아요 수", example = "23")
+    private Integer likeCount;
+
+    @Schema(description = "댓글 수", example = "32")
+    private Integer commentCount;
+
+    @Schema(description = "작성 시각", example = "2026-01-12T08:30:00")
+    private LocalDateTime createdAt;
+  }
+
+  @Getter
+  @Builder
+  @NoArgsConstructor
+  @AllArgsConstructor
+  @Schema(description = "실시간 인기글 목록 응답")
+  public static class PopularPostListResponse {
+
+    @Schema(description = "인기글 목록")
+    private List<PopularPostItem> content;
   }
 }
