@@ -1,12 +1,14 @@
 package com.lived.domain.post.service;
 
 import com.lived.domain.member.entity.Member;
+import com.lived.domain.member.repository.MemberBlockRepository;
 import com.lived.domain.member.repository.MemberRepository;
 import com.lived.domain.post.converter.PostConverter;
 import com.lived.domain.post.dto.PostRequestDTO;
 import com.lived.domain.post.dto.PostResponseDTO;
 import com.lived.domain.post.entity.Post;
 import com.lived.domain.post.entity.PostImage;
+import com.lived.domain.post.entity.enums.PostCategory;
 import com.lived.domain.post.entity.mapping.PostLike;
 import com.lived.domain.post.entity.mapping.PostScrap;
 import com.lived.domain.post.repository.PostImageRepository;
@@ -15,6 +17,7 @@ import com.lived.domain.post.repository.PostRepository;
 import com.lived.domain.post.repository.PostScrapRepository;
 import com.lived.global.apiPayload.code.GeneralErrorCode;
 import com.lived.global.apiPayload.exception.GeneralException;
+import com.lived.global.dto.CursorPageResponse;
 import com.lived.global.s3.S3Service;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -38,6 +41,7 @@ public class PostService {
   private final S3Service s3Service;
   private final PostLikeRepository postLikeRepository;
   private final PostScrapRepository postScrapRepository;
+  private final MemberBlockRepository memberBlockRepository;
 
   private static final int MAX_IMAGE_COUNT = 10;
 
@@ -266,7 +270,8 @@ public class PostService {
         .orElseThrow(() -> new GeneralException(GeneralErrorCode.MEMBER_NOT_FOUND));
 
     // 스크랩 존재 여부 확인
-    Optional<PostScrap> existingScrap = postScrapRepository.findByPostIdAndMemberId(postId, memberId);
+    Optional<PostScrap> existingScrap = postScrapRepository.findByPostIdAndMemberId(postId,
+        memberId);
 
     boolean isScrapped;
 
@@ -287,5 +292,72 @@ public class PostService {
     }
 
     return PostConverter.toToggleScrapResponse(isScrapped);
+  }
+
+  /**
+   * 게시글 목록 조회
+   */
+  public CursorPageResponse<PostResponseDTO.PostListItem> getPostList(
+      Long memberId,
+      String keyword,
+      PostCategory category,
+      Long cursor,
+      int size
+  ) {
+    List<Post> posts = postRepository.findAll();
+
+    // 필터링
+    List<PostResponseDTO.PostListItem> filteredPosts = posts.stream()
+        .filter(p -> p.getDeletedAt() == null)
+        .filter(p -> category == null || p.getCategory() == category)
+        .filter(p -> keyword == null || keyword.isBlank() ||
+            p.getTitle().toLowerCase().contains(keyword.toLowerCase()) ||
+            p.getContent().toLowerCase().contains(keyword.toLowerCase()))
+        .filter(p -> cursor == null || p.getId() < cursor)
+        .sorted((a, b) -> b.getId().compareTo(a.getId()))
+        .limit(size + 1)
+        .map(p -> {
+          // 차단 여부 확인
+          boolean isBlocked = memberBlockRepository.existsByBlockerIdAndBlockedId(memberId,
+              p.getMember().getId());
+
+          // 썸네일 조회 (orderIndex = 1)
+          String thumbnailUrl = postImageRepository.findFirstByPostIdAndOrderIndex(p.getId(), 1)
+              .map(PostImage::getImageUrl)
+              .orElse(null);
+
+          // 전체 이미지 개수
+          int imageCount = postImageRepository.findAllByPostId(p.getId()).size();
+
+          return PostResponseDTO.PostListItem.builder()
+              .postId(p.getId())
+              .category(p.getCategory())
+              .categoryLabel(p.getCategory().getLabel())
+              .title(isBlocked ? "차단한 사용자의 게시글입니다." : p.getTitle())
+              .content(isBlocked ? "차단한 사용자의 게시글입니다." : p.getContent())
+              .likeCount(p.getLikeCount())
+              .commentCount(p.getCommentCount())
+              .thumbnailUrl(thumbnailUrl)
+              .imageCount(imageCount)
+              .isBlocked(isBlocked)
+              .createdAt(p.getCreatedAt())
+              .build();
+        })
+        .toList();
+
+    boolean hasNext = filteredPosts.size() > size;
+    List<PostResponseDTO.PostListItem> content = hasNext
+        ? filteredPosts.subList(0, size)
+        : filteredPosts;
+
+    Long nextCursor = hasNext && !content.isEmpty()
+        ? content.get(content.size() - 1).getPostId()
+        : null;
+
+    return CursorPageResponse.<PostResponseDTO.PostListItem>builder()
+        .content(content)
+        .hasNext(hasNext)
+        .nextCursor(nextCursor)
+        .build();
   }
 }
