@@ -80,7 +80,7 @@ public class Member extends BaseEntity {
         this.refreshToken = refreshToken;
     }
 
-
+    // 프로필사진 변경
     public void updateProfile(String nickname, String profileImageUrl) {
         if (nickname != null) {
             this.nickname = nickname;
