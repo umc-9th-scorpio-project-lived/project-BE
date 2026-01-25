@@ -108,4 +108,20 @@ public class S3Service {
     // → posts/1/uuid-image.jpg
     return fileUrl.substring(fileUrl.indexOf(".com/") + 5);
   }
+
+  /**
+   * 멤버 프로필 이미지 업로드
+   */
+  public String uploadMemberImage(MultipartFile file, Long memberId) {
+    String fileName = createMemberImagePath(memberId, file.getOriginalFilename());
+    return uploadFile(file, fileName);
+  }
+
+  /**
+   * 멤버 이미지 경로 생성: members/{memberId}/{uuid}-{originalFileName}
+   */
+  private String createMemberImagePath(Long memberId, String originalFileName) {
+    String uuid = UUID.randomUUID().toString();
+    return String.format("members/%d/%s-%s", memberId, uuid, originalFileName);
+  }
 }
