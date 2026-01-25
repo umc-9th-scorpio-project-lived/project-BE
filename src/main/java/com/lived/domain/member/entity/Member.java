@@ -72,6 +72,9 @@ public class Member extends BaseEntity {
     @Column(name = "profile_image_url")
     private String profileImageUrl; // 프로필 사진
 
+    @Column(name = "temp_nickname", length = 64)
+    private String tempNickname; // 탈퇴 시 원래 닉네임을 임시 저장
+
     // 리프레시 토큰 업데이트
     public void updateRefreshToken(String refreshToken) {
         this.refreshToken = refreshToken;
@@ -87,9 +90,36 @@ public class Member extends BaseEntity {
         }
     }
 
-    // 로그아웃 로직
+    // 로그아웃
     public void logout() {
         this.refreshToken = null;
+    }
 
+    // 회원탈퇴 직후
+    public void withdraw() {
+        this.status = "INACTIVE";
+        this.inactiveDate = LocalDateTime.now();
+        this.refreshToken = null;
+        this.tempNickname = this.nickname; // 원래 랜덤 닉네임을 백업
+        this.nickname = "탈퇴한 회원"; // 게시글 등에 즉시 반영
+    }
+
+    // 회원 탈퇴 30일 전 로그인 시
+    public void recover() {
+        this.status = "ACTIVE";
+        this.inactiveDate = null;
+        this.nickname = this.tempNickname; // 백업해둔 랜덤 닉네임으로 복원
+        this.tempNickname = null; // 백업 데이터 삭제
+    }
+
+    // 회원 탈퇴 30일 후
+    public void anonymize() {
+        // socialId를 변경하여 재가입 시 신규 유저로 인식되게 함
+        this.socialId = "ANONYMOUS_" + this.getId() + "_" + LocalDateTime.now();
+        this.name = "탈퇴한 회원";
+        this.nickname = "탈퇴한 회원";
+        this.tempNickname = null;
+        this.birth = LocalDate.of(1900, 1, 1); // 더미 데이터
+        this.status = "DELETED"; // 완전 삭제 상태 표시
     }
 }

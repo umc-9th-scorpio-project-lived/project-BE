@@ -49,6 +49,15 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 
         boolean isNewMember = memberEntity.isEmpty();
 
+        // 만약 INACTIVE인 유저라면 복구 수행
+        if (memberEntity.isPresent()) {
+            Member member = memberEntity.get();
+            if ("INACTIVE".equals(member.getStatus())) {
+                member.recover();
+                memberRepository.save(member);
+            }
+        }
+
         Map<String, Object> memberData = new HashMap<>(attributes.getAttributes());
         memberData.put("isNewMember", isNewMember);
         memberData.put("name", attributes.getName());

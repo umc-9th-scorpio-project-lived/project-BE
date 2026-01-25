@@ -3,6 +3,9 @@ package com.lived.domain.member.repository;
 import com.lived.domain.member.entity.Member;
 import com.lived.domain.member.enums.Provider;
 import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 public interface MemberRepository extends JpaRepository<Member, Long> {
@@ -14,4 +17,7 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
 
     // 닉네임 중복 체크
     boolean existsByNickname(String nickname);
+
+    // 자동 회원 삭제 스케줄러
+    List<Member> findAllByStatusAndInactiveDateBefore(String status, LocalDateTime threshold);
 }

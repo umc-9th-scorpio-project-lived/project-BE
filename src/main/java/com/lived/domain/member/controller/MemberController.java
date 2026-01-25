@@ -1,11 +1,11 @@
 package com.lived.domain.member.controller;
 
-import com.google.api.client.util.SecurityUtils;
 import com.lived.domain.member.dto.MemberRequestDTO;
 import com.lived.domain.member.dto.MemberResponseDTO;
 import com.lived.domain.member.service.MemberService;
 import com.lived.global.apiPayload.ApiResponse;
 import com.lived.global.apiPayload.code.GeneralSuccessCode; //
+import com.lived.global.auth.annotation.AuthMember;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -13,7 +13,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -54,6 +53,7 @@ public class MemberController {
         return ApiResponse.onSuccess(GeneralSuccessCode.CREATED, result);
     }
 
+    // 로그아웃
     @PostMapping("/logout")
     @Operation(
             summary = "로그아웃 API",
@@ -69,9 +69,32 @@ public class MemberController {
                     content = @Content(schema = @Schema(implementation = ApiResponse.class)))
     })
     public ApiResponse<String> logout(
-            @AuthenticationPrincipal Long memberId // 시큐리티 컨텍스트에서 인증 객체를 바로 가져옴
+            @AuthMember Long memberId // 시큐리티 컨텍스트에서 인증 객체를 바로 가져옴
     ) {
         memberService.logout(memberId);
         return ApiResponse.onSuccess(GeneralSuccessCode.OK, "로그아웃 성공");
+    }
+
+    // 회원탈퇴
+    @PostMapping("/withdraw")
+    @Operation(
+            summary = "회원 탈퇴 API",
+            description = "회원 상태를 INACTIVE로 변경하고 닉네임을 백업합니다. " +
+                    "30일 이내 재로그인 시 계정은 자동으로 ACTIVE 상태로 복구되며, " +
+                    "30일 경과 후에는 스케줄러에 의해 데이터가 영구 익명화되어 복구가 불가능해집니다."
+    )
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "COMMON200",
+                    description = "탈퇴 요청 성공 (30일 유예 기간 시작)"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "MEMBER404",
+                    description = "존재하지 않는 사용자입니다.")
+    })
+    public ApiResponse<String> withdraw(
+            @AuthMember Long memberId
+    ) {
+        memberService.withdraw(memberId);
+        return ApiResponse.onSuccess(GeneralSuccessCode.OK, "회원 탈퇴 요청이 완료되었습니다.");
     }
 }

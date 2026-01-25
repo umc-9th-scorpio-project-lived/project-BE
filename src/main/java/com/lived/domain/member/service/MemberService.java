@@ -20,9 +20,11 @@ import com.lived.global.apiPayload.exception.GeneralException;
 import com.lived.global.jwt.JwtTokenProvider;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -142,6 +144,26 @@ public class MemberService {
 
         // 리프레시 토큰 제거
         member.logout();
+    }
+
+    // 회원탈퇴 로직
+    public void withdraw(Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new GeneralException(GeneralErrorCode.MEMBER_NOT_FOUND));
+        member.withdraw();
+    }
+
+    // 탈퇴 30일 후 스케줄러
+    @Scheduled(cron = "0 0 0 * * *")
+    @Transactional
+    public void cleanupInactiveMembers() {
+        LocalDateTime threshold = LocalDateTime.now().minusDays(30);
+        // 대상 조회
+        List<Member> targets = memberRepository.findAllByStatusAndInactiveDateBefore("INACTIVE", threshold);
+        // 30일 지난 계정 삭제
+        if (!targets.isEmpty()) {
+            targets.forEach(Member::anonymize);
+        }
     }
 }
 
