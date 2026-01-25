@@ -33,31 +33,8 @@ public class MemberMyPageResponseDTO {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class CommunityProfilePostListResponse {
-        private List<MyPagePostPreview> posts;
-    }
-
-    @Getter
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
     public static class MyPageFruitInfo {
         private Long fruitId;
         private String fruitType;
-    }
-
-    @Getter
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class MyPagePostPreview {
-        private Long postId;
-        private String category;
-        private String title;
-        private String contentSummary;
-        private Integer likeCount;
-        private Integer commentCount;
-        private String createdAt;
-        private String firstImageUrl;
     }
 }
