@@ -13,6 +13,13 @@ import java.util.stream.Collectors;
 @Component
 public class MemberMyPageConverter {
 
+    // 기본 프로필 정보 변환
+    public MemberMyPageResponseDTO.MyProfileResponse toMemberProfileResponse(Member member) {
+        return MemberMyPageResponseDTO.MyProfileResponse.builder()
+                .name(member.getName())
+                .build();
+    }
+
     // 커뮤니티 프로필 정보 변환
     public MemberMyPageResponseDTO.CommunityProfileResponse toCommunityProfileResponse(Member member, List<RoutineFruit> fruits) {
         return MemberMyPageResponseDTO.CommunityProfileResponse.builder()

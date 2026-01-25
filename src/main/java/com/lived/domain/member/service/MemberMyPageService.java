@@ -25,16 +25,25 @@ public class MemberMyPageService {
 
     private final MemberRepository memberRepository;
     private final MemberMyPageQueryRepository queryRepository;
-    private final MemberMyPageConverter memberConverter;
+    private final MemberMyPageConverter memberMyPageConverter;
+
+    // 기본 프로필 정보 조회
+    public MemberMyPageResponseDTO.MyProfileResponse getMyProfile(Long memberId) {
+        Member member = memberRepository.findById(memberId).orElseThrow(
+                () -> new GeneralException(GeneralErrorCode.MEMBER_NOT_FOUND));
+        return memberMyPageConverter.toMemberProfileResponse(member);
+    }
 
     // 커뮤니티 프로필 정보 조회
     public MemberMyPageResponseDTO.CommunityProfileResponse getCommunityProfile(Long memberId) {
-        Member member = memberRepository.findById(memberId).orElseThrow();
+        Member member = memberRepository.findById(memberId).orElseThrow(
+                () -> new GeneralException(GeneralErrorCode.MEMBER_NOT_FOUND));
         List<RoutineFruit> fruits = queryRepository.findTop5Fruits(member);
-        return memberConverter.toCommunityProfileResponse(member, fruits);
+        return memberMyPageConverter.toCommunityProfileResponse(member, fruits);
     }
 
     // 커뮤니티 프로필 정보 수정
+    @Transactional
     public MemberMyPageResponseDTO.CommunityProfileResponse updateCommunityProfile(Long memberId, MemberMyPageRequestDTO.UpdateCommunityProfileRequest request) {
 
         Member member = memberRepository.findById(memberId)
@@ -44,7 +53,7 @@ public class MemberMyPageService {
 
         // 수정된 멤버 정보와 기존의 TOP 5 열매 정보를 합쳐서 반환
         List<RoutineFruit> fruits = queryRepository.findTop5Fruits(member);
-        return memberConverter.toCommunityProfileResponse(member, fruits);
+        return memberMyPageConverter.toCommunityProfileResponse(member, fruits);
     }
 
     // 작성한 글 조회
@@ -74,6 +83,6 @@ public class MemberMyPageService {
     private MemberMyPageResponseDTO.CommunityProfilePostListResponse getPostListResponse(List<Post> posts) {
         List<Long> postIds = posts.stream().map(Post::getId).collect(Collectors.toList());
         Map<Long, String> thumbnails = queryRepository.findThumbnailsByPostIds(postIds);
-        return memberConverter.toMemberPostListResponse(posts, thumbnails);
+        return memberMyPageConverter.toMemberPostListResponse(posts, thumbnails);
     }
 }
