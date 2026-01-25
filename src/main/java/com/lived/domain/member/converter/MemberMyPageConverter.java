@@ -31,31 +31,6 @@ public class MemberMyPageConverter {
                 .build();
     }
 
-    // 게시글 리스트 변환
-    public MemberMyPageResponseDTO.CommunityProfilePostListResponse toMemberPostListResponse(List<PostResponseDTO.PostListItem> postList) {
-
-        List<MemberMyPageResponseDTO.MyPagePostPreview> previewList = postList.stream()
-                .map(this::toMyPagePostPreview)
-                .collect(Collectors.toList());
-
-        return MemberMyPageResponseDTO.CommunityProfilePostListResponse.builder()
-                .posts(previewList)
-                .build();
-    }
-
-    private MemberMyPageResponseDTO.MyPagePostPreview toMyPagePostPreview(PostResponseDTO.PostListItem postItem) {
-        return MemberMyPageResponseDTO.MyPagePostPreview.builder()
-                .postId(postItem.getPostId())
-                .category(postItem.getCategoryLabel())
-                .title(postItem.getTitle())
-                .contentSummary(postItem.getContent())
-                .likeCount(postItem.getLikeCount())
-                .commentCount(postItem.getCommentCount())
-                .createdAt(postItem.getCreatedAt().toString())
-                .firstImageUrl(postItem.getThumbnailUrl())
-                .build();
-    }
-
     private List<MemberMyPageResponseDTO.MyPageFruitInfo> mapToFruitInfoList(List<RoutineFruit> fruits) {
         return fruits.stream()
                 .map(fruit -> MemberMyPageResponseDTO.MyPageFruitInfo.builder()

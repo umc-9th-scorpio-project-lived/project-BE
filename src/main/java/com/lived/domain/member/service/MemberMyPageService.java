@@ -54,33 +54,18 @@ public class MemberMyPageService {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new GeneralException(GeneralErrorCode.MEMBER_NOT_FOUND));
 
-        String imageUrl = member.getProfileImageUrl();
-
+        // 이미지가 새로 들어온 경우에만 기존 이미지 삭제 후 업로드 진행
         if (image != null && !image.isEmpty()) {
-            imageUrl = s3Service.uploadMemberImage(image, memberId);
+            if (member.getProfileImageUrl() != null) {
+                s3Service.deleteFile(member.getProfileImageUrl());
+            }
+            String newImageUrl = s3Service.uploadMemberImage(image, memberId);
+            member.updateProfile(request.getNickname(), newImageUrl);
+        } else {
+            member.updateProfile(request.getNickname(), member.getProfileImageUrl());
         }
-
-        member.updateProfile(request.getNickname(), imageUrl);
 
         List<RoutineFruit> fruits = queryRepository.findTop5Fruits(member);
         return memberMyPageConverter.toCommunityProfileResponse(member, fruits);
-    }
-
-    // 작성한 글 조회
-    public MemberMyPageResponseDTO.CommunityProfilePostListResponse getWrittenPosts(Long memberId, Long cursor, int size) {
-        var pageResponse = postService.getMyPosts(memberId, cursor, size);
-        return memberMyPageConverter.toMemberPostListResponse(pageResponse.getContent());
-    }
-
-    // 댓글 단 글 조회
-    public MemberMyPageResponseDTO.CommunityProfilePostListResponse getCommentedPosts(Long memberId, Long cursor, int size) {
-        var pageResponse = postService.getMyCommentedPosts(memberId, cursor, size);
-        return memberMyPageConverter.toMemberPostListResponse(pageResponse.getContent());
-    }
-
-    // 스크랩한 글 조회
-    public MemberMyPageResponseDTO.CommunityProfilePostListResponse getScrappedPosts(Long memberId, Long cursor, int size) {
-        var pageResponse = postService.getMyScrappedPosts(memberId, cursor, size);
-        return memberMyPageConverter.toMemberPostListResponse(pageResponse.getContent());
     }
 }
