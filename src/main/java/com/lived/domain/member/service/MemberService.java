@@ -133,6 +133,16 @@ public class MemberService {
         } while (memberRepository.existsByNickname(nickname)); // 최종 결과 중복 체크
         return nickname;
     }
+
+    // 로그아웃 로직
+    public void logout(Long memberId) {
+        // 사용자 존재 여부 확인
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new GeneralException(GeneralErrorCode.MEMBER_NOT_FOUND));
+
+        // 리프레시 토큰 제거
+        member.logout();
+    }
 }
 
 

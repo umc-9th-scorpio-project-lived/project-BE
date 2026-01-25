@@ -72,9 +72,11 @@ public class Member extends BaseEntity {
     @Column(name = "profile_image_url")
     private String profileImageUrl; // 프로필 사진
 
+    // 리프레시 토큰 업데이트
     public void updateRefreshToken(String refreshToken) {
         this.refreshToken = refreshToken;
     }
+
 
     public void updateProfile(String nickname, String profileImageUrl) {
         if (nickname != null) {
@@ -83,5 +85,11 @@ public class Member extends BaseEntity {
         if (profileImageUrl != null) {
             this.profileImageUrl = profileImageUrl;
         }
+    }
+
+    // 로그아웃 로직
+    public void logout() {
+        this.refreshToken = null;
+
     }
 }
