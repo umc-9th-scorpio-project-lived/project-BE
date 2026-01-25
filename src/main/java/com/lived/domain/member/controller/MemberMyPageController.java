@@ -7,9 +7,11 @@ import com.lived.global.apiPayload.ApiResponse;
 import com.lived.global.apiPayload.code.GeneralSuccessCode;
 import com.lived.global.auth.annotation.AuthMember;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+@Tag(name = "MyPage", description = "기본 및 커뮤니티 마이페이지 관련 API (프로필 조회 및 수정) ")
 @RestController
 @RequestMapping("/api/members/me")
 @RequiredArgsConstructor

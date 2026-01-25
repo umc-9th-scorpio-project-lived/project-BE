@@ -9,11 +9,13 @@ import com.lived.domain.notification.service.NotificationSettingService;
 import com.lived.global.apiPayload.ApiResponse;
 import com.lived.global.apiPayload.code.GeneralSuccessCode;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Tag(name = "Notification", description = "알림 관련 API (FCM 및 알림 설정)")
 @RestController
 @RequestMapping("/api/notifications")
 @RequiredArgsConstructor
