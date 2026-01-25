@@ -1,5 +1,6 @@
 package com.lived.domain.member.controller;
 
+import com.lived.domain.member.dto.MemberMyPageRequestDTO;
 import com.lived.domain.member.dto.MemberMyPageResponseDTO;
 import com.lived.domain.member.service.MemberMyPageService;
 import com.lived.global.apiPayload.ApiResponse;
@@ -7,9 +8,7 @@ import com.lived.global.apiPayload.code.GeneralSuccessCode;
 import com.lived.global.auth.annotation.AuthMember;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/members/me")
@@ -23,6 +22,12 @@ public class MemberMyPageController {
     public ApiResponse<MemberMyPageResponseDTO.CommunityProfileResponse> getCommunityProfile(@AuthMember Long memberId) {
         // 첫 번째 인자로 성공 코드를 넘겨줍니다.
         return ApiResponse.onSuccess(GeneralSuccessCode.OK, memberMyPageService.getCommunityProfile(memberId));
+    }
+
+    @PatchMapping("/community")
+    @Operation(summary = "커뮤니티 프로필 수정", description = "닉네임, 프로필 사진을 수정합니다.")
+    public ApiResponse<MemberMyPageResponseDTO.CommunityProfileResponse> updateCommunityProfile(@AuthMember Long memberId, @RequestBody MemberMyPageRequestDTO.UpdateCommunityProfileRequest request) {
+        return ApiResponse.onSuccess(GeneralSuccessCode.OK, memberMyPageService.updateCommunityProfile(memberId, request));
     }
 
     @GetMapping("/posts/written")
