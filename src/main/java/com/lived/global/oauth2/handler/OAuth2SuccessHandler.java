@@ -43,7 +43,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         if (isNewMember) {
             //신규 가입자 (회원가입 페이지로 리다이렉트)
-            targetUrl = UriComponentsBuilder.fromUriString(frontendUrl + "/login/callback")
+            targetUrl = UriComponentsBuilder.fromUriString(frontendUrl + "/signup/callback")
                     .queryParam("isNewMember", true)
                     .queryParam("socialId", socialId)
                     .queryParam("name", name)

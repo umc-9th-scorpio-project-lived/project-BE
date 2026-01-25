@@ -37,7 +37,7 @@ public class JwtTokenProvider {
         Date validity = new Date(now.getTime() + accessTokenExpiration);
 
         return Jwts.builder()
-                .subject(String.valueOf(memberId)) // socialId 대신 memberId 사용
+                .subject(String.valueOf(memberId))
                 .claim("provider", provider)
                 .issuedAt(now)
                 .expiration(validity)
@@ -51,7 +51,7 @@ public class JwtTokenProvider {
         Date validity = new Date(now.getTime() + refreshTokenExpiration);
 
         return Jwts.builder()
-                .subject(String.valueOf(memberId)) // socialId 대신 memberId 사용
+                .subject(String.valueOf(memberId))
                 .issuedAt(now)
                 .expiration(validity)
                 .signWith(key)
@@ -69,7 +69,7 @@ public class JwtTokenProvider {
         return false;
     }
 
-    //토큰에서 socialId 추출
+    //토큰에서 MemberId 추출
     public String getPayload(String token) {
         return Jwts.parser()
                 .verifyWith(key)
