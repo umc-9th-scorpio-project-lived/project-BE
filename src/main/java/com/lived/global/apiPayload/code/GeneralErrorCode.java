@@ -15,6 +15,10 @@ public enum GeneralErrorCode implements BaseErrorCode {
 
     // 회원 관련 에러 코드
     MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "MEMBER404_1", "사용자를 찾을 수 없습니다."),
+    MEMBER_SOCIAL_NOT_FOUND(HttpStatus.NOT_FOUND, "MEMBER404_2", "해당 소셜 계정으로 가입된 유저가 없습니다."),
+    REFRESH_TOKEN_NOT_MATCH(HttpStatus.BAD_REQUEST, "AUTH400_2", "리프레시 토큰이 일치하지 않습니다. 다시 로그인하세요."),
+    MEMBER_ALREADY_EXISTS(HttpStatus.CONFLICT, "MEMBER409_1", "이미 가입된 회원입니다."),
+    NICKNAME_GENERATE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "MEMBER500_1", "닉네임 생성에 필요한 단어가 부족합니다."),
 
     // 루틴 관련 에러 코드
     ROUTINE_NOT_FOUND(HttpStatus.NOT_FOUND, "ROUTINE404_1", "해당 루틴을 찾을 수 없습니다."),

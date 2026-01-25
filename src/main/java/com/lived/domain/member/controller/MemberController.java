@@ -45,7 +45,7 @@ public class MemberController {
             @RequestBody @Valid MemberRequestDTO.SignUpDTO request //
     ) {
         // 회원가입 로직 실행
-        MemberResponseDTO.SignUpResultDTO result = memberService.SignUp(request);
+        MemberResponseDTO.SignUpResultDTO result = memberService.signup(request);
 
         // SuccessCode의 CREATED를 반환
         return ApiResponse.onSuccess(GeneralSuccessCode.CREATED, result);

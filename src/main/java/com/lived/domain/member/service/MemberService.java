@@ -1,6 +1,6 @@
 package com.lived.domain.member.service;
 
-import com.lived.domain.concern.entity.Concern;
+
 import com.lived.domain.concern.entity.mapping.MemberConcern;
 import com.lived.domain.concern.repository.ConcernRepository;
 import com.lived.domain.concern.repository.MemberConcernRepository;
@@ -10,20 +10,19 @@ import com.lived.domain.member.dto.MemberResponseDTO;
 import com.lived.domain.member.entity.Member;
 import com.lived.domain.member.entity.NicknameWord;
 import com.lived.domain.member.enums.Provider;
-import com.lived.domain.member.enums.WordType;
 import com.lived.domain.member.repository.MemberRepository;
 import com.lived.domain.member.repository.NicknameWordRepository;
-import com.lived.domain.routine.entity.Routine;
 import com.lived.domain.routine.entity.mapping.MemberRoutine;
 import com.lived.domain.routine.repository.MemberRoutineRepository;
 import com.lived.domain.routine.repository.RoutineRepository;
+import com.lived.global.apiPayload.code.GeneralErrorCode;
+import com.lived.global.apiPayload.exception.GeneralException;
 import com.lived.global.jwt.JwtTokenProvider;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -42,7 +41,7 @@ public class MemberService {
     // JWT Refresh 토큰 갱신 로직
     public void updateRefreshToken(String socialId, Provider provider, String refreshToken) {
         Member member = memberRepository.findBySocialIdAndProvider(socialId, provider)
-                .orElseThrow(() -> new RuntimeException("해당 소셜 계정으로 가입된 유저가 없습니다."));
+                .orElseThrow(() -> new GeneralException(GeneralErrorCode.MEMBER_SOCIAL_NOT_FOUND));
 
         member.updateRefreshToken(refreshToken); // Member 엔티티에 추가한 메서드
     }
@@ -50,11 +49,11 @@ public class MemberService {
     // JWT Acceess 토큰 갱신 로직
     public String reissueAccessToken(Long memberId, String oldRefreshToken) {
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new GeneralException(GeneralErrorCode.MEMBER_NOT_FOUND));
 
         //DB에 저장된 리프레시 토큰과 클라이언트가 보낸 토큰이 일치하는지 검증
         if (!oldRefreshToken.equals(member.getRefreshToken())) {
-            throw new RuntimeException("리프레시 토큰이 일치하지 않습니다. 다시 로그인하세요.");
+            throw new GeneralException(GeneralErrorCode.REFRESH_TOKEN_NOT_MATCH);
         }
 
         //새로운 토큰 생성하여 반환
@@ -62,11 +61,11 @@ public class MemberService {
     }
 
     // 회원 가입 로직
-    public MemberResponseDTO.SignUpResultDTO SignUp(MemberRequestDTO.SignUpDTO request) {
+    public MemberResponseDTO.SignUpResultDTO signup(MemberRequestDTO.SignUpDTO request) {
 
         // 중복 가입 확인
         if (memberRepository.existsBySocialIdAndProvider(request.getSocialId(), request.getProvider())) {
-            throw new RuntimeException("이미 가입된 회원입니다.");
+            throw new GeneralException(GeneralErrorCode.MEMBER_ALREADY_EXISTS);
         }
 
         // 닉네임 생성
@@ -125,7 +124,7 @@ public class MemberService {
             List<NicknameWord> nouns = wordRepository.findRandomByType("NOUN", 1);
 
             if (adjs.size() < 2 || nouns.isEmpty()) {
-                throw new RuntimeException("닉네임 생성에 필요한 단어가 부족합니다.");
+                throw new GeneralException(GeneralErrorCode.NICKNAME_GENERATE_FAILED);
             };
 
             // 결과
