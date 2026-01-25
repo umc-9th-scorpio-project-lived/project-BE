@@ -23,6 +23,7 @@ public class MemberMyPageResponseDTO {
     @AllArgsConstructor
     public static class CommunityProfileResponse {
         private String nickname;
+        private String profileImageUrl;
         private String livingPeriod;
 
         private List<MyPageFruitInfo> fruits;

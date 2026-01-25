@@ -2,6 +2,7 @@ package com.lived.domain.member.converter;
 
 import com.lived.domain.member.dto.MemberMyPageResponseDTO;
 import com.lived.domain.member.entity.Member;
+import com.lived.domain.post.dto.PostResponseDTO;
 import com.lived.domain.post.entity.Post;
 import com.lived.domain.routine.entity.RoutineFruit;
 import org.springframework.stereotype.Component;
@@ -24,16 +25,17 @@ public class MemberMyPageConverter {
     public MemberMyPageResponseDTO.CommunityProfileResponse toCommunityProfileResponse(Member member, List<RoutineFruit> fruits) {
         return MemberMyPageResponseDTO.CommunityProfileResponse.builder()
                 .nickname(member.getNickname())
+                .profileImageUrl(member.getProfileImageUrl())
                 .livingPeriod(member.getLivingPeriod().name())
                 .fruits(mapToFruitInfoList(fruits))
                 .build();
     }
 
     // 게시글 리스트 변환
-    public MemberMyPageResponseDTO.CommunityProfilePostListResponse toMemberPostListResponse(List<Post> posts, Map<Long, String> thumbnails) {
+    public MemberMyPageResponseDTO.CommunityProfilePostListResponse toMemberPostListResponse(List<PostResponseDTO.PostListItem> postList) {
 
-        List<MemberMyPageResponseDTO.MyPagePostPreview> previewList = posts.stream()
-                .map(post -> toMyPagePostPreview(post, thumbnails.get(post.getId())))
+        List<MemberMyPageResponseDTO.MyPagePostPreview> previewList = postList.stream()
+                .map(this::toMyPagePostPreview)
                 .collect(Collectors.toList());
 
         return MemberMyPageResponseDTO.CommunityProfilePostListResponse.builder()
@@ -41,16 +43,16 @@ public class MemberMyPageConverter {
                 .build();
     }
 
-    private MemberMyPageResponseDTO.MyPagePostPreview toMyPagePostPreview(Post post, String thumbnailUrl) {
+    private MemberMyPageResponseDTO.MyPagePostPreview toMyPagePostPreview(PostResponseDTO.PostListItem postItem) {
         return MemberMyPageResponseDTO.MyPagePostPreview.builder()
-                .postId(post.getId())
-                .category(post.getCategory() != null ? post.getCategory().getLabel() : "기타")
-                .title(post.getTitle())
-                .contentSummary(post.getContent().length() > 50 ? post.getContent().substring(0, 50) + "..." : post.getContent())
-                .likeCount(post.getLikeCount())
-                .commentCount(post.getCommentCount())
-                .createdAt(post.getCreatedAt().toString())
-                .firstImageUrl(thumbnailUrl) // 전달받은 썸네일 URL 사용
+                .postId(postItem.getPostId())
+                .category(postItem.getCategoryLabel())
+                .title(postItem.getTitle())
+                .contentSummary(postItem.getContent())
+                .likeCount(postItem.getLikeCount())
+                .commentCount(postItem.getCommentCount())
+                .createdAt(postItem.getCreatedAt().toString())
+                .firstImageUrl(postItem.getThumbnailUrl())
                 .build();
     }
 

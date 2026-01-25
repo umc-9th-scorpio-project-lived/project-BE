@@ -29,27 +29,39 @@ public class MemberMyPageController {
         return ApiResponse.onSuccess(GeneralSuccessCode.OK, memberMyPageService.getCommunityProfile(memberId));
     }
 
-    @PatchMapping("/community")
+    @PatchMapping(value = "/community", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "커뮤니티 프로필 수정", description = "닉네임, 프로필 사진을 수정합니다.")
-    public ApiResponse<MemberMyPageResponseDTO.CommunityProfileResponse> updateCommunityProfile(@AuthMember Long memberId, @RequestBody MemberMyPageRequestDTO.UpdateCommunityProfileRequest request) {
-        return ApiResponse.onSuccess(GeneralSuccessCode.OK, memberMyPageService.updateCommunityProfile(memberId, request));
+    public ApiResponse<MemberMyPageResponseDTO.CommunityProfileResponse> updateCommunityProfile(
+            @AuthMember Long memberId,
+            @RequestPart(value = "request") MemberMyPageRequestDTO.UpdateCommunityProfileRequest request,
+            @RequestPart(value = "image", required = false) org.springframework.web.multipart.MultipartFile image) {
+        return ApiResponse.onSuccess(GeneralSuccessCode.OK, memberMyPageService.updateCommunityProfile(memberId, request, image));
     }
 
     @GetMapping("/posts/written")
     @Operation(summary = "사용자가 작성한 게시글 조회", description = "사용자가 작성한 게시글 목록을 최신순으로 조회합니다.")
-    public ApiResponse<MemberMyPageResponseDTO.CommunityProfilePostListResponse> getWrittenPosts(@AuthMember Long memberId) {
-        return ApiResponse.onSuccess(GeneralSuccessCode.OK, memberMyPageService.getWrittenPosts(memberId));
+    public ApiResponse<MemberMyPageResponseDTO.CommunityProfilePostListResponse> getWrittenPosts(
+            @AuthMember Long memberId,
+            @RequestParam(required = false) Long cursor,
+            @RequestParam(defaultValue = "10") int size) {
+        return ApiResponse.onSuccess(GeneralSuccessCode.OK, memberMyPageService.getWrittenPosts(memberId, cursor, size));
     }
 
     @GetMapping("/posts/commented")
     @Operation(summary = "사용자가 댓글 단 게시글 조회", description = "사용자가 댓글을 단 게시글 목록을 최신순으로 조회합니다.")
-    public ApiResponse<MemberMyPageResponseDTO.CommunityProfilePostListResponse> getCommentedPosts(@AuthMember Long memberId) {
-        return ApiResponse.onSuccess(GeneralSuccessCode.OK, memberMyPageService.getCommentedPosts(memberId));
+    public ApiResponse<MemberMyPageResponseDTO.CommunityProfilePostListResponse> getCommentedPosts(
+            @AuthMember Long memberId,
+            @RequestParam(required = false) Long cursor,
+            @RequestParam(defaultValue = "10") int size) {
+        return ApiResponse.onSuccess(GeneralSuccessCode.OK, memberMyPageService.getCommentedPosts(memberId, cursor, size));
     }
 
     @GetMapping("/posts/scrapped")
     @Operation(summary = "사용자가 스크랩한 게시글 조회", description = "사용자가 스크랩한 게시글 목록을 최신순으로 조회합니다.")
-    public ApiResponse<MemberMyPageResponseDTO.CommunityProfilePostListResponse> getScrappedPosts(@AuthMember Long memberId) {
-        return ApiResponse.onSuccess(GeneralSuccessCode.OK, memberMyPageService.getScrappedPosts(memberId));
+    public ApiResponse<MemberMyPageResponseDTO.CommunityProfilePostListResponse> getScrappedPosts(
+            @AuthMember Long memberId,
+            @RequestParam(required = false) Long cursor,
+            @RequestParam(defaultValue = "10") int size) {
+        return ApiResponse.onSuccess(GeneralSuccessCode.OK, memberMyPageService.getScrappedPosts(memberId, cursor, size));
     }
 }
