@@ -26,6 +26,8 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+
                 .csrf(csrf -> csrf.disable()) // CSRF 보호 비활성화
                 .formLogin(form -> form.disable()) // 기본 로그인 페이지 비활성화
                 .httpBasic(basic -> basic.disable()) // HTTP Basic 인증 비활성화
@@ -33,16 +35,12 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(org.springframework.web.cors.CorsUtils::isPreFlightRequest).permitAll()
                         .requestMatchers(
-                                "/api/auth/**",
-                                "/login/**",
-                                "/oauth2/**",
-                                "/v3/api-docs/**",
-                                "/swagger-ui/**",
-                                "/swagger-resources/**"
-                        ).permitAll() // 로그인 관련, 스웨거 허용
-
-                        .anyRequest().authenticated() // 그 외는 인증 필요
+                                "/api/auth/**", "/login/**", "/oauth2/**",
+                                "/v3/api-docs/**", "/swagger-ui/**", "/swagger-resources/**"
+                        ).permitAll()
+                        .anyRequest().authenticated()
                 )
 
                 // 인증 실패 시 응답
@@ -75,5 +73,20 @@ public class SecurityConfig {
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
+    }
+
+    @Bean
+    public org.springframework.web.cors.CorsConfigurationSource corsConfigurationSource() {
+        org.springframework.web.cors.CorsConfiguration configuration = new org.springframework.web.cors.CorsConfiguration();
+
+        configuration.addAllowedOrigin("http://localhost:5173"); // 프론트 로컬 주소
+        configuration.addAllowedHeader("*"); // 모든 헤더 허용
+        configuration.addAllowedMethod("*"); // 모든 HTTP 메서드 허용
+        configuration.setAllowCredentials(true); // 쿠키/인증정보 허용
+        configuration.setMaxAge(3600L); // 캐싱 시간
+
+        org.springframework.web.cors.UrlBasedCorsConfigurationSource source = new org.springframework.web.cors.UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 }
