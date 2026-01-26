@@ -1,9 +1,6 @@
 package com.lived.domain.member.entity;
 
-import com.lived.domain.member.enums.Gender;
-import com.lived.domain.member.enums.LivingPeriod;
-import com.lived.domain.member.enums.Provider;
-import com.lived.domain.member.enums.TreeVisibility;
+import com.lived.domain.member.enums.*;
 import com.lived.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -60,8 +57,9 @@ public class Member extends BaseEntity {
     @Column(name = "tree_visibility", nullable = false)
     private TreeVisibility treeVisibility = TreeVisibility.PUBLIC; // 루틴나무 공개 범위
 
+    @Enumerated(EnumType.STRING) // DB에는 문자열로 저장되도록 설정
     @Column(name = "status", length = 32)
-    private String status; // 활성화 상태
+    private MemberStatus status;
 
     @Column(name = "inactive_date")
     private LocalDateTime inactiveDate; // 비활성화 시각
@@ -97,16 +95,16 @@ public class Member extends BaseEntity {
 
     // 회원탈퇴 직후
     public void withdraw() {
-        this.status = "INACTIVE";
+        this.status = MemberStatus.INACTIVE;
         this.inactiveDate = LocalDateTime.now();
         this.refreshToken = null;
         this.tempNickname = this.nickname; // 원래 랜덤 닉네임을 백업
-        this.nickname = "탈퇴한 회원"; // 게시글 등에 즉시 반영
+        this.nickname = "탈퇴한 회원" + this.getId(); // 게시글 등에 즉시 반영
     }
 
     // 회원 탈퇴 30일 전 로그인 시
     public void recover() {
-        this.status = "ACTIVE";
+        this.status = MemberStatus.ACTIVE;
         this.inactiveDate = null;
         this.nickname = this.tempNickname; // 백업해둔 랜덤 닉네임으로 복원
         this.tempNickname = null; // 백업 데이터 삭제
@@ -116,10 +114,10 @@ public class Member extends BaseEntity {
     public void anonymize() {
         // socialId를 변경하여 재가입 시 신규 유저로 인식되게 함
         this.socialId = "ANONYMOUS_" + this.getId() + "_" + LocalDateTime.now();
-        this.name = "탈퇴한 회원";
-        this.nickname = "탈퇴한 회원";
+        this.name = "탈퇴한 회원" + this.getId();
+        this.nickname = "탈퇴한 회원" + this.getId();
         this.tempNickname = null;
         this.birth = LocalDate.of(1900, 1, 1); // 더미 데이터
-        this.status = "DELETED"; // 완전 삭제 상태 표시
+        this.status = MemberStatus.DELETED; // 완전 삭제 상태 표시
     }
 }

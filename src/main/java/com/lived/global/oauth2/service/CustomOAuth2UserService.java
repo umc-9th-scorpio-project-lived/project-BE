@@ -1,6 +1,7 @@
 package com.lived.global.oauth2.service;
 
 import com.lived.domain.member.entity.Member;
+import com.lived.domain.member.enums.MemberStatus;
 import com.lived.domain.member.enums.Provider;
 import com.lived.domain.member.repository.MemberRepository;
 import com.lived.global.oauth2.dto.OAuthAttributes;
@@ -52,7 +53,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         // 만약 INACTIVE인 유저라면 복구 수행
         if (memberEntity.isPresent()) {
             Member member = memberEntity.get();
-            if ("INACTIVE".equals(member.getStatus())) {
+            if (MemberStatus.INACTIVE.equals(member.getStatus())) {
                 member.recover();
                 memberRepository.save(member);
             }
