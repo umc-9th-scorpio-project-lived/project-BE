@@ -5,6 +5,7 @@ import com.lived.domain.concern.entity.mapping.MemberConcern;
 import com.lived.domain.member.dto.MemberRequestDTO;
 import com.lived.domain.member.dto.MemberResponseDTO;
 import com.lived.domain.member.entity.Member;
+import com.lived.domain.member.enums.MemberStatus;
 
 import java.time.LocalDateTime;
 
@@ -23,7 +24,7 @@ public class MemberConverter {
                 .livingPeriod(request.getLivingPeriod()) // 자취연차
                 .notificationStatus(request.getNotificationStatus()) // 알림 수신 동의 여부 1: 수락, 2: 나중에
                 .agreementDate(LocalDateTime.now()) // 알림 상태 설정 시점
-                .status("ACTIVATE")     // 기본 상태값 설정
+                .status(MemberStatus.ACTIVE)     // 기본 상태값 설정
                 .build();
     }
 

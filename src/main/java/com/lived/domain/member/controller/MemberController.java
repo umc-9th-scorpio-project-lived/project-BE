@@ -5,6 +5,7 @@ import com.lived.domain.member.dto.MemberResponseDTO;
 import com.lived.domain.member.service.MemberService;
 import com.lived.global.apiPayload.ApiResponse;
 import com.lived.global.apiPayload.code.GeneralSuccessCode; //
+import com.lived.global.auth.annotation.AuthMember;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -24,9 +25,10 @@ import org.springframework.web.bind.annotation.RestController;
 public class MemberController {
 
     private final MemberService memberService;
-
-    @PostMapping("/signup") //
-    @Operation(summary = "소셜 회원가입 API",
+    // 회원가입
+    @PostMapping("/signup")
+    @Operation(
+            summary = "소셜 회원가입 API",
             description = "소셜 정보와 온보딩 데이터를 받아 최종 회원가입을 처리"
     )
     @ApiResponses(value = {
@@ -49,5 +51,50 @@ public class MemberController {
 
         // SuccessCode의 CREATED를 반환
         return ApiResponse.onSuccess(GeneralSuccessCode.CREATED, result);
+    }
+
+    // 로그아웃
+    @PostMapping("/logout")
+    @Operation(
+            summary = "로그아웃 API",
+            description = "현재 로그인된 사용자의 Refresh Token을 삭제하여 로그아웃 처리합니다."
+    )
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "COMMON200_1",
+                    description = "로그아웃 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "MEMBER404_1",
+                    description = "존재하지 않는 사용자입니다.",
+                    content = @Content(schema = @Schema(implementation = ApiResponse.class)))
+    })
+    public ApiResponse<String> logout(
+            @AuthMember Long memberId // 시큐리티 컨텍스트에서 인증 객체를 바로 가져옴
+    ) {
+        memberService.logout(memberId);
+        return ApiResponse.onSuccess(GeneralSuccessCode.OK, "로그아웃 성공");
+    }
+
+    // 회원탈퇴
+    @PostMapping("/withdraw")
+    @Operation(
+            summary = "회원 탈퇴 API",
+            description = "회원 상태를 INACTIVE로 변경하고 닉네임을 백업합니다. " +
+                    "30일 이내 재로그인 시 계정은 자동으로 ACTIVE 상태로 복구되며, " +
+                    "30일 경과 후에는 스케줄러에 의해 데이터가 영구 익명화되어 복구가 불가능해집니다."
+    )
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "COMMON200",
+                    description = "탈퇴 요청 성공 (30일 유예 기간 시작)"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "MEMBER404",
+                    description = "존재하지 않는 사용자입니다.")
+    })
+    public ApiResponse<String> withdraw(
+            @AuthMember Long memberId
+    ) {
+        memberService.withdraw(memberId);
+        return ApiResponse.onSuccess(GeneralSuccessCode.OK, "회원 탈퇴 요청이 완료되었습니다.");
     }
 }
