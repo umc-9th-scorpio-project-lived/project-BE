@@ -13,11 +13,11 @@ public record RoutineCalenderResponseDTO(
         @Schema(description = "루틴 제목", example = "매일 물 2L 마시기")
         String title,
 
-        @Schema(description = "연도", example = "2024")
-        int year,
+        @Schema(description = "달성률", example = "90")
+        int achievementRate,
 
-        @Schema(description = "월", example = "12")
-        int month,
+        @Schema(description = "상태 메시지", example = "완벽해요! 황금열매를 얻었어요!")
+        String statusMessage,
 
         @Schema(description = "해당 월의 날짜별 상태 리스트")
         List<DayResponseDTO> days
