@@ -215,11 +215,6 @@ public class RoutineService {
 
         memberRoutineRepository.saveAll(memberRoutines);
         return memberRoutines.size();
-
-
     }
-
-
-
 
 }
