@@ -1,5 +1,6 @@
 package com.lived.domain.routine.service;
 
+import com.lived.domain.routine.dto.FruitPopupResponseDTO;
 import com.lived.domain.routine.dto.MonthlyFruitSummaryDTO;
 import com.lived.domain.routine.dto.MonthlyTrackerViewResponseDTO;
 import com.lived.domain.routine.dto.RoutineCalenderResponseDTO;
@@ -11,6 +12,8 @@ import com.lived.domain.routine.entity.mapping.MemberRoutine;
 import com.lived.domain.routine.repository.MemberRoutineRepository;
 import com.lived.domain.routine.repository.RoutineFruitRepository;
 import com.lived.domain.routine.repository.RoutineHistoryRepository;
+import com.lived.global.apiPayload.code.GeneralErrorCode;
+import com.lived.global.apiPayload.exception.GeneralException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -125,6 +128,7 @@ public class RoutineStatisticsService {
         return ((double) completedDays / scheduledDays) * 100;
     }
 
+    // achievementRate 업데이트
     @Transactional
     public void syncRoutineFruit(MemberRoutine routine, LocalDate date) {
         LocalDate startOfMonth = date.withDayOfMonth(1);
@@ -144,4 +148,25 @@ public class RoutineStatisticsService {
         // 엔티티 내부 로직을 통해 열매 등급 업데이트
         fruit.updateAchievement(rate);
     }
+
+    // 특정 루틴의 팝업용 요약 정보 조회
+    public FruitPopupResponseDTO getRoutinePopup(Long memberRoutineId, int year, int month) {
+        MemberRoutine routine = memberRoutineRepository.findById(memberRoutineId)
+                .orElseThrow(() -> new GeneralException(GeneralErrorCode.ROUTINE_NOT_FOUND));
+
+        LocalDate firstDay = LocalDate.of(year, month, 1);
+        LocalDate lastDay = firstDay.withDayOfMonth(firstDay.lengthOfMonth());
+
+        double rate = calculateAchievementRate(routine, firstDay, lastDay);
+
+        return new FruitPopupResponseDTO(
+                routine.getTitle(),
+                rate,
+                routine.getMember().getId(),
+                year,
+                month,
+                routine.getId()
+        );
+    }
+
 }

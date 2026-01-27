@@ -1,5 +1,6 @@
 package com.lived.domain.routine.controller;
 
+import com.lived.domain.routine.dto.FruitPopupResponseDTO;
 import com.lived.domain.routine.dto.MonthlyFruitSummaryDTO;
 import com.lived.domain.routine.dto.MonthlyTrackerViewResponseDTO;
 import com.lived.domain.routine.service.RoutineStatisticsService;
@@ -46,6 +47,18 @@ public class RoutineStatisticsController {
         return ApiResponse.onSuccess(GeneralSuccessCode.OK, result);
     }
 
+    @Operation(
+            summary = "열매 팝업 데이터 조회",
+            description = "나무의 열매를 클릭했을 때 나타나는 루틴 이름과 달성률 요약을 조회합니다. (열매 팝업용)")
+    @GetMapping("/routines/{memberRoutineId}/popup")
+    public ApiResponse<FruitPopupResponseDTO> getFruitPopup(
+            @Parameter(description = "멤버 루틴 ID", example = "101") @PathVariable Long memberRoutineId,
+            @Parameter(description = "조회할 연도 (YYYY)", example = "2026") @RequestParam int year,
+            @Parameter(description = "조회할 월 (1-12)", example = "1") @RequestParam int month) {
+
+        FruitPopupResponseDTO result = routineStatisticsService.getRoutinePopup(memberRoutineId, year, month);
+        return ApiResponse.onSuccess(GeneralSuccessCode.OK, result);
+    }
 
 
 }
