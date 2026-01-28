@@ -1,18 +1,17 @@
 package com.lived.domain.routine.controller;
 
+import com.lived.domain.routine.dto.RoutineBatchAddRequestDTO;
 import com.lived.domain.routine.dto.RoutineRecommendResponseDTO;
 import com.lived.domain.routine.dto.RoutineResponseDTO;
 import com.lived.domain.routine.service.RoutineRecommendationService;
+import com.lived.domain.routine.service.RoutineService;
 import com.lived.global.apiPayload.ApiResponse;
 import com.lived.global.apiPayload.code.GeneralSuccessCode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -23,6 +22,7 @@ import java.util.List;
 public class RoutineRecommendationController {
 
     private final RoutineRecommendationService routineRecommendationService;
+    private final RoutineService routineService;
 
     @Operation(
             summary = "[온보딩] 고민 기반 루틴 추천 API",
@@ -46,5 +46,25 @@ public class RoutineRecommendationController {
     public ApiResponse<RoutineRecommendResponseDTO> getRecommendedRoutinesByCategory() {
         RoutineRecommendResponseDTO response = routineRecommendationService.getRecommendedRoutines();
         return ApiResponse.onSuccess(GeneralSuccessCode.OK, response);
+    }
+
+    @Operation(
+            summary = "추천 루틴 일괄 등록 API",
+            description = "선택된 루틴 템플릿들을 내 루틴으로 한 번에 등록합니다. 온보딩 및 추천 기능에서 공통으로 사용됩니다."
+    )
+    @PostMapping("/batch")
+    public ApiResponse<String> addRoutinesBatch(
+            @Parameter(description = "사용자 ID", required = true, example = "1")
+            @RequestHeader("memberId") Long memberid,
+            @RequestBody RoutineBatchAddRequestDTO request
+    ) {
+        int addedCount = routineService.registerRoutinesBatch(memberid, request);
+
+        if(addedCount == 0) {
+            return ApiResponse.onSuccess(GeneralSuccessCode.OK,"이미 모든 루틴이 등록되어 있습니다.");
+        }
+
+        return ApiResponse.onSuccess(GeneralSuccessCode.ROUTINE_CREATED,
+                String.format("선택하신 %d개의 루틴이 추가되었습니다.", addedCount));
     }
 }
