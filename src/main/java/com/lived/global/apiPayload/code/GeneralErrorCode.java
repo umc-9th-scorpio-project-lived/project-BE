@@ -23,6 +23,7 @@ public enum GeneralErrorCode implements BaseErrorCode {
     // 루틴 관련 에러 코드
     ROUTINE_NOT_FOUND(HttpStatus.NOT_FOUND, "ROUTINE404_1", "해당 루틴을 찾을 수 없습니다."),
     ROUTINE_ALREADY_EXISTS(HttpStatus.CONFLICT, "ROUTINE409_1", "이미 존재하는 루틴 이름입니다."),
+    FUTURE_ROUTINE_CHECK_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "ROUTINE400_1", "미래 날짜의 루틴에는 완료 체크 할 수 없습니다."),
 
     // 커뮤니티 관련 에러 코드
     POST_IMAGE_LIMIT_EXCEEDED(HttpStatus.BAD_REQUEST, "COMMUNITY400_1", "이미지는 최대 10개까지 업로드 가능합니다."),

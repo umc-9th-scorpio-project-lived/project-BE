@@ -53,7 +53,7 @@ public class RoutineService {
                 .repeatValue(request.getRepeatValueAsString())
                 .isAlarmOn(request.getIsAlarmon())
                 .alarmTime(request.getIsAlarmon() ? request.getAlarmTime() : null)
-                .startDate(LocalDate.now())
+                .startDate(request.getStartDate() != null ? request.getStartDate() : LocalDate.now())
                 .isActive(true)
                 .build();
 
@@ -155,6 +155,10 @@ public class RoutineService {
     public boolean toggleRoutineCheck(Long memberRoutineId, LocalDate targetDate) {
         MemberRoutine memberRoutine = memberRoutineRepository.findById(memberRoutineId)
                 .orElseThrow(() -> new GeneralException(GeneralErrorCode.ROUTINE_NOT_FOUND));
+
+        if(targetDate.isAfter(LocalDate.now())) {
+            throw new GeneralException(GeneralErrorCode.FUTURE_ROUTINE_CHECK_NOT_ALLOWED);
+        }
 
         if(!memberRoutine.isScheduledFor(targetDate)) {
             throw new GeneralException(GeneralErrorCode.BAD_REQUEST);
