@@ -3,6 +3,7 @@ package com.lived.domain.routine.repository;
 import com.lived.domain.routine.entity.RoutineHistory;
 import com.lived.domain.routine.entity.mapping.MemberRoutine;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -21,4 +22,16 @@ public interface RoutineHistoryRepository extends JpaRepository<RoutineHistory, 
 
     // 특정 루틴과 연결된 모든 수행 기록을 삭제
     void deleteAllByMemberRoutineId(Long memberRoutineId);
+
+    // 특정 루틴의 한 달간 모든 기록 조회
+    List<RoutineHistory> findAllByMemberRoutineIdAndCheckDateBetween(Long memberRoutineId, LocalDate state, LocalDate end);
+
+    // 완료일 수 계산
+    @Query("SELECT COUNT(rh) FROM RoutineHistory rh " +
+            "WHERE rh.memberRoutine = :routine " +
+            "AND rh.checkDate BETWEEN :startDate AND :endDate " +
+            "AND rh.isDone = true")
+    long countCompletedDays(MemberRoutine routine, LocalDate startDate, LocalDate endDate);
+
+
 }
