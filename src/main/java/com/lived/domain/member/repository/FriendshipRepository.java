@@ -10,6 +10,8 @@ import java.util.List;
 
 public interface FriendshipRepository extends JpaRepository<Friendship, Long> {
     @Query("SELECT f FROM Friendship f " +
+            "JOIN FETCH f.requester " +
+            "JOIN FETCH f.receiver " +
             "WHERE (f.requester = :member OR f.receiver = :member) " +
             "AND f.status = 'ACCEPTED' " +
             "AND f.isDeleted = false")

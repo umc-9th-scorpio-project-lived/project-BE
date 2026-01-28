@@ -4,11 +4,12 @@ import com.lived.domain.member.enums.FriendshipStatus;
 import com.lived.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 @Entity
 @Table(name = "friendship")
 @Getter
-@Builder
+@SuperBuilder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 public class Friendship extends BaseEntity {
