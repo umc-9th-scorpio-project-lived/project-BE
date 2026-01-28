@@ -53,7 +53,7 @@ public class RoutineService {
                 .repeatValue(request.getRepeatValueAsString())
                 .isAlarmOn(request.getIsAlarmon())
                 .alarmTime(request.getIsAlarmon() ? request.getAlarmTime() : null)
-                .startDate(LocalDate.now())
+                .startDate(request.getStartDate() != null ? request.getStartDate() : LocalDate.now())
                 .isActive(true)
                 .build();
 
