@@ -156,6 +156,10 @@ public class RoutineService {
         MemberRoutine memberRoutine = memberRoutineRepository.findById(memberRoutineId)
                 .orElseThrow(() -> new GeneralException(GeneralErrorCode.ROUTINE_NOT_FOUND));
 
+        if(targetDate.isAfter(LocalDate.now())) {
+            throw new GeneralException(GeneralErrorCode.FUTURE_ROUTINE_CHECK_NOT_ALLOWED);
+        }
+
         if(!memberRoutine.isScheduledFor(targetDate)) {
             throw new GeneralException(GeneralErrorCode.BAD_REQUEST);
         }
