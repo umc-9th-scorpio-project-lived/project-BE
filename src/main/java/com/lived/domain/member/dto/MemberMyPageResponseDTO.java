@@ -1,5 +1,6 @@
 package com.lived.domain.member.dto;
 
+import com.lived.domain.member.enums.TreeVisibility;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -36,5 +37,14 @@ public class MemberMyPageResponseDTO {
     public static class MyPageFruitInfo {
         private Long fruitId;
         private String fruitType;
+    }
+
+    @Getter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class TreeVisibilityResponse {
+        private TreeVisibility visibility;
+        private List<Long> targetMemberIds;
     }
 }

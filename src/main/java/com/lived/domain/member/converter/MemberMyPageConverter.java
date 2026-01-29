@@ -2,14 +2,11 @@ package com.lived.domain.member.converter;
 
 import com.lived.domain.member.dto.MemberMyPageResponseDTO;
 import com.lived.domain.member.entity.Member;
-import com.lived.domain.member.entity.RoutineVisibilityTarget;
-import com.lived.domain.post.dto.PostResponseDTO;
-import com.lived.domain.post.entity.Post;
+import com.lived.domain.member.entity.TreeVisibilityTarget;
 import com.lived.domain.routine.entity.RoutineFruit;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @Component
@@ -42,12 +39,24 @@ public class MemberMyPageConverter {
     }
 
     // 타겟 ID 리스트 -> 엔티티 리스트 변환
-    public List<RoutineVisibilityTarget> toVisibilityTargetList(Member owner, List<Long> targetMemberIds) {
+    public List<TreeVisibilityTarget> toVisibilityTargetList(Member owner, List<Long> targetMemberIds) {
         return targetMemberIds.stream()
-                .map(targetId -> RoutineVisibilityTarget.builder()
+                .map(targetId -> TreeVisibilityTarget.builder()
                         .member(owner)
                         .targetMemberId(targetId)
                         .build())
                 .collect(Collectors.toList());
+    }
+
+    public MemberMyPageResponseDTO.TreeVisibilityResponse toTreeVisibilityResponse(Member member, List<TreeVisibilityTarget> targets) {
+        // Target Entity 리스트에서 ID만 추출
+        List<Long> targetIds = targets.stream()
+                .map(TreeVisibilityTarget::getTargetMemberId)
+                .collect(Collectors.toList());
+
+        return MemberMyPageResponseDTO.TreeVisibilityResponse.builder()
+                .visibility(member.getTreeVisibility())
+                .targetMemberIds(targetIds)
+                .build();
     }
 }

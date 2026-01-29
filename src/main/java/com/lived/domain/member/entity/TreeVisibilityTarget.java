@@ -1,6 +1,5 @@
 package com.lived.domain.member.entity;
 
-import com.fasterxml.jackson.databind.ser.Serializers;
 import com.lived.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -10,7 +9,7 @@ import lombok.*;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-public class RoutineVisibilityTarget extends BaseEntity {
+public class TreeVisibilityTarget extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

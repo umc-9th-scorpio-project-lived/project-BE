@@ -55,7 +55,7 @@ public class Member extends BaseEntity {
     @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(name = "tree_visibility", nullable = false)
-    private TreeVisibility treeVisibility = TreeVisibility.PUBLIC; // 루틴나무 공개 범위
+    private TreeVisibility treeVisibility = TreeVisibility.FRIENDS; // 루틴나무 공개 범위
 
     @Enumerated(EnumType.STRING) // DB에는 문자열로 저장되도록 설정
     @Column(name = "status", length = 32)
@@ -119,5 +119,9 @@ public class Member extends BaseEntity {
         this.tempNickname = null;
         this.birth = LocalDate.of(1900, 1, 1); // 더미 데이터
         this.status = MemberStatus.DELETED; // 완전 삭제 상태 표시
+    }
+
+    public void updateTreeVisibility(TreeVisibility treeVisibility) {
+        this.treeVisibility = treeVisibility;
     }
 }
