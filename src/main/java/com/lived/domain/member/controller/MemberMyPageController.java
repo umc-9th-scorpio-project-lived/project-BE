@@ -39,4 +39,18 @@ public class MemberMyPageController {
             @RequestPart(value = "image", required = false) org.springframework.web.multipart.MultipartFile image) {
         return ApiResponse.onSuccess(GeneralSuccessCode.OK, memberMyPageService.updateCommunityProfile(memberId, request, image));
     }
+
+    @GetMapping("/visibility")
+    @Operation(summary = "루틴 나무 공개 범위 조회", description = "")
+    public ApiResponse<MemberMyPageResponseDTO.TreeVisibilityResponse> getTreeVisibility(@AuthMember Long memberId) {
+        return ApiResponse.onSuccess(GeneralSuccessCode.OK, memberMyPageService.getTreeVisibility(memberId));
+    }
+
+    @PatchMapping("/visibility")
+    @Operation(summary = "루틴 나무 공개 범위 설정", description = "공개 범위(FRIENDS, PARTIAL, PRIVATE)를 수정합니다. PARTIAL일 경우 targetMemberIds 리스트가 필요합니다.")
+    public ApiResponse<MemberMyPageResponseDTO.TreeVisibilityResponse> updateTreeVisibility(
+            @AuthMember Long memberId,
+            @RequestBody MemberMyPageRequestDTO.UpdateTreeVisibilityDTO request) {
+        return ApiResponse.onSuccess(GeneralSuccessCode.OK, memberMyPageService.updateTreeVisibility(memberId, request));
+    }
 }
