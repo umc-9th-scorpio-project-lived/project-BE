@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
@@ -39,6 +40,10 @@ public class RoutineRequestDTO {
     @Schema(description = "알림 시간 (HH:mm 형식)", example = "13:30")
     @JsonFormat(pattern = "HH:mm")
     private LocalTime alarmTime;
+
+    @Schema(description = "루틴 시작 날짜 (YYYY-MM-DD 형식)", example = "2026-01-28")
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private LocalDate startDate;
 
     public String getRepeatValueAsString() {
         return (repeatValues != null) ? String.join(",", repeatValues) : null;
