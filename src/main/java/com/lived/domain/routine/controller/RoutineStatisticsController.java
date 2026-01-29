@@ -3,6 +3,7 @@ package com.lived.domain.routine.controller;
 import com.lived.domain.routine.dto.FruitPopupResponseDTO;
 import com.lived.domain.routine.dto.MonthlyFruitSummaryDTO;
 import com.lived.domain.routine.dto.MonthlyTrackerViewResponseDTO;
+import com.lived.domain.routine.dto.RoutineTreeResponseDTO;
 import com.lived.domain.routine.service.RoutineStatisticsService;
 import com.lived.global.apiPayload.ApiResponse;
 import com.lived.global.apiPayload.code.GeneralSuccessCode;
@@ -19,6 +20,17 @@ import org.springframework.web.bind.annotation.*;
 public class RoutineStatisticsController {
 
     private final RoutineStatisticsService routineStatisticsService;
+
+    @Operation(summary = "루틴 나무 전체 데이터 조회", description = "월별 열매 통계 요약과 나무에 표시될 열매 리스트를 한번에 조회합니다.")
+    @GetMapping("/members/{memberId}/fruits")
+    public ApiResponse<RoutineTreeResponseDTO> getRoutineTree(
+            @PathVariable Long memberId,
+            @RequestParam(name = "year") int year,
+            @RequestParam(name = "month") int month
+    ) {
+        RoutineTreeResponseDTO result = routineStatisticsService.getRoutineTree(memberId, year, month);
+        return ApiResponse.onSuccess(GeneralSuccessCode.OK, result);
+    }
 
     @Operation(
             summary = "월별 루틴 트래커 전체 데이터 조회",
