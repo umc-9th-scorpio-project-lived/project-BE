@@ -140,7 +140,10 @@ public class RoutineStatisticsService {
         long completedDays = routineHistoryRepository.countCompletedDays(routine, start, end);
 
         if(scheduledDays == 0) return 0.0;
-        return ((double) completedDays / scheduledDays) * 100;
+        double rate =  ((double) completedDays / scheduledDays) * 100;
+
+        // 소수점 첫째 자리까지 반올림
+        return Math.round(rate * 10.0) / 10.0;
     }
 
     // achievementRate 업데이트
