@@ -1,9 +1,6 @@
 package com.lived.domain.routine.service;
 
-import com.lived.domain.routine.dto.FruitPopupResponseDTO;
-import com.lived.domain.routine.dto.MonthlyFruitSummaryDTO;
-import com.lived.domain.routine.dto.MonthlyTrackerViewResponseDTO;
-import com.lived.domain.routine.dto.RoutineCalenderResponseDTO;
+import com.lived.domain.routine.dto.*;
 import com.lived.domain.routine.entity.RoutineFruit;
 import com.lived.domain.routine.entity.RoutineHistory;
 import com.lived.domain.routine.entity.enums.DayStatus;
@@ -34,6 +31,24 @@ public class RoutineStatisticsService {
     private final MemberRoutineRepository memberRoutineRepository;
     private final RoutineHistoryRepository routineHistoryRepository;
     private final RoutineFruitRepository routineFruitRepository;
+
+    // 루틴 나무 전체 데이터 화면 반환
+    public RoutineTreeResponseDTO getRoutineTree(Long memberId, int year, int month) {
+        LocalDate targetMonth = LocalDate.of(year, month, 1);
+
+        MonthlyFruitSummaryDTO summary = getMonthlyFruitSummary(memberId, year, month);
+
+        List<RoutineFruit> fruits = routineFruitRepository.findAllByMemberRoutineMemberIdAndMonth(memberId, targetMonth);
+
+        List<RoutineTreeResponseDTO.FruitItemDTO> fruitList = fruits.stream()
+                .map(f -> new RoutineTreeResponseDTO.FruitItemDTO(
+                        f.getMemberRoutine().getId(),
+                        f.getFruitType()
+                ))
+                .toList();
+
+        return new RoutineTreeResponseDTO(summary, fruitList);
+    }
 
     // 특정 멤버의 월간 전체 트래커 데이터 조회
     public MonthlyTrackerViewResponseDTO getMonthlyTrackerView(Long memberId, int year, int month) {
@@ -125,7 +140,10 @@ public class RoutineStatisticsService {
         long completedDays = routineHistoryRepository.countCompletedDays(routine, start, end);
 
         if(scheduledDays == 0) return 0.0;
-        return ((double) completedDays / scheduledDays) * 100;
+        double rate =  ((double) completedDays / scheduledDays) * 100;
+
+        // 소수점 첫째 자리까지 반올림
+        return Math.round(rate * 10.0) / 10.0;
     }
 
     // achievementRate 업데이트
@@ -168,5 +186,7 @@ public class RoutineStatisticsService {
                 routine.getId()
         );
     }
+
+
 
 }
