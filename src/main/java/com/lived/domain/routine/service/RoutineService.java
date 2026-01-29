@@ -35,6 +35,8 @@ public class RoutineService {
     private final RoutineHistoryRepository routineHistoryRepository;
     private final RoutineRepository routineRepository;
 
+    private final RoutineStatisticsService statisticsService;
+
     // 루틴 생성 로직 (커스텀)
     public Long createCustomRoutine(Long memberId, RoutineRequestDTO request) {
         Member member = memberRepository.findById(memberId)
@@ -160,7 +162,7 @@ public class RoutineService {
             throw new GeneralException(GeneralErrorCode.BAD_REQUEST);
         }
 
-        return routineHistoryRepository.findByMemberRoutineIdAndCheckDate(memberRoutineId, targetDate)
+        boolean isDone = routineHistoryRepository.findByMemberRoutineIdAndCheckDate(memberRoutineId, targetDate)
                 .map(history -> {
                     history.toggleDone();
                     return history.getIsDone();
@@ -174,6 +176,10 @@ public class RoutineService {
                     routineHistoryRepository.save(newHistory);
                     return true;
                 });
+
+        statisticsService.syncRoutineFruit(memberRoutine, targetDate);
+
+        return isDone;
     }
 
     // 일괄 선택된 루틴 등록
@@ -215,11 +221,6 @@ public class RoutineService {
 
         memberRoutineRepository.saveAll(memberRoutines);
         return memberRoutines.size();
-
-
     }
-
-
-
 
 }
