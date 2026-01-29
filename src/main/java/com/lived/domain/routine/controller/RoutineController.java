@@ -94,25 +94,4 @@ public class RoutineController {
         return ApiResponse.onSuccess(GeneralSuccessCode.OK, isDone);
     }
 
-    @Operation(
-            summary = "추천 루틴 일괄 등록 API",
-            description = "선택된 루틴 템플릿들을 내 루틴으로 한 번에 등록합니다. 온보딩 및 추천 기능에서 공통으로 사용됩니다."
-    )
-    @PostMapping("/batch")
-    public ApiResponse<String> addRoutinesBatch(
-            @Parameter(description = "사용자 ID", required = true, example = "1")
-            @RequestHeader("memberId") Long memberid,
-            @RequestBody RoutineBatchAddRequestDTO request
-    ) {
-        int addedCount = routineService.registerRoutinesBatch(memberid, request);
-
-        if(addedCount == 0) {
-            return ApiResponse.onSuccess(GeneralSuccessCode.OK,"이미 모든 루틴이 등록되어 있습니다.");
-        }
-
-        return ApiResponse.onSuccess(GeneralSuccessCode.ROUTINE_CREATED,
-                String.format("선택하신 %d개의 루틴이 추가되었습니다.", addedCount));
-    }
-
-
 }

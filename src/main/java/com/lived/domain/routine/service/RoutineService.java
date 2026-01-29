@@ -35,6 +35,8 @@ public class RoutineService {
     private final RoutineHistoryRepository routineHistoryRepository;
     private final RoutineRepository routineRepository;
 
+    private final RoutineStatisticsService statisticsService;
+
     // 루틴 생성 로직 (커스텀)
     public Long createCustomRoutine(Long memberId, RoutineRequestDTO request) {
         Member member = memberRepository.findById(memberId)
@@ -53,7 +55,7 @@ public class RoutineService {
                 .repeatValue(request.getRepeatValueAsString())
                 .isAlarmOn(request.getIsAlarmon())
                 .alarmTime(request.getIsAlarmon() ? request.getAlarmTime() : null)
-                .startDate(LocalDate.now())
+                .startDate(request.getStartDate() != null ? request.getStartDate() : LocalDate.now())
                 .isActive(true)
                 .build();
 
@@ -156,11 +158,15 @@ public class RoutineService {
         MemberRoutine memberRoutine = memberRoutineRepository.findById(memberRoutineId)
                 .orElseThrow(() -> new GeneralException(GeneralErrorCode.ROUTINE_NOT_FOUND));
 
+        if(targetDate.isAfter(LocalDate.now())) {
+            throw new GeneralException(GeneralErrorCode.FUTURE_ROUTINE_CHECK_NOT_ALLOWED);
+        }
+
         if(!memberRoutine.isScheduledFor(targetDate)) {
             throw new GeneralException(GeneralErrorCode.BAD_REQUEST);
         }
 
-        return routineHistoryRepository.findByMemberRoutineIdAndCheckDate(memberRoutineId, targetDate)
+        boolean isDone = routineHistoryRepository.findByMemberRoutineIdAndCheckDate(memberRoutineId, targetDate)
                 .map(history -> {
                     history.toggleDone();
                     return history.getIsDone();
@@ -174,6 +180,10 @@ public class RoutineService {
                     routineHistoryRepository.save(newHistory);
                     return true;
                 });
+
+        statisticsService.syncRoutineFruit(memberRoutine, targetDate);
+
+        return isDone;
     }
 
     // 일괄 선택된 루틴 등록
@@ -215,11 +225,6 @@ public class RoutineService {
 
         memberRoutineRepository.saveAll(memberRoutines);
         return memberRoutines.size();
-
-
     }
-
-
-
 
 }
