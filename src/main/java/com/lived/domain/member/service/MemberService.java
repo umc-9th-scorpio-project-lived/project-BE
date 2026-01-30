@@ -19,8 +19,10 @@ import com.lived.domain.routine.repository.RoutineRepository;
 import com.lived.global.apiPayload.code.GeneralErrorCode;
 import com.lived.global.apiPayload.exception.GeneralException;
 import com.lived.global.jwt.JwtTokenProvider;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseCookie;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -50,17 +52,19 @@ public class MemberService {
     }
 
     // JWT Acceess 토큰 갱신 로직
-    public String reissueAccessToken(Long memberId, String oldRefreshToken) {
+    public MemberResponseDTO.ReissueResultDTO reissueAccessToken(Long memberId, String refreshToken) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new GeneralException(GeneralErrorCode.MEMBER_NOT_FOUND));
 
         //DB에 저장된 리프레시 토큰과 클라이언트가 보낸 토큰이 일치하는지 검증
-        if (!oldRefreshToken.equals(member.getRefreshToken())) {
+        if (!refreshToken.equals(member.getRefreshToken())) {
             throw new GeneralException(GeneralErrorCode.REFRESH_TOKEN_NOT_MATCH);
         }
 
+        String newAccessToken = jwtTokenProvider.createAccessToken(memberId, member.getProvider().toString());
+
         //새로운 토큰 생성하여 반환
-        return jwtTokenProvider.createAccessToken(member.getId(), member.getProvider().name());
+        return MemberConverter.toReissueResultDTO(newAccessToken);
     }
 
     // 회원 가입 로직
@@ -139,13 +143,20 @@ public class MemberService {
 
     // 로그아웃 로직
     @Transactional
-    public void logout(Long memberId) {
+    public void logout(Long memberId, HttpServletResponse response) {
         // 사용자 존재 여부 확인
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new GeneralException(GeneralErrorCode.MEMBER_NOT_FOUND));
 
         // 리프레시 토큰 제거
         member.logout();
+
+        // 브라우저 쿠키 무효화
+        ResponseCookie cookie = ResponseCookie.from("refreshToken", "")
+                .path("/")
+                .maxAge(0)
+                .build();
+        response.addHeader("Set-Cookie", cookie.toString());
     }
 
     // 회원탈퇴 로직

@@ -1,8 +1,6 @@
 package com.lived.global.oauth2.handler;
 
-import com.lived.domain.member.entity.Member;
 import com.lived.domain.member.enums.Provider;
-import com.lived.domain.member.repository.MemberRepository;
 import com.lived.domain.member.service.MemberService;
 import com.lived.global.jwt.JwtTokenProvider;
 import jakarta.servlet.http.HttpServletRequest;
@@ -65,14 +63,6 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
             memberService.updateRefreshToken(socialId, providerEnum, refreshToken);
 
             // 쿠키 설정
-            ResponseCookie accessCookie = ResponseCookie.from("accessToken", accessToken)
-                    .path("/")
-                    .httpOnly(true)
-                    .secure(false)               // HTTPS 환경에서만 전송, 테스트 할 땐 false
-                    .sameSite("Lax")            // CSRF 방지를 위한 설정
-                    .maxAge(3600)  // 쿠키 유효 기간 (1시간)
-                    .build();
-
             ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", refreshToken)
                     .path("/")
                     .httpOnly(true)
@@ -81,11 +71,11 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
                     .maxAge(1209600) // 쿠키 유효 기간 (2주)
                     .build();
 
-            response.addHeader("Set-Cookie", accessCookie.toString());
             response.addHeader("Set-Cookie", refreshCookie.toString());
 
             // 로그인 성공시 리다이렉트
             targetUrl = UriComponentsBuilder.fromUriString(frontendUrl + "/login/callback")
+                    .queryParam("accessToken", accessToken)
                     .queryParam("isNewMember", false)
                     .build()
                     .encode(StandardCharsets.UTF_8)
