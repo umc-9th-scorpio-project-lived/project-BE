@@ -6,6 +6,7 @@ import com.lived.domain.member.dto.MemberBlockResponseDTO.BlockedMemberInfo;
 import com.lived.domain.member.service.MemberBlockService;
 import com.lived.global.apiPayload.ApiResponse;
 import com.lived.global.apiPayload.code.GeneralSuccessCode;
+import com.lived.global.auth.annotation.AuthMember;
 import com.lived.global.dto.CursorPageResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -35,8 +36,7 @@ public class MemberBlockController {
   })
   @PostMapping
   public ApiResponse<MemberBlockResponseDTO.BlockMemberResponse> blockMember(
-      @Parameter(description = "사용자 ID", required = true, example = "1")
-      @RequestHeader("Member-Id") Long memberId,
+      @Parameter(hidden = true) @AuthMember Long memberId,
 
       @Parameter(description = "차단 요청 데이터", required = true)
       @Valid @RequestBody MemberBlockRequestDTO.BlockMemberRequest request
@@ -57,8 +57,7 @@ public class MemberBlockController {
   })
   @GetMapping
   public ApiResponse<CursorPageResponse<MemberBlockResponseDTO.BlockedMemberInfo>> getBlockList(
-      @Parameter(description = "사용자 ID", required = true, example = "1")
-      @RequestHeader("Member-Id") Long memberId,
+      @Parameter(hidden = true) @AuthMember Long memberId,
 
       @Parameter(description = "커서 (다음 페이지 조회 시 이전 응답의 nextCursor 값)", example = "100")
       @RequestParam(required = false) Long cursor
@@ -80,8 +79,7 @@ public class MemberBlockController {
   })
   @DeleteMapping("/{blockedMemberId}")
   public ApiResponse<MemberBlockResponseDTO.UnblockMemberResponse> unblockMember(
-      @Parameter(description = "사용자 ID", required = true, example = "1")
-      @RequestHeader("Member-Id") Long memberId,
+      @Parameter(hidden = true) @AuthMember Long memberId,
 
       @Parameter(description = "차단 해제할 사용자 ID", required = true, example = "5")
       @PathVariable Long blockedMemberId
