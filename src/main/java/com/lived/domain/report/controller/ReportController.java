@@ -5,6 +5,7 @@ import com.lived.domain.report.dto.ReportResponseDTO;
 import com.lived.domain.report.service.ReportService;
 import com.lived.global.apiPayload.ApiResponse;
 import com.lived.global.apiPayload.code.GeneralSuccessCode;
+import com.lived.global.auth.annotation.AuthMember;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -33,8 +34,7 @@ public class ReportController {
   })
   @PostMapping
   public ApiResponse<ReportResponseDTO.CreateReportResponse> createReport(
-      @Parameter(description = "사용자 ID", required = true, example = "1")
-      @RequestHeader("Member-Id") Long memberId,
+      @Parameter(hidden = true) @AuthMember Long memberId,
 
       @Parameter(description = "신고 생성 요청 데이터", required = true)
       @Valid @RequestBody ReportRequestDTO.CreateReportRequest request

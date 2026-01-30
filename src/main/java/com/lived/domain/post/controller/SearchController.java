@@ -4,6 +4,7 @@ import com.lived.domain.post.dto.SearchResponseDTO;
 import com.lived.domain.post.service.SearchService;
 import com.lived.global.apiPayload.ApiResponse;
 import com.lived.global.apiPayload.code.GeneralSuccessCode;
+import com.lived.global.auth.annotation.AuthMember;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -31,8 +32,7 @@ public class SearchController {
   })
   @GetMapping("/history")
   public ApiResponse<SearchResponseDTO.SearchHistoryListResponse> getSearchHistory(
-      @Parameter(description = "사용자 ID", required = true, example = "1")
-      @RequestHeader("Member-Id") Long memberId
+      @Parameter(hidden = true) @AuthMember Long memberId
   ) {
     SearchResponseDTO.SearchHistoryListResponse response =
         searchService.getSearchHistory(memberId);
@@ -51,8 +51,7 @@ public class SearchController {
   })
   @DeleteMapping("/history/{historyId}")
   public ApiResponse<SearchResponseDTO.DeleteSearchHistoryResponse> deleteSearchHistory(
-      @Parameter(description = "사용자 ID", required = true, example = "1")
-      @RequestHeader("Member-Id") Long memberId,
+      @Parameter(hidden = true) @AuthMember Long memberId,
 
       @Parameter(description = "검색 기록 ID", required = true, example = "1")
       @PathVariable Long historyId
@@ -74,8 +73,7 @@ public class SearchController {
   })
   @DeleteMapping("/history")
   public ApiResponse<SearchResponseDTO.DeleteAllSearchHistoryResponse> deleteAllSearchHistory(
-      @Parameter(description = "사용자 ID", required = true, example = "1")
-      @RequestHeader("Member-Id") Long memberId
+      @Parameter(hidden = true) @AuthMember Long memberId
   ) {
     SearchResponseDTO.DeleteAllSearchHistoryResponse response =
         searchService.deleteAllSearchHistory(memberId);

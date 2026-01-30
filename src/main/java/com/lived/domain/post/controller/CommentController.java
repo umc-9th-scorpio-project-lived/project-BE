@@ -5,6 +5,7 @@ import com.lived.domain.post.dto.CommentResponseDTO;
 import com.lived.domain.post.service.CommentService;
 import com.lived.global.apiPayload.ApiResponse;
 import com.lived.global.apiPayload.code.GeneralSuccessCode;
+import com.lived.global.auth.annotation.AuthMember;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -33,8 +34,7 @@ public class CommentController {
   })
   @PostMapping
   public ApiResponse<CommentResponseDTO.CreateCommentResponse> createComment(
-      @Parameter(description = "사용자 ID", required = true, example = "1")
-      @RequestHeader("Member-Id") Long memberId,
+      @Parameter(hidden = true) @AuthMember Long memberId,
 
       @Parameter(description = "게시글 ID", required = true, example = "123")
       @PathVariable Long postId,
@@ -59,8 +59,7 @@ public class CommentController {
   })
   @PatchMapping("/{commentId}")
   public ApiResponse<CommentResponseDTO.UpdateCommentResponse> updateComment(
-      @Parameter(description = "사용자 ID", required = true, example = "1")
-      @RequestHeader("Member-Id") Long memberId,
+      @Parameter(hidden = true) @AuthMember Long memberId,
 
       @Parameter(description = "게시글 ID", required = true, example = "123")
       @PathVariable Long postId,
@@ -88,8 +87,7 @@ public class CommentController {
   })
   @DeleteMapping("/{commentId}")
   public ApiResponse<CommentResponseDTO.DeleteCommentResponse> deleteComment(
-      @Parameter(description = "사용자 ID", required = true, example = "1")
-      @RequestHeader("Member-Id") Long memberId,
+      @Parameter(hidden = true) @AuthMember Long memberId,
 
       @Parameter(description = "게시글 ID", required = true, example = "123")
       @PathVariable Long postId,
@@ -114,8 +112,7 @@ public class CommentController {
   })
   @PostMapping("/{commentId}/like")
   public ApiResponse<CommentResponseDTO.ToggleLikeResponse> toggleCommentLike(
-      @Parameter(description = "사용자 ID", required = true, example = "1")
-      @RequestHeader("Member-Id") Long memberId,
+      @Parameter(hidden = true) @AuthMember Long memberId,
 
       @Parameter(description = "게시글 ID", required = true, example = "123")
       @PathVariable Long postId,
@@ -140,8 +137,7 @@ public class CommentController {
   })
   @GetMapping
   public ApiResponse<CommentResponseDTO.CommentListResponse> getCommentList(
-      @Parameter(description = "사용자 ID", required = true, example = "1")
-      @RequestHeader("Member-Id") Long memberId,
+      @Parameter(hidden = true) @AuthMember Long memberId,
 
       @Parameter(description = "게시글 ID", required = true, example = "123")
       @PathVariable Long postId,

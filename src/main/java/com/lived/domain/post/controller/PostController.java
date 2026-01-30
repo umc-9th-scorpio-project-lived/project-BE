@@ -7,6 +7,7 @@ import com.lived.domain.post.entity.enums.PostCategory;
 import com.lived.domain.post.service.PostService;
 import com.lived.global.apiPayload.ApiResponse;
 import com.lived.global.apiPayload.code.GeneralSuccessCode;
+import com.lived.global.auth.annotation.AuthMember;
 import com.lived.global.dto.CursorPageResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -40,8 +41,7 @@ public class PostController {
   })
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ApiResponse<PostResponseDTO.CreatePostResponse> createPost(
-      @Parameter(description = "사용자 ID", required = true, example = "1")
-      @RequestHeader("Member-Id") Long memberId,
+      @Parameter(hidden = true) @AuthMember Long memberId,
 
       @Parameter(description = "게시글 작성 요청 데이터", required = true)
       @Valid @ModelAttribute PostRequestDTO.CreatePostRequest request,
@@ -65,8 +65,7 @@ public class PostController {
   })
   @PatchMapping(value = "/{postId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ApiResponse<PostResponseDTO.UpdatePostResponse> updatePost(
-      @Parameter(description = "사용자 ID", required = true, example = "1")
-      @RequestHeader("Member-Id") Long memberId,
+      @Parameter(hidden = true) @AuthMember Long memberId,
 
       @Parameter(description = "게시글 ID", required = true, example = "1")
       @PathVariable Long postId,
@@ -93,8 +92,7 @@ public class PostController {
   })
   @DeleteMapping("/{postId}")
   public ApiResponse<PostResponseDTO.DeletePostResponse> deletePost(
-      @Parameter(description = "사용자 ID", required = true, example = "1")
-      @RequestHeader("Member-Id") Long memberId,
+      @Parameter(hidden = true) @AuthMember Long memberId,
 
       @Parameter(description = "게시글 ID", required = true, example = "1")
       @PathVariable Long postId
@@ -115,8 +113,7 @@ public class PostController {
   })
   @PostMapping("/{postId}/like")
   public ApiResponse<PostResponseDTO.ToggleLikeResponse> toggleLike(
-      @Parameter(description = "사용자 ID", required = true, example = "1")
-      @RequestHeader("Member-Id") Long memberId,
+      @Parameter(hidden = true) @AuthMember Long memberId,
 
       @Parameter(description = "게시글 ID", required = true, example = "1")
       @PathVariable Long postId
@@ -137,8 +134,7 @@ public class PostController {
   })
   @PostMapping("/{postId}/scrap")
   public ApiResponse<PostResponseDTO.ToggleScrapResponse> toggleScrap(
-      @Parameter(description = "사용자 ID", required = true, example = "1")
-      @RequestHeader("Member-Id") Long memberId,
+      @Parameter(hidden = true) @AuthMember Long memberId,
 
       @Parameter(description = "게시글 ID", required = true, example = "1")
       @PathVariable Long postId
@@ -159,8 +155,7 @@ public class PostController {
   })
   @GetMapping
   public ApiResponse<CursorPageResponse<PostResponseDTO.PostListItem>> getPostList(
-      @Parameter(description = "사용자 ID", required = true, example = "1")
-      @RequestHeader("Member-Id") Long memberId,
+      @Parameter(hidden = true) @AuthMember Long memberId,
 
       @Parameter(description = "검색 키워드", required = false)
       @RequestParam(required = false) String keyword,
@@ -207,8 +202,7 @@ public class PostController {
   })
   @GetMapping("/{postId}")
   public ApiResponse<PostResponseDTO.PostDetailResponse> getPostDetail(
-      @Parameter(description = "사용자 ID", required = true, example = "1")
-      @RequestHeader("Member-Id") Long memberId,
+      @Parameter(hidden = true) @AuthMember Long memberId,
 
       @Parameter(description = "게시글 ID", required = true, example = "123")
       @PathVariable Long postId
@@ -229,8 +223,7 @@ public class PostController {
   })
   @GetMapping("/me")
   public ApiResponse<CursorPageResponse<PostResponseDTO.PostListItem>> getMyPosts(
-      @Parameter(description = "사용자 ID", required = true, example = "1")
-      @RequestHeader("Member-Id") Long memberId,
+      @Parameter(hidden = true) @AuthMember Long memberId,
 
       @Parameter(description = "커서", required = false)
       @RequestParam(required = false) Long cursor,
@@ -255,8 +248,7 @@ public class PostController {
   })
   @GetMapping("/me/comments")
   public ApiResponse<CursorPageResponse<PostResponseDTO.PostListItem>> getMyCommentedPosts(
-      @Parameter(description = "사용자 ID", required = true, example = "1")
-      @RequestHeader("Member-Id") Long memberId,
+      @Parameter(hidden = true) @AuthMember Long memberId,
 
       @Parameter(description = "커서", required = false)
       @RequestParam(required = false) Long cursor,
@@ -281,8 +273,7 @@ public class PostController {
   })
   @GetMapping("/me/scraps")
   public ApiResponse<CursorPageResponse<PostResponseDTO.PostListItem>> getMyScrappedPosts(
-      @Parameter(description = "사용자 ID", required = true, example = "1")
-      @RequestHeader("Member-Id") Long memberId,
+      @Parameter(hidden = true) @AuthMember Long memberId,
 
       @Parameter(description = "커서", required = false)
       @RequestParam(required = false) Long cursor,
