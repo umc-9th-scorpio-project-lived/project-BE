@@ -50,7 +50,7 @@ public class FriendshipService {
                 // 계정이 활성 상태인 친구만 보이게함
                 .filter(friend -> MemberStatus.ACTIVE.equals(friend.getStatus()))
                 .map(FriendshipConverter::toFriendInfoDTO)
-                .sorted(Comparator.comparing(FriendshipResponseDTO.FriendInfoDTO::getNickname))
+                .sorted(Comparator.comparing(FriendshipResponseDTO.FriendInfoDTO::getName))
                 .collect(Collectors.toList());
 
         // 최종 리스트 DTO 반환

@@ -11,7 +11,7 @@ public class FriendshipResponseDTO {
     @AllArgsConstructor
     public static class FriendInfoDTO {
         private Long memberId;      // 해당 친구의 ID
-        private String nickname;    // 리스트에 표시될 이름
+        private String name;    // 리스트에 표시될 이름
     }
 
     @Builder

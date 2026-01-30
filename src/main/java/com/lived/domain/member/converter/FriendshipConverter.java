@@ -10,7 +10,7 @@ public class FriendshipConverter {
     public static FriendshipResponseDTO.FriendInfoDTO toFriendInfoDTO(Member member) {
         return FriendshipResponseDTO.FriendInfoDTO.builder()
                 .memberId(member.getId()) // 친구의 ID
-                .nickname(member.getNickname()) // 리스트에 표시될 이름
+                .name(member.getName()) // 리스트에 표시될 이름
                 .build();
     }
 
