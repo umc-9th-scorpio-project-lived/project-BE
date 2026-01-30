@@ -7,6 +7,7 @@ import com.lived.domain.routine.dto.RoutineTreeResponseDTO;
 import com.lived.domain.routine.service.RoutineStatisticsService;
 import com.lived.global.apiPayload.ApiResponse;
 import com.lived.global.apiPayload.code.GeneralSuccessCode;
+import com.lived.global.auth.annotation.AuthMember;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -22,9 +23,9 @@ public class RoutineStatisticsController {
     private final RoutineStatisticsService routineStatisticsService;
 
     @Operation(summary = "루틴 나무 전체 데이터 조회", description = "월별 열매 통계 요약과 나무에 표시될 열매 리스트를 한번에 조회합니다.")
-    @GetMapping("/members/{memberId}/fruits")
+    @GetMapping("/tree")
     public ApiResponse<RoutineTreeResponseDTO> getRoutineTree(
-            @PathVariable Long memberId,
+            @AuthMember Long memberId,
             @RequestParam(name = "year") int year,
             @RequestParam(name = "month") int month
     ) {
@@ -35,9 +36,9 @@ public class RoutineStatisticsController {
     @Operation(
             summary = "월별 루틴 트래커 전체 데이터 조회",
             description = "특정 멤버의 해당 월 열매 요약과 모든 루틴별 달성 상태 리스트를 한 번에 조회합니다.")
-    @GetMapping("routines/{memberId}/calender")
+    @GetMapping("/calender")
     public ApiResponse<MonthlyTrackerViewResponseDTO> getMonthlyCalender(
-            @Parameter(description = "멤버 ID", example = "1") @PathVariable Long memberId,
+            @AuthMember Long memberId,
             @Parameter(description = "조회할 연도 (YYYY)", example = "2024") @RequestParam int year,
             @Parameter(description = "조회할 월 (1-12)", example = "12") @RequestParam int month) {
 
@@ -48,9 +49,9 @@ public class RoutineStatisticsController {
     @Operation(
             summary = "월별 전체 열매 개수 요약 조회",
             description = "특정 멤버의 월별 열매(골드, 일반, 성장 중) 통계를 집계하여 반환합니다.")
-    @GetMapping("/members/{memberId}/fruits/summary")
+    @GetMapping("/fruits/summary")
     public ApiResponse<MonthlyFruitSummaryDTO> getMonthlyFruitSummary(
-            @Parameter(description = "멤버 고유 ID", example = "1") @PathVariable Long memberId,
+            @AuthMember Long memberId,
             @Parameter(description = "조회할 연도 (YYYY)", example = "2024") @RequestParam int year,
             @Parameter(description = "조회할 월 (1-12)", example = "12") @RequestParam int month) {
 

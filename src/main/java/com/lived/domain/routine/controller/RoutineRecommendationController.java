@@ -7,6 +7,7 @@ import com.lived.domain.routine.service.RoutineRecommendationService;
 import com.lived.domain.routine.service.RoutineService;
 import com.lived.global.apiPayload.ApiResponse;
 import com.lived.global.apiPayload.code.GeneralSuccessCode;
+import com.lived.global.auth.annotation.AuthMember;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -55,7 +56,7 @@ public class RoutineRecommendationController {
     @PostMapping("/batch")
     public ApiResponse<String> addRoutinesBatch(
             @Parameter(description = "사용자 ID", required = true, example = "1")
-            @RequestHeader("memberId") Long memberid,
+            @AuthMember Long memberid,
             @RequestBody RoutineBatchAddRequestDTO request
     ) {
         int addedCount = routineService.registerRoutinesBatch(memberid, request);

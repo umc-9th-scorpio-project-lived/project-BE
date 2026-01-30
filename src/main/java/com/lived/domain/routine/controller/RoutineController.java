@@ -4,6 +4,7 @@ import com.lived.domain.routine.dto.*;
 import com.lived.domain.routine.service.RoutineService;
 import com.lived.global.apiPayload.ApiResponse;
 import com.lived.global.apiPayload.code.GeneralSuccessCode;
+import com.lived.global.auth.annotation.AuthMember;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -30,7 +31,7 @@ public class RoutineController {
     @PostMapping
     public ApiResponse<Long> addCustomRoutine(
             @Parameter(description = "사용자 ID", required = true, example = "1")
-            @RequestHeader("Member-Id") Long memberId,
+            @AuthMember Long memberId,
             @RequestBody RoutineRequestDTO requestDTO) {
 
         Long routineId = routineService.createCustomRoutine(memberId, requestDTO);
@@ -44,7 +45,7 @@ public class RoutineController {
     )
     @GetMapping("/home")
     public ApiResponse<HomeRoutineResponseDTO> getHomeRoutines(
-            @RequestParam(name = "memberId") Long memberId,
+            @AuthMember Long memberId,
             @Parameter(description = "조회할 날짜(YYYY-MM-DD)", example = "2026-01-19")
             @RequestParam(name = "date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)LocalDate date
             ) {
