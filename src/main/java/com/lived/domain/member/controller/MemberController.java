@@ -11,12 +11,14 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseCookie;
 
 @Tag(name = "Member", description = "회원 관련 API (가입 및 온보딩)")
 @RestController
@@ -44,10 +46,20 @@ public class MemberController {
                     content = @Content(schema = @Schema(implementation = ApiResponse.class)))
     })
     public ApiResponse<MemberResponseDTO.SignUpResultDTO> signup(
-            @RequestBody @Valid MemberRequestDTO.SignUpDTO request //
+            @RequestBody @Valid MemberRequestDTO.SignUpDTO request,
+            HttpServletResponse response
     ) {
         // 회원가입 로직 실행
         MemberResponseDTO.SignUpResultDTO result = memberService.signup(request);
+
+        // Refresh Token만 쿠키에 담기
+        ResponseCookie cookie = ResponseCookie.from("refreshToken", result.getRefreshToken())
+                .path("/")
+                .httpOnly(true)
+                .secure(false)
+                .maxAge(1209600)
+                .build();
+        response.addHeader("Set-Cookie", cookie.toString());
 
         // SuccessCode의 CREATED를 반환
         return ApiResponse.onSuccess(GeneralSuccessCode.CREATED, result);
@@ -69,9 +81,10 @@ public class MemberController {
                     content = @Content(schema = @Schema(implementation = ApiResponse.class)))
     })
     public ApiResponse<String> logout(
-            @AuthMember Long memberId // 시큐리티 컨텍스트에서 인증 객체를 바로 가져옴
+            @AuthMember Long memberId, // 시큐리티 컨텍스트에서 인증 객체를 바로 가져옴
+            HttpServletResponse response
     ) {
-        memberService.logout(memberId);
+        memberService.logout(memberId, response);
         return ApiResponse.onSuccess(GeneralSuccessCode.OK, "로그아웃 성공");
     }
 

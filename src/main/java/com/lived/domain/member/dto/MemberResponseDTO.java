@@ -79,4 +79,14 @@ public class MemberResponseDTO {
         private LocalDateTime createdAt;
     }
 
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Schema(description = "토큰 재발급 응답 DTO")
+    public static class ReissueResultDTO {
+        @Schema(description = "재발급한 Access Token", example = "eyJhbGciOiJIUzI1NiJ9...")
+        private String accessToken;
+    }
+
 }

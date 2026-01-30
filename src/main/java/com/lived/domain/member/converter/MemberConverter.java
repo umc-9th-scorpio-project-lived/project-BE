@@ -45,4 +45,11 @@ public class MemberConverter {
                 .createdAt(LocalDateTime.now())
                 .build();
     }
+
+    // AccessToken 재발급
+    public static MemberResponseDTO.ReissueResultDTO toReissueResultDTO(String accessToken) {
+        return MemberResponseDTO.ReissueResultDTO.builder()
+                .accessToken(accessToken)
+                .build();
+    }
 }

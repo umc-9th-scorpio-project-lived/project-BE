@@ -1,6 +1,11 @@
 package com.lived.global.auth;
 
+import com.lived.domain.member.dto.MemberResponseDTO;
 import com.lived.domain.member.service.MemberService;
+import com.lived.global.apiPayload.ApiResponse;
+import com.lived.global.apiPayload.code.GeneralErrorCode;
+import com.lived.global.apiPayload.code.GeneralSuccessCode;
+import com.lived.global.apiPayload.exception.GeneralException;
 import com.lived.global.jwt.JwtTokenProvider;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -28,7 +33,7 @@ public class AuthController {
 
     @PostMapping("/reissue")
     @Operation(summary = "액세스 토큰 재발급", description = "쿠키에 저장된 refreshToken을 검증하여, 만료된 액세스 토큰을 새로 발급하고 쿠키를 갱신합니다.")
-    public ResponseEntity<?> reissue(HttpServletRequest request, HttpServletResponse response) {
+    public ApiResponse<MemberResponseDTO.ReissueResultDTO> reissue(HttpServletRequest request) {
         // 쿠키에서 refreshToken 꺼내기
         String refreshToken = getCookieValue(request, "refreshToken");
 
@@ -36,22 +41,11 @@ public class AuthController {
         if (refreshToken != null && jwtTokenProvider.validateToken(refreshToken)) {
             Long memberId = Long.parseLong(jwtTokenProvider.getPayload(refreshToken));
 
-            try {
-                //새 액세스 토큰 받기
-                String newAccessToken = memberService.reissueAccessToken(memberId, refreshToken);
+            MemberResponseDTO.ReissueResultDTO result = memberService.reissueAccessToken(memberId, refreshToken);
 
-                //새 액세스 토큰을 쿠키에 갱신
-                ResponseCookie accessCookie = ResponseCookie.from("accessToken", newAccessToken)
-                        .path("/").httpOnly(true).secure(false).maxAge(3600).build();
-
-                response.addHeader("Set-Cookie", accessCookie.toString());
-                return ResponseEntity.ok("액세스 토큰 재발급 성공");
-
-            } catch (RuntimeException e) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
-            }
+            return ApiResponse.onSuccess(GeneralSuccessCode.OK, result);
         }
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("리프레시 토큰이 유효하지 않습니다.");
+        throw new GeneralException(GeneralErrorCode.INVALID_TOKEN);
     }
 
     private String getCookieValue(HttpServletRequest request, String name) {
