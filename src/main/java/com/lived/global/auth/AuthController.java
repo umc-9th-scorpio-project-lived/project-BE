@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Arrays;
 
-@Tag(name = "인증/로그인", description = "소셜 로그인 및 토큰 관리 API")
+@Tag(name = "Member")
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor

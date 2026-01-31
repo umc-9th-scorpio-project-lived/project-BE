@@ -1,5 +1,6 @@
 package com.lived.global.config;
 
+import com.lived.global.auth.annotation.AuthMember;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
@@ -13,6 +14,8 @@ import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
 import org.springdoc.core.customizers.OpenApiCustomizer;
+import org.springdoc.core.models.GroupedOpenApi;
+import org.springdoc.core.utils.SpringDocUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -50,7 +53,7 @@ public class SwaggerConfig {
         return openApi -> {
             openApi.getPaths().addPathItem("/api/auth/login/{provider}", new PathItem()
                     .get(new Operation()
-                            .tags(List.of("인증/로그인"))
+                            .tags(List.of("Member"))
                             .summary("소셜 로그인 및 가입 확인")
                             .description("사용자를 소셜 로그인 페이지로 리다이렉트합니다.")
                             .addParametersItem(new Parameter()
