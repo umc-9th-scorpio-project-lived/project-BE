@@ -8,6 +8,7 @@ import com.lived.domain.notification.service.NotificationService;
 import com.lived.domain.notification.service.NotificationSettingService;
 import com.lived.global.apiPayload.ApiResponse;
 import com.lived.global.apiPayload.code.GeneralSuccessCode;
+import com.lived.global.auth.annotation.AuthMember;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -26,9 +27,7 @@ public class NotificationController {
 
     @GetMapping("")
     @Operation(summary = "알림 목록 조회 API", description = "특정 카테고리(ROUTINE, COMMUNITY 등)의 알림 목록을 조회합니다.")
-    public ApiResponse<List<NotificationResponseDTO.NotificationDTO>> getNotifications(@RequestParam TargetType targetType) {
-        // 사용자 ID 가져오기 추후 구현
-        Long memberId = 1L;
+    public ApiResponse<List<NotificationResponseDTO.NotificationDTO>> getNotifications(@AuthMember Long memberId, @RequestParam TargetType targetType) {
 
         List<NotificationResponseDTO.NotificationDTO> result = notificationService.getNotificationByCategory(memberId, targetType);
 
@@ -37,9 +36,7 @@ public class NotificationController {
 
     @GetMapping("/settings")
     @Operation(summary = "알림 설정 조회 API", description = "사용자의 현재 알림 설정 ON/OFF 상태를 조회합니다.")
-    public ApiResponse<NotificationResponseDTO.NotificationSettingDTO> getNotificationSetting() {
-        // 사용자 ID 가져오기 추후 구현
-        Long memberId = 1L;
+    public ApiResponse<NotificationResponseDTO.NotificationSettingDTO> getNotificationSetting(@AuthMember Long memberId) {
 
         NotificationResponseDTO.NotificationSettingDTO result = notificationSettingService.getNotificationSetting(memberId);
 
@@ -48,18 +45,14 @@ public class NotificationController {
 
     @PatchMapping("/settings")
     @Operation(summary = "알림 설정 수정 API", description = "사용자의 알림 ON/OFF 상태를 변경합니다.")
-    public ApiResponse<NotificationResponseDTO.NotificationSettingDTO> updateNotificationSetting(@RequestBody NotificationRequestDTO.NotificationSettingDTO request) {
-        // 사용자 ID 가져오기 추후 구현
-        Long memberId = 1L;
+    public ApiResponse<NotificationResponseDTO.NotificationSettingDTO> updateNotificationSetting(@AuthMember Long memberId, @RequestBody NotificationRequestDTO.NotificationSettingDTO request) {
 
         return ApiResponse.onSuccess(GeneralSuccessCode.OK, notificationSettingService.updateNotificationSetting(memberId, request));
     }
 
     @PostMapping("/token")
     @Operation(summary = "FCM 토큰 등록 API", description = "사용자의 기기별 FCM 토큰을 등록하거나 최신화합니다.")
-    public ApiResponse<String> registerFcmToken(@RequestBody NotificationRequestDTO.FcmTokenDTO request) {
-        // 사용자 ID 가져오기 추후 구현
-        Long memberId = 1L;
+    public ApiResponse<String> registerFcmToken(@AuthMember Long memberId, @RequestBody NotificationRequestDTO.FcmTokenDTO request) {
 
         fcmTokenService.registerToken(memberId, request.getToken());
 
