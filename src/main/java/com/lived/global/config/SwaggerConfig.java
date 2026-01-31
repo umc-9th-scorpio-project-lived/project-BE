@@ -24,6 +24,10 @@ import java.util.List;
 @Configuration
 public class SwaggerConfig {
 
+    static {
+        SpringDocUtils.getConfig().addAnnotationsToIgnore(AuthMember.class);
+    }
+
     @Bean
     public OpenAPI swagger() {
         Info info = new Info()
