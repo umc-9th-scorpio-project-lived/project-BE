@@ -54,7 +54,7 @@ public class MemberRoutine extends BaseEntity {
     private LocalTime alarmTime;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "repeat_type", length = 20)
+    @Column(name = "repeat_type", nullable = false, length = 20)
     private RepeatType repeatType;
 
     @Column(name = "repeat_value", length = 100)
