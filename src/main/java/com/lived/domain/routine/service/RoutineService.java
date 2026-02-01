@@ -126,6 +126,24 @@ public class RoutineService {
         return String.format("오늘 루틴 %d/%d 진행 중!", completed, total);
     }
 
+    // 루틴 상세 정보 조회
+    @Transactional(readOnly = true)
+    public RoutineDetailResponseDTO getRoutineDetail(Long memberRoutineId) {
+        MemberRoutine memberRoutine = memberRoutineRepository.findById(memberRoutineId)
+                .orElseThrow(() -> new GeneralException(GeneralErrorCode.ROUTINE_NOT_FOUND));
+
+        return new RoutineDetailResponseDTO(
+                memberRoutine.getId(),
+                memberRoutine.getTitle(),
+                memberRoutine.getEmoji(),
+                memberRoutine.getRepeatType().toString(),
+                memberRoutine.getRepeatInterval(),
+                memberRoutine.getRepeatValue(),
+                memberRoutine.getAlarmTime(),
+                memberRoutine.getIsAlarmOn()
+        );
+    }
+
     // 루틴 수정
     @Transactional
     public void updateRoutine(Long memberRoutineId, RoutineUpdateRequestDTO request) {
