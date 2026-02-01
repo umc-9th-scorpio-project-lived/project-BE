@@ -16,6 +16,11 @@ jobs:
           java-version: '21'
           distribution: 'corretto'
 
+      - name: Create Firebase Key
+        run: |
+            mkdir -p ./src/main/resources
+            echo '${{ secrets.FIREBASE_JSON }}' > ./src/main/resources/serviceAccountKey.json
+
       - name: Build with Gradle
         run: ./gradlew clean build -x test
 
