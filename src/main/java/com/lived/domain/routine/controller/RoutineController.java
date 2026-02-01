@@ -53,6 +53,16 @@ public class RoutineController {
         return ApiResponse.onSuccess(GeneralSuccessCode.ROUTINE_OK, response);
     }
 
+    @Operation(summary = "루틴 상세 정보 조회 API", description = "루틴 수정을 위해 기존 설정된 모든 정보를 조회합니다.")
+    @GetMapping("/{memberRoutineId}")
+    public ApiResponse<RoutineDetailResponseDTO> getRoutineDetail(
+            @PathVariable(name = "memberRoutineId") Long memberRoutineId) {
+
+        RoutineDetailResponseDTO response = routineService.getRoutineDetail(memberRoutineId);
+        return ApiResponse.onSuccess(GeneralSuccessCode.OK, response);
+    }
+
+
     @Operation(
             summary = "루틴 수정 API",
             description = "기존 루틴의 정보를 수정합니다. 수정은 과거와 미래의 모든 일정에 반영됩니다."
