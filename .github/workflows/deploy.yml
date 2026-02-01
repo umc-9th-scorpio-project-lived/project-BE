@@ -41,6 +41,7 @@ jobs:
             sudo docker stop lived-app || true
             sudo docker rm lived-app || true
             sudo docker run -d --name lived-app -p 8080:8080 \
+              -v /home/ubuntu/serviceAccountKey.json:/app/resources/serviceAccountKey.json \
               -e SPRING_PROFILES_ACTIVE=prod \
               -e RDS_URL='${{ secrets.RDS_URL }}' \
               -e RDS_USERNAME='${{ secrets.RDS_USERNAME }}' \
