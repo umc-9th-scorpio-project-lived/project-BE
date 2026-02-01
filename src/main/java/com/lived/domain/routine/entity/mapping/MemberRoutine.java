@@ -57,7 +57,7 @@ public class MemberRoutine extends BaseEntity {
     @Column(name = "repeat_type", nullable = false, length = 20)
     private RepeatType repeatType;
 
-    @Column(name = "repeat_value", length = 100)
+    @Column(name = "repeat_value", nullable = false, length = 100)
     private String repeatValue;
 
     @Builder.Default
