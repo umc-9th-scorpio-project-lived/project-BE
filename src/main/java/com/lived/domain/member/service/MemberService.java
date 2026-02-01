@@ -13,6 +13,7 @@ import com.lived.domain.member.enums.MemberStatus;
 import com.lived.domain.member.enums.Provider;
 import com.lived.domain.member.repository.MemberRepository;
 import com.lived.domain.member.repository.NicknameWordRepository;
+import com.lived.domain.routine.entity.enums.RepeatType;
 import com.lived.domain.routine.entity.mapping.MemberRoutine;
 import com.lived.domain.routine.repository.MemberRoutineRepository;
 import com.lived.domain.routine.repository.RoutineRepository;
@@ -99,6 +100,8 @@ public class MemberService {
                             .routine(r) // routineId
                             .title(r.getTitle())    // 루틴 이름
                             .emoji(r.getCategory().getEmoji())  // 이모지 복사 저장
+                            .repeatType(RepeatType.WEEKLY)
+                            .repeatValue("0,1,2,3,4,5,6")
                             .isActive(true) // 기본값 true
                             .isAlarmOn(false)   // 기본값 false
                             .startDate(LocalDate.now()) // 시작일은 당일로 설정
