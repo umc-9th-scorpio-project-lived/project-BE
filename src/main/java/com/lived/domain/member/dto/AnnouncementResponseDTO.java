@@ -16,7 +16,7 @@ public class AnnouncementResponseDTO {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class AnnouncementListDTO {
-        private List<Announcement> announcementList;
+        private List<AnnouncementInfoDTO> announcementList;
     }
 
     @Builder
