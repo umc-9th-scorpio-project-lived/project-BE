@@ -33,7 +33,7 @@ public class PostImage extends BaseEntity {
   @JoinColumn(name = "post_id", nullable = false)
   private Post post;
 
-  @Column(name = "image_url", nullable = false)
+  @Column(name = "image_url", nullable = false, columnDefinition = "TEXT")
   private String imageUrl;
 
   @Column(name = "order_index", nullable = false)
