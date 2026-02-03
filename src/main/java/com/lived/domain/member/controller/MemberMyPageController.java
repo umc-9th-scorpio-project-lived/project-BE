@@ -1,7 +1,9 @@
 package com.lived.domain.member.controller;
 
+import com.lived.domain.member.dto.AnnouncementResponseDTO;
 import com.lived.domain.member.dto.MemberMyPageRequestDTO;
 import com.lived.domain.member.dto.MemberMyPageResponseDTO;
+import com.lived.domain.member.service.AnnouncementService;
 import com.lived.domain.member.service.MemberMyPageService;
 import com.lived.global.apiPayload.ApiResponse;
 import com.lived.global.apiPayload.code.GeneralSuccessCode;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 public class MemberMyPageController {
 
     private final MemberMyPageService memberMyPageService;
+    private final AnnouncementService announcementService;
 
     @GetMapping("")
     @Operation(summary = "기본 프로필 정보 조회", description = "사용자 이름을 조회합니다.")
@@ -52,5 +55,11 @@ public class MemberMyPageController {
             @AuthMember Long memberId,
             @RequestBody MemberMyPageRequestDTO.UpdateTreeVisibilityDTO request) {
         return ApiResponse.onSuccess(GeneralSuccessCode.OK, memberMyPageService.updateTreeVisibility(memberId, request));
+    }
+
+    @GetMapping("/announcements")
+    @Operation(summary = "공지사항 목록 조회", description = "전체 공지사항 목록을 최신순으로 조회합니다.")
+    public ApiResponse<AnnouncementResponseDTO.AnnouncementListDTO> getAnnouncementList() {
+        return ApiResponse.onSuccess(GeneralSuccessCode.OK, announcementService.getAnnouncementList());
     }
 }
