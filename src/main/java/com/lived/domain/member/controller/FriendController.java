@@ -9,9 +9,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "Friendship", description = "친구 관련 API")
 @RestController
@@ -30,6 +28,26 @@ public class FriendController {
             @Parameter(hidden = true) @AuthMember Long memberId
     ) {
         FriendshipResponseDTO.FriendListDTO result = friendshipService.getFriendList(memberId);
+        return ApiResponse.onSuccess(GeneralSuccessCode.OK, result);
+    }
+
+    @GetMapping("/invite")
+    @Operation(summary = "내 초대 정보 조회 API", description = "카톡 공유 시 필요한 내 ID와 라우팅 URL을 가져옵니다.")
+    public ApiResponse<FriendshipResponseDTO.InviteInfoDTO> getInviteInfo(
+            @Parameter(hidden = true) @AuthMember Long memberId
+    ) {
+        return ApiResponse.onSuccess(GeneralSuccessCode.OK, friendshipService.getMyInviteInfo(memberId));
+    }
+
+    @PostMapping("/accept/{inviterId}")
+    @Operation(
+            summary = "친구 초대 수락 실행 API",
+            description = "초대 링크를 통해 들어온 유저가 로그인을 마치면 호출합니다.")
+    public ApiResponse<FriendshipResponseDTO.AcceptInviteResultDTO> acceptInvitation(
+            @Parameter(hidden = true) @AuthMember Long memberId, // 로그인한 나
+            @PathVariable Long inviterId // 링크에 담겨있던 상대방 ID
+    ) {
+        FriendshipResponseDTO.AcceptInviteResultDTO result = friendshipService.acceptInvitation(memberId, inviterId);
         return ApiResponse.onSuccess(GeneralSuccessCode.OK, result);
     }
 }
