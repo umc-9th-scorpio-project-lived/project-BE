@@ -3,6 +3,8 @@ package com.lived.domain.member.controller;
 import com.lived.domain.member.dto.FriendTreeResponseDTO;
 import com.lived.domain.member.dto.FriendshipResponseDTO;
 import com.lived.domain.member.service.FriendshipService;
+import com.lived.domain.routine.dto.RoutineTreeListResponseDTO;
+import com.lived.domain.routine.service.RoutineStatisticsService;
 import com.lived.global.apiPayload.ApiResponse;
 import com.lived.global.apiPayload.code.GeneralSuccessCode;
 import com.lived.global.auth.annotation.AuthMember;
@@ -19,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 public class FriendController {
 
     private final FriendshipService friendshipService;
+    private final RoutineStatisticsService routineStatisticsService;
 
     @GetMapping("")
     @Operation(
@@ -68,5 +71,20 @@ public class FriendController {
 
         FriendTreeResponseDTO response = friendshipService.getFriendTree(myId, friendId, year, month);
         return ApiResponse.onSuccess(GeneralSuccessCode.OK, response);
+    }
+
+    @Operation(
+            summary = "친구 루틴 나무 모아보기",
+            description = "친구의 루틴 나무들을 조회합니다."
+    )
+    @GetMapping("/{friendId}/trees")
+    public ApiResponse<RoutineTreeListResponseDTO> getFriendRoutineTreeList(
+            @PathVariable Long friendId, // 친구 ID 수신
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "5") int size
+    ) {
+        RoutineTreeListResponseDTO result = routineStatisticsService.getRoutineTreeListPaging(friendId, page, size);
+
+        return ApiResponse.onSuccess(GeneralSuccessCode.OK, result);
     }
 }
