@@ -6,6 +6,7 @@ import com.lived.domain.member.converter.FriendshipConverter;
 import com.lived.domain.member.dto.FriendshipResponseDTO;
 import com.lived.domain.member.entity.Friendship;
 import com.lived.domain.member.entity.Member;
+import com.lived.domain.member.enums.FriendshipStatus;
 import com.lived.domain.member.enums.MemberStatus;
 import com.lived.domain.member.dto.FriendTreeResponseDTO;
 import com.lived.domain.member.repository.FriendshipRepository;
@@ -20,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -72,22 +74,33 @@ public class FriendshipService {
     // 초대 수락 로직
     @Transactional
     public FriendshipResponseDTO.AcceptInviteResultDTO acceptInvitation(Long receiverId, Long inviterId) {
+
         // 자기 자신 초대 방지
         if (receiverId.equals(inviterId)) {
             throw new GeneralException(GeneralErrorCode.INVALID_INVITATION);
         }
 
-        // 사용자 존재 여부 확인
+        Optional<Friendship> existingFriendship = friendshipRepository.findAnyFriendship(receiverId, inviterId);
+
+        if (existingFriendship.isPresent()) {
+            Friendship friendship = existingFriendship.get();
+
+            // 이미 친구인 경우 에러 발생
+            if (!friendship.getIsDeleted()) {
+                throw new GeneralException(GeneralErrorCode.ALREADY_FRIENDS);
+            }
+
+            // 삭제되었던 경우라면 다시 활성화
+            friendship.updateIsDeleted(false);
+
+            return FriendshipConverter.toAcceptInviteResultDTO(friendship);
+        }
+
+        // 아예 처음 맺는 관계인 경우
         Member receiver = memberRepository.findById(receiverId)
                 .orElseThrow(() -> new GeneralException(GeneralErrorCode.MEMBER_NOT_FOUND));
         Member inviter = memberRepository.findById(inviterId)
                 .orElseThrow(() -> new GeneralException(GeneralErrorCode.MEMBER_NOT_FOUND));
-
-        // 이미 친구인지 확인
-        if (friendshipRepository.existsFriendship(receiverId, inviterId)) {
-            // 이미 친구라면 새로 저장하지 않고 기존 정보를 조회해 반환
-            throw new GeneralException(GeneralErrorCode.ALREADY_FRIENDS);
-        }
 
         // 친구 관계 저장
         Friendship friendship = friendshipRepository.save(FriendshipConverter.toFriendship(inviter, receiver));
@@ -95,6 +108,7 @@ public class FriendshipService {
         return FriendshipConverter.toAcceptInviteResultDTO(friendship);
     }
 
+    // 친구 나무 조회 로직
     @Transactional(readOnly = true)
     public FriendTreeResponseDTO getFriendTree(Long myId, Long friendId, int year, int month) {
 
@@ -111,5 +125,16 @@ public class FriendshipService {
         RoutineTreeResponseDTO treeData = routineStatisticsService.getRoutineTree(friendId, year, month);
 
         return new FriendTreeResponseDTO(friend.getName(), treeData);
+    }
+
+    // 친구 삭제 로직
+    @Transactional
+    public void deleteFriend(Long myId, Long friendId) {
+        // 나와 친구 사이의 활성화된 친구 관계 조회
+        Friendship friendship = friendshipRepository.findActiveFriendship(myId, friendId)
+                .orElseThrow(() -> new GeneralException(GeneralErrorCode.FRIENDSHIP_NOT_FOUND));
+
+        // Soft Delete 수행
+        friendship.updateIsDeleted(true);
     }
 }
