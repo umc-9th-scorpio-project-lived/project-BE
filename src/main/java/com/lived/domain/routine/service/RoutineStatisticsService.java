@@ -2,12 +2,16 @@ package com.lived.domain.routine.service;
 
 import com.lived.domain.routine.converter.RoutineStatisticsConverter;
 import com.lived.domain.routine.dto.*;
+import com.lived.domain.routine.entity.RoutineBigFruit;
 import com.lived.domain.routine.entity.RoutineFruit;
 import com.lived.domain.routine.entity.RoutineHistory;
+import com.lived.domain.routine.entity.enums.BigFruitType;
 import com.lived.domain.routine.entity.enums.DayStatus;
 import com.lived.domain.routine.entity.enums.FruitType;
 import com.lived.domain.routine.entity.mapping.MemberRoutine;
+import com.lived.domain.routine.enums.StatisticsType;
 import com.lived.domain.routine.repository.MemberRoutineRepository;
+import com.lived.domain.routine.repository.RoutineBigFruitRepository;
 import com.lived.domain.routine.repository.RoutineFruitRepository;
 import com.lived.domain.routine.repository.RoutineHistoryRepository;
 import com.lived.global.apiPayload.code.GeneralErrorCode;
@@ -18,10 +22,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
+import java.time.format.TextStyle;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -34,6 +37,7 @@ public class RoutineStatisticsService {
     private final RoutineHistoryRepository routineHistoryRepository;
     private final RoutineFruitRepository routineFruitRepository;
     private final RoutineStatisticsConverter routineStatisticsConverter;
+    private final RoutineBigFruitRepository routineBigFruitRepository;
 
     // 루틴 나무 전체 데이터 화면 반환
     public RoutineTreeResponseDTO getRoutineTree(Long memberId, int year, int month) {
@@ -207,5 +211,112 @@ public class RoutineStatisticsService {
         boolean hasNext = oldestYm.getYear() >= 2025;
 
         return routineStatisticsConverter.toRoutineTreePagingResponseDTO(fetchedFruits, size, page, hasNext);
+    }
+
+    public RoutineStatisticsResponseDTO getMyStatistics(Long memberId, int year, int month, Integer week, StatisticsType type) {
+
+        LocalDate startDate;
+        LocalDate endDate;
+        String periodTitle;
+
+        if (type == StatisticsType.WEEKLY) {
+            if(week == null) {
+                week = 1;
+            }
+            LocalDate firstDayOfMonth = LocalDate.of(year, month, 1);
+            LocalDate weekStart = firstDayOfMonth.plusDays((long) (week - 1) * 7);
+            startDate = weekStart;
+            endDate = weekStart.plusDays(6);
+            periodTitle = month + "월 " + week + "주차";
+        } else {
+            YearMonth yearMonth = YearMonth.of(year, month);
+            startDate = yearMonth.atDay(1);
+            endDate = yearMonth.atEndOfMonth();
+            periodTitle = year + "년 " + month + "월";
+        }
+
+        List<RoutineHistory> histories = routineHistoryRepository.findAllByMemberIdAndDateBetween(memberId, startDate, endDate);
+        List<MemberRoutine> myRoutines = memberRoutineRepository.findAllByMemberId(memberId);
+
+        int periodTotalScheduled = 0;
+        int periodTotalDone = 0;
+        List<RoutineStatisticsResponseDTO.DailyStatisticsDTO> dailyStats = new ArrayList<>();
+
+        Map<LocalDate, List<RoutineHistory>> historyMap = histories.stream()
+                .collect(Collectors.groupingBy(RoutineHistory::getCheckDate));
+
+        for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
+            final LocalDate currentDate = date;
+
+            long scheduledCount = myRoutines.stream().filter(r -> r.isScheduledFor(currentDate)).count();
+
+            List<RoutineHistory> dayHistories = historyMap.getOrDefault(currentDate, Collections.emptyList());
+            long doneCount = dayHistories.stream().filter(RoutineHistory::getIsDone).count();
+
+            periodTotalScheduled += scheduledCount;
+            periodTotalDone += doneCount;
+
+            int dailyRate = (scheduledCount == 0) ? 0 : (int) ((double) doneCount / scheduledCount * 100);
+
+            dailyStats.add(RoutineStatisticsResponseDTO.DailyStatisticsDTO.builder()
+                    .date(currentDate)
+                    .dayOfWeek(currentDate.getDayOfWeek().getDisplayName(TextStyle.SHORT, Locale.KOREA))
+                    .percentage(dailyRate)
+                    .isDone(dailyRate == 100 && scheduledCount > 0)
+                    .build());
+        }
+
+        int totalRate = (periodTotalScheduled == 0) ? 0 : (int) ((double) periodTotalDone / periodTotalScheduled * 100);
+
+
+        List<RoutineBigFruit> allFruits = routineBigFruitRepository.findAllByMemberIdOrderByCreatedAtDesc(memberId);
+
+        List<RoutineStatisticsResponseDTO.BigFruitDTO> bigFruitPreviewList = allFruits.stream()
+                .limit(2)
+                .map(this::toBigFruitDTO)
+                .toList();
+
+        return RoutineStatisticsResponseDTO.builder()
+                .type(type)
+                .periodTitle(periodTitle)
+                .aiAdvice("꾸준함이 재능이에요! 조금만 더 힘내면 목표를 달성할 수 있어요.") // Mock
+                .completionRate(RoutineStatisticsResponseDTO.CompleteRateDTO.builder()
+                        .percentage(totalRate)
+                        .doneCount(periodTotalDone)
+                        .totalCount(periodTotalScheduled)
+                        .build())
+                .dailyGraph(dailyStats)
+                .bigFruits(bigFruitPreviewList)
+                .build();
+    }
+
+    public BigFruitListResponseDTO getAllBigFruits(Long memberId) {
+        List<RoutineBigFruit> allFruits = routineBigFruitRepository.findAllByMemberIdOrderByCreatedAtDesc(memberId);
+
+        List<RoutineStatisticsResponseDTO.BigFruitDTO> bigFruitList = allFruits.stream()
+                .map(this::toBigFruitDTO)
+                .toList();
+
+        return BigFruitListResponseDTO.builder()
+                .fruits(bigFruitList)
+                .build();
+    }
+
+    private RoutineStatisticsResponseDTO.BigFruitDTO toBigFruitDTO(RoutineBigFruit fruit) {
+        int percent = (fruit.getGoalValue() == 0) ? 0 :
+                (int) ((double) fruit.getCurrentValue() / fruit.getGoalValue() * 100);
+
+        String desc = (fruit.getType() == BigFruitType.STREAK)
+                ? "최대 연속일 " + fruit.getGoalValue() + "일 달성"
+                : fruit.getGoalValue() + "개 완료";
+
+        return RoutineStatisticsResponseDTO.BigFruitDTO.builder()
+                .id(fruit.getId())
+                .fruitType(fruit.getType())
+                .currentValue(fruit.getCurrentValue())
+                .goalValue(fruit.getGoalValue())
+                .percentage(percent)
+                .description(desc)
+                .build();
     }
 }

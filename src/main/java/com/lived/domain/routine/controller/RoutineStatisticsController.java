@@ -1,6 +1,7 @@
 package com.lived.domain.routine.controller;
 
 import com.lived.domain.routine.dto.*;
+import com.lived.domain.routine.enums.StatisticsType;
 import com.lived.domain.routine.service.RoutineStatisticsService;
 import com.lived.global.apiPayload.ApiResponse;
 import com.lived.global.apiPayload.code.GeneralSuccessCode;
@@ -80,9 +81,23 @@ public class RoutineStatisticsController {
             @Parameter(description = "페이지 번호 (0부터 시작)", example = "0")
             @RequestParam(name = "page", defaultValue = "0") int page,
             @Parameter(description = "한 번에 불러올 개수", example = "5")
-            @RequestParam(name = "size", defaultValue = "5") int size
-    ) {
+            @RequestParam(name = "size", defaultValue = "5") int size) {
         RoutineTreeListResponseDTO result = routineStatisticsService.getRoutineTreeListPaging(memberId, page, size);
+        return ApiResponse.onSuccess(GeneralSuccessCode.OK, result);
+    }
+
+    @Operation(
+            summary = "나의 주간/월간 통계 조회",
+            description = "주간 또는 월간 루틴 달성률, AI 조언, 그래프 데이터를 조회합니다."
+    )
+    @GetMapping("/me")
+    public ApiResponse<RoutineStatisticsResponseDTO> getMyStatistics(
+            @AuthMember Long memberId,
+            @Parameter(description = "조회할 연도", example = "2025") @RequestParam int year,
+            @Parameter(description = "조회할 월", example = "10") @RequestParam int month,
+            @Parameter(description = "주차 (주간 통계일 경우 필수)", example = "2") @RequestParam(required = false) Integer week,
+            @Parameter(description = "통계 타입 (WEEKLY, MONTHLY)", example = "WEEKLY") @RequestParam StatisticsType type) {
+        RoutineStatisticsResponseDTO result = routineStatisticsService.getMyStatistics(memberId, year, month, week, type);
         return ApiResponse.onSuccess(GeneralSuccessCode.OK, result);
     }
 }
