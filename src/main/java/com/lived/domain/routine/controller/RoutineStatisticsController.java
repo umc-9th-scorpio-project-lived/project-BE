@@ -1,9 +1,6 @@
 package com.lived.domain.routine.controller;
 
-import com.lived.domain.routine.dto.FruitPopupResponseDTO;
-import com.lived.domain.routine.dto.MonthlyFruitSummaryDTO;
-import com.lived.domain.routine.dto.MonthlyTrackerViewResponseDTO;
-import com.lived.domain.routine.dto.RoutineTreeResponseDTO;
+import com.lived.domain.routine.dto.*;
 import com.lived.domain.routine.service.RoutineStatisticsService;
 import com.lived.global.apiPayload.ApiResponse;
 import com.lived.global.apiPayload.code.GeneralSuccessCode;
@@ -73,5 +70,19 @@ public class RoutineStatisticsController {
         return ApiResponse.onSuccess(GeneralSuccessCode.OK, result);
     }
 
-
+    @Operation(
+            summary = "루틴 나무 모아보기",
+            description = "월별 나무 현황을 최신순으로 페이징하여 조회합니다. (page는 0부터 시작, size는 한 번에 불러올 월의 개수)"
+    )
+    @GetMapping("/trees")
+    public ApiResponse<RoutineTreeListResponseDTO> getRoutineTreeList(
+            @AuthMember Long memberId,
+            @Parameter(description = "페이지 번호 (0부터 시작)", example = "0")
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @Parameter(description = "한 번에 불러올 개수", example = "5")
+            @RequestParam(name = "size", defaultValue = "5") int size
+    ) {
+        RoutineTreeListResponseDTO result = routineStatisticsService.getRoutineTreeListPaging(memberId, page, size);
+        return ApiResponse.onSuccess(GeneralSuccessCode.OK, result);
+    }
 }

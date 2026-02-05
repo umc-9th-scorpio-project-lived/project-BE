@@ -1,5 +1,6 @@
 package com.lived.domain.routine.service;
 
+import com.lived.domain.routine.converter.RoutineStatisticsConverter;
 import com.lived.domain.routine.dto.*;
 import com.lived.domain.routine.entity.RoutineFruit;
 import com.lived.domain.routine.entity.RoutineHistory;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +33,7 @@ public class RoutineStatisticsService {
     private final MemberRoutineRepository memberRoutineRepository;
     private final RoutineHistoryRepository routineHistoryRepository;
     private final RoutineFruitRepository routineFruitRepository;
+    private final RoutineStatisticsConverter routineStatisticsConverter;
 
     // 루틴 나무 전체 데이터 화면 반환
     public RoutineTreeResponseDTO getRoutineTree(Long memberId, int year, int month) {
@@ -187,6 +190,22 @@ public class RoutineStatisticsService {
         );
     }
 
+    // 루틴 나무 모아보기
+    public RoutineTreeListResponseDTO getRoutineTreeListPaging(Long memberId, int page, int size) {
 
+        YearMonth currentBase = YearMonth.now();
 
+        YearMonth latestYm = currentBase.minusMonths((long) page * size);
+
+        YearMonth oldestYm = latestYm.minusMonths(size - 1);
+
+        LocalDate startDate = oldestYm.atDay(1);
+        LocalDate endDate = latestYm.atEndOfMonth();
+
+        List<RoutineFruit> fetchedFruits = routineFruitRepository.findAllByMemberRoutineMemberIdAndMonthBetween(memberId, startDate, endDate);
+
+        boolean hasNext = oldestYm.getYear() >= 2025;
+
+        return routineStatisticsConverter.toRoutineTreePagingResponseDTO(fetchedFruits, size, page, hasNext);
+    }
 }
