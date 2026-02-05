@@ -33,4 +33,8 @@ public class Friendship extends BaseEntity {
     @Builder.Default
     @Column(name = "is_deleted", nullable = false)
     private Boolean isDeleted = false; // 삭제 여부
+
+    public void updateIsDeleted(boolean status) {
+        this.isDeleted = status;
+    }
 }

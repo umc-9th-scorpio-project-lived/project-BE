@@ -87,4 +87,17 @@ public class FriendController {
 
         return ApiResponse.onSuccess(GeneralSuccessCode.OK, result);
     }
+
+    @Operation(
+            summary = "친구 삭제 API",
+            description = "현재 친구 관계인 사용자를 삭제합니다."
+    )
+    @DeleteMapping("/{friendId}")
+    public ApiResponse<String> deleteFriend(
+            @AuthMember Long myId,
+            @PathVariable Long friendId
+    ) {
+        friendshipService.deleteFriend(myId, friendId);
+        return ApiResponse.onSuccess(GeneralSuccessCode.OK, "친구 삭제가 완료되었습니다.");
+    }
 }
