@@ -4,6 +4,7 @@ import com.lived.domain.routine.entity.RoutineHistory;
 import com.lived.domain.routine.entity.mapping.MemberRoutine;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -34,4 +35,11 @@ public interface RoutineHistoryRepository extends JpaRepository<RoutineHistory, 
     long countCompletedDays(MemberRoutine routine, LocalDate startDate, LocalDate endDate);
 
 
+    @Query("SELECT rh FROM RoutineHistory rh " +
+            "JOIN rh.memberRoutine mr " +
+            "WHERE mr.member.id = :memberId " +
+            "AND rh.checkDate BETWEEN :startDate AND :endDate")
+    List<RoutineHistory> findAllByMemberIdAndDateBetween(@Param("memberId") Long memberId,
+                                                         @Param("startDate") LocalDate startDate,
+                                                         @Param("endDate") LocalDate endDate);
 }
