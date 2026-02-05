@@ -80,4 +80,4 @@ server:
 
 gemini:
   api-url: https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent
-  api-key: "AIzaSyBG0FYzAp1t9_Yf3lkuygqHt_xxLMi_-yU"
+  api-key: "{GEMINI_API_KEY}"
