@@ -77,3 +77,7 @@ logging:
 
 server:
   forward-headers-strategy: native
+
+gemini:
+  api-url: https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent
+  api-key: "AIzaSyBG0FYzAp1t9_Yf3lkuygqHt_xxLMi_-yU"
