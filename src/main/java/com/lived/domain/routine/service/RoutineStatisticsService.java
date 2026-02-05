@@ -1,5 +1,6 @@
 package com.lived.domain.routine.service;
 
+import com.lived.domain.ai.service.GeminiService;
 import com.lived.domain.routine.converter.RoutineStatisticsConverter;
 import com.lived.domain.routine.dto.*;
 import com.lived.domain.routine.entity.RoutineBigFruit;
@@ -38,6 +39,7 @@ public class RoutineStatisticsService {
     private final RoutineFruitRepository routineFruitRepository;
     private final RoutineStatisticsConverter routineStatisticsConverter;
     private final RoutineBigFruitRepository routineBigFruitRepository;
+    private final GeminiService geminiService;
 
     // 루틴 나무 전체 데이터 화면 반환
     public RoutineTreeResponseDTO getRoutineTree(Long memberId, int year, int month) {
@@ -276,10 +278,14 @@ public class RoutineStatisticsService {
                 .map(this::toBigFruitDTO)
                 .toList();
 
+        // gemini
+        String prompt = createPrompt(type, periodTitle, totalRate, dailyStats);
+        String aiAdvice = geminiService.getAiAdvice(prompt);
+
         return RoutineStatisticsResponseDTO.builder()
                 .type(type)
                 .periodTitle(periodTitle)
-                .aiAdvice("꾸준함이 재능이에요! 조금만 더 힘내면 목표를 달성할 수 있어요.") // Mock
+                .aiAdvice(aiAdvice) // Mock
                 .completionRate(RoutineStatisticsResponseDTO.CompleteRateDTO.builder()
                         .percentage(totalRate)
                         .doneCount(periodTotalDone)
@@ -318,5 +324,29 @@ public class RoutineStatisticsService {
                 .percentage(percent)
                 .description(desc)
                 .build();
+    }
+
+    private String createPrompt(StatisticsType type, String periodTitle, int totalRate, List<RoutineStatisticsResponseDTO.DailyStatisticsDTO> dailyStats) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("너는 사용자의 루틴 관리를 도와주는 AI 코치야.\n");
+        sb.append("아래 데이터를 보고 사용자에게 조언을 해줘.\n\n");
+
+        sb.append("[분석 기간]: ").append(periodTitle).append("\n");
+        sb.append("[전체 달성률]: ").append(totalRate).append("%\n");
+
+        if (type == StatisticsType.WEEKLY) {
+            sb.append("[요일별 달성률]:\n");
+            for (RoutineStatisticsResponseDTO.DailyStatisticsDTO day : dailyStats) {
+                sb.append("- ").append(day.getDayOfWeek()).append(": ").append(day.getPercentage()).append("%\n");
+            }
+        }
+
+        sb.append("\n[제약 조건]:\n");
+        sb.append("1. 이모지나 인사말을 빼고, 핵심만 말해줘.\n");
+        sb.append("2. 정확히 '두 문장'으로만 답변해줘.\n");
+        sb.append("3. 첫 번째 문장은 데이터에 대한 팩트(감소/증가 등)를, 두 번째 문장은 제안이나 격려를 해줘.\n");
+        sb.append("4. 예시: \"월요일의 루틴 완료율이 줄어들었어요. 루틴을 조금 조정해보는 건 어때요?\"");
+
+        return sb.toString();
     }
 }
