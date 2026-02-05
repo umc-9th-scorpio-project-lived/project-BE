@@ -19,7 +19,8 @@ public interface FriendshipRepository extends JpaRepository<Friendship, Long> {
 
     // 이미 존재하는 친구 관계인지 확인
     @Query("SELECT COUNT(f) > 0 FROM Friendship f WHERE " +
-            "((f.requester = :m1 AND f.receiver = :m2) OR (f.requester = :m2 AND f.receiver = :m1)) " +
-            "AND f.isDeleted = false")
-    boolean existsByRequesterAndReceiver(@Param("m1") Member m1, @Param("m2") Member m2);
+            "((f.requester.id = :m1Id AND f.receiver.id = :m2Id) OR " +
+            " (f.requester.id = :m2Id AND f.receiver.id = :m1Id)) " +
+            "AND f.status = 'ACCEPTED' AND f.isDeleted = false")
+    boolean existsFriendship(@Param("m1Id") Long m1Id, @Param("m2Id") Long m2Id);
 }

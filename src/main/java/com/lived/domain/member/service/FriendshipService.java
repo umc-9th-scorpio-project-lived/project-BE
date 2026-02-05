@@ -7,15 +7,17 @@ import com.lived.domain.member.dto.FriendshipResponseDTO;
 import com.lived.domain.member.entity.Friendship;
 import com.lived.domain.member.entity.Member;
 import com.lived.domain.member.enums.MemberStatus;
+import com.lived.domain.member.dto.FriendTreeResponseDTO;
 import com.lived.domain.member.repository.FriendshipRepository;
 import com.lived.domain.member.repository.MemberRepository;
+import com.lived.domain.routine.dto.RoutineTreeResponseDTO;
+import com.lived.domain.routine.service.RoutineStatisticsService;
 import com.lived.global.apiPayload.code.GeneralErrorCode;
 import com.lived.global.apiPayload.exception.GeneralException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -27,6 +29,7 @@ public class FriendshipService {
 
     private final MemberRepository memberRepository;
     private final FriendshipRepository friendshipRepository;
+    private final RoutineStatisticsService routineStatisticsService;
 
     /**
      * 친구 목록 조회
@@ -81,7 +84,7 @@ public class FriendshipService {
                 .orElseThrow(() -> new GeneralException(GeneralErrorCode.MEMBER_NOT_FOUND));
 
         // 이미 친구인지 확인
-        if (friendshipRepository.existsByRequesterAndReceiver(receiver, inviter)) {
+        if (friendshipRepository.existsFriendship(receiverId, inviterId)) {
             // 이미 친구라면 새로 저장하지 않고 기존 정보를 조회해 반환
             throw new GeneralException(GeneralErrorCode.ALREADY_FRIENDS);
         }
@@ -90,5 +93,23 @@ public class FriendshipService {
         Friendship friendship = friendshipRepository.save(FriendshipConverter.toFriendship(inviter, receiver));
 
         return FriendshipConverter.toAcceptInviteResultDTO(friendship);
+    }
+
+    @Transactional(readOnly = true)
+    public FriendTreeResponseDTO getFriendTree(Long myId, Long friendId, int year, int month) {
+
+        // 친구 관계 확인
+        if (!friendshipRepository.existsFriendship(myId, friendId)) {
+            throw new GeneralException(GeneralErrorCode.FRIENDSHIP_NOT_FOUND);
+        }
+
+        // 친구의 프로필 이름 조회
+        Member friend = memberRepository.findById(friendId)
+                .orElseThrow(() -> new GeneralException(GeneralErrorCode.MEMBER_NOT_FOUND));
+
+        // 친구의 루틴 나무 전체 조회
+        RoutineTreeResponseDTO treeData = routineStatisticsService.getRoutineTree(friendId, year, month);
+
+        return new FriendTreeResponseDTO(friend.getName(), treeData);
     }
 }
