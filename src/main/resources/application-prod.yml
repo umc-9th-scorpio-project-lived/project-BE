@@ -75,6 +75,5 @@ logging:
       root: info
       com.lived: info
 
-
-
-
+server:
+  forward-headers-strategy: native
