@@ -1,5 +1,6 @@
 package com.lived.domain.routine.controller;
 
+import com.lived.domain.routine.dto.RoutineAiRecommendResponseDTO;
 import com.lived.domain.routine.dto.RoutineBatchAddRequestDTO;
 import com.lived.domain.routine.dto.RoutineRecommendResponseDTO;
 import com.lived.domain.routine.dto.RoutineResponseDTO;
@@ -10,6 +11,9 @@ import com.lived.global.apiPayload.code.GeneralSuccessCode;
 import com.lived.global.auth.annotation.AuthMember;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -67,5 +71,18 @@ public class RoutineRecommendationController {
 
         return ApiResponse.onSuccess(GeneralSuccessCode.ROUTINE_CREATED,
                 String.format("선택하신 %d개의 루틴이 추가되었습니다.", addedCount));
+    }
+
+    @Operation(
+            summary = "AI 루틴 추천 리스트 조회 API",
+            description = "사용자의 현재 루틴을 분석하여 시너지가 날 만한 새로운 루틴들을 Gemini AI가 추천해줍니다."
+    )
+    @GetMapping("/ai")
+    public ApiResponse<List<RoutineAiRecommendResponseDTO>> getAiRecommendations(Long memberId) {
+
+        List<RoutineAiRecommendResponseDTO> response =
+                routineRecommendationService.getAiRecommendations(memberId);
+
+        return ApiResponse.onSuccess(GeneralSuccessCode.OK, response);
     }
 }
