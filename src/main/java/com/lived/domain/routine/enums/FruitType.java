@@ -1,4 +1,4 @@
-package com.lived.domain.routine.entity.enums;
+package com.lived.domain.routine.enums;
 
 public enum FruitType {
     NONE,    // 열매 X

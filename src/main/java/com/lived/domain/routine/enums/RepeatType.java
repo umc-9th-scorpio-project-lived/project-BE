@@ -1,4 +1,4 @@
-package com.lived.domain.routine.entity.enums;
+package com.lived.domain.routine.enums;
 
 public enum RepeatType {
     WEEKLY, // 주 단위 (요일 선택)

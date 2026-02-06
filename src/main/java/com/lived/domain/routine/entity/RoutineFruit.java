@@ -1,6 +1,6 @@
 package com.lived.domain.routine.entity;
 
-import com.lived.domain.routine.entity.enums.FruitType;
+import com.lived.domain.routine.enums.FruitType;
 import com.lived.domain.routine.entity.mapping.MemberRoutine;
 import com.lived.global.entity.BaseEntity;
 import jakarta.persistence.*;

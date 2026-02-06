@@ -2,7 +2,7 @@ package com.lived.domain.routine.converter;
 
 import com.lived.domain.routine.dto.RoutineTreeListResponseDTO;
 import com.lived.domain.routine.entity.RoutineFruit;
-import com.lived.domain.routine.entity.enums.FruitType;
+import com.lived.domain.routine.enums.FruitType;
 import org.springframework.stereotype.Component;
 
 import java.time.YearMonth;
