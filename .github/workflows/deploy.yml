@@ -54,4 +54,5 @@ jobs:
               -e KAKAO_CLIENT_ID='${{ secrets.KAKAO_CLIENT_ID }}' \
               -e KAKAO_CLIENT_SECRET='${{ secrets.KAKAO_CLIENT_SECRET }}' \
               -e JWT_SECRET_KEY='${{ secrets.JWT_SECRET_KEY }}' \
+              -e GEMINI_API_KEY='${{ secrets.GEMINI_API_KEY }}' \
               naho1108/lived-app
