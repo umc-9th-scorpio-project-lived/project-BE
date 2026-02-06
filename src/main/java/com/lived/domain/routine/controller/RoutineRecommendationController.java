@@ -78,7 +78,7 @@ public class RoutineRecommendationController {
             description = "사용자의 현재 루틴을 분석하여 시너지가 날 만한 새로운 루틴들을 Gemini AI가 추천해줍니다."
     )
     @GetMapping("/ai")
-    public ApiResponse<List<RoutineAiRecommendResponseDTO>> getAiRecommendations(Long memberId) {
+    public ApiResponse<List<RoutineAiRecommendResponseDTO>> getAiRecommendations(@AuthMember Long memberId) {
 
         List<RoutineAiRecommendResponseDTO> response =
                 routineRecommendationService.getAiRecommendations(memberId);
