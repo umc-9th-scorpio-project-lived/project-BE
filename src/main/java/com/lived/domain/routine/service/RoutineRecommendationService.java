@@ -46,7 +46,7 @@ public class RoutineRecommendationService {
     @Value("${gemini.api-key}")
     private String apiKey;
 
-    @Value("${gemini.url}")
+    @Value("${gemini.api-url}")
     private String baseUrl;
 
     // [온보딩] 고민 키워드 기반 루틴 추천
