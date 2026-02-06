@@ -29,6 +29,12 @@ public enum GeneralErrorCode implements BaseErrorCode {
     ROUTINE_ALREADY_EXISTS(HttpStatus.CONFLICT, "ROUTINE409_1", "이미 존재하는 루틴 이름입니다."),
     FUTURE_ROUTINE_CHECK_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "ROUTINE400_1", "미래 날짜의 루틴에는 완료 체크 할 수 없습니다."),
 
+    // AI 추천 관련 에러 코드
+    AI_RECOMMENDATION_FAILED(HttpStatus.SERVICE_UNAVAILABLE, "AI503_1", "AI 루틴 추천 서비스 호출에 실패했습니다."),
+    AI_RESPONSE_PARSE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "AI500_1", "AI 응답 데이터를 처리하는 중 오류가 발생했습니다."),
+    BASE_ROUTINE_NOT_FOUND(HttpStatus.NOT_FOUND, "ROUTINE404_2", "추천의 근거가 된 기존 루틴을 찾을 수 없어 저장에 실패했습니다."),
+
+
     // 커뮤니티 관련 에러 코드
     POST_IMAGE_LIMIT_EXCEEDED(HttpStatus.BAD_REQUEST, "COMMUNITY400_1", "이미지는 최대 10개까지 업로드 가능합니다."),
     COMMENT_NOT_MATCH_POST(HttpStatus.BAD_REQUEST, "COMMENT400_2", "해당 게시글의 댓글이 아닙니다."),
