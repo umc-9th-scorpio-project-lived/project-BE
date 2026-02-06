@@ -15,6 +15,7 @@ public class MemberMyPageResponseDTO {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class MyProfileResponse {
+        private Long memberId;
         private String name;
     }
 
@@ -23,6 +24,7 @@ public class MemberMyPageResponseDTO {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class CommunityProfileResponse {
+        private Long memberId;
         private String nickname;
         private String profileImageUrl;
         private String livingPeriod;
