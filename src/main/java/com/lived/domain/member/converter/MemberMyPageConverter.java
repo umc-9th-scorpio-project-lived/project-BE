@@ -15,6 +15,7 @@ public class MemberMyPageConverter {
     // 기본 프로필 정보 변환
     public MemberMyPageResponseDTO.MyProfileResponse toMemberProfileResponse(Member member) {
         return MemberMyPageResponseDTO.MyProfileResponse.builder()
+                .memberId(member.getId())
                 .name(member.getName())
                 .build();
     }
@@ -22,6 +23,7 @@ public class MemberMyPageConverter {
     // 커뮤니티 프로필 정보 변환
     public MemberMyPageResponseDTO.CommunityProfileResponse toCommunityProfileResponse(Member member, List<RoutineFruit> fruits) {
         return MemberMyPageResponseDTO.CommunityProfileResponse.builder()
+                .memberId(member.getId())
                 .nickname(member.getNickname())
                 .profileImageUrl(member.getProfileImageUrl())
                 .livingPeriod(member.getLivingPeriod().name())
