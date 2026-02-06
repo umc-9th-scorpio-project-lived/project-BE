@@ -1,7 +1,7 @@
 package com.lived.domain.routine.entity;
 
 import com.lived.domain.member.entity.Member;
-import com.lived.domain.routine.entity.enums.BigFruitType;
+import com.lived.domain.routine.enums.BigFruitType;
 import com.lived.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;

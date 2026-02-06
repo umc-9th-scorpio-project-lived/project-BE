@@ -1,6 +1,6 @@
 package com.lived.domain.routine.dto;
 
-import com.lived.domain.routine.entity.enums.FruitType;
+import com.lived.domain.routine.enums.FruitType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

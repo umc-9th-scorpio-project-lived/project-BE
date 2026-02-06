@@ -1,18 +1,14 @@
 package com.lived.domain.member.repository;
 
 import com.lived.domain.member.entity.Member;
-import com.lived.domain.post.entity.Post;
 import com.lived.domain.routine.entity.RoutineFruit;
-import com.lived.domain.routine.entity.enums.FruitType;
+import com.lived.domain.routine.enums.FruitType;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor

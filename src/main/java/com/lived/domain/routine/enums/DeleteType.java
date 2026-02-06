@@ -1,4 +1,4 @@
-package com.lived.domain.routine.entity.enums;
+package com.lived.domain.routine.enums;
 
 public enum DeleteType {
     ONLY_SET,  // 이 일정만 삭제

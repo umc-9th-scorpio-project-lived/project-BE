@@ -1,6 +1,6 @@
 package com.lived.domain.routine.entity;
 
-import com.lived.domain.routine.entity.enums.CategoryName;
+import com.lived.domain.routine.enums.CategoryName;
 import com.lived.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;

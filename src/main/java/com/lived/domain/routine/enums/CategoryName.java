@@ -1,4 +1,4 @@
-package com.lived.domain.routine.entity.enums;
+package com.lived.domain.routine.enums;
 
 public enum CategoryName {
     LIFESTYLE, // 생활 습관

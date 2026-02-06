@@ -13,7 +13,7 @@ import com.lived.domain.member.enums.MemberStatus;
 import com.lived.domain.member.enums.Provider;
 import com.lived.domain.member.repository.MemberRepository;
 import com.lived.domain.member.repository.NicknameWordRepository;
-import com.lived.domain.routine.entity.enums.RepeatType;
+import com.lived.domain.routine.enums.RepeatType;
 import com.lived.domain.routine.entity.mapping.MemberRoutine;
 import com.lived.domain.routine.repository.MemberRoutineRepository;
 import com.lived.domain.routine.repository.RoutineRepository;

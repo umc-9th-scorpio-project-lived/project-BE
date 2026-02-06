@@ -11,7 +11,7 @@ import com.lived.domain.routine.dto.RoutineRecommendResponseDTO;
 import com.lived.domain.routine.dto.RoutineResponseDTO;
 import com.lived.domain.routine.entity.Routine;
 import com.lived.domain.routine.entity.RoutineCategory;
-import com.lived.domain.routine.entity.enums.CategoryName;
+import com.lived.domain.routine.enums.CategoryName;
 import com.lived.domain.routine.entity.mapping.MemberRoutine;
 import com.lived.domain.routine.repository.MemberRoutineRepository;
 import com.lived.domain.routine.repository.RoutineRepository;

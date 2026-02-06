@@ -3,7 +3,7 @@ package com.lived.domain.routine.entity.mapping;
 import com.lived.domain.member.entity.Member;
 import com.lived.domain.routine.dto.RoutineUpdateRequestDTO;
 import com.lived.domain.routine.entity.Routine;
-import com.lived.domain.routine.entity.enums.RepeatType;
+import com.lived.domain.routine.enums.RepeatType;
 import com.lived.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;

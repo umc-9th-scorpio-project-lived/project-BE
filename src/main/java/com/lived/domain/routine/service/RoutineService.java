@@ -6,7 +6,7 @@ import com.lived.domain.routine.converter.RoutineConverter;
 import com.lived.domain.routine.dto.*;
 import com.lived.domain.routine.entity.Routine;
 import com.lived.domain.routine.entity.RoutineHistory;
-import com.lived.domain.routine.entity.enums.RepeatType;
+import com.lived.domain.routine.enums.RepeatType;
 import com.lived.domain.routine.entity.mapping.MemberRoutine;
 import com.lived.domain.routine.repository.MemberRoutineRepository;
 import com.lived.domain.routine.repository.RoutineHistoryRepository;
