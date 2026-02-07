@@ -8,11 +8,12 @@ import com.lived.domain.post.dto.PostRequestDTO;
 import com.lived.domain.post.dto.PostResponseDTO;
 import com.lived.domain.post.entity.Post;
 import com.lived.domain.post.entity.PostImage;
-import com.lived.domain.post.entity.SearchHistory;
 import com.lived.domain.post.entity.enums.PostCategory;
+import com.lived.domain.report.entity.enums.ReportTargetType;
 import com.lived.domain.post.entity.mapping.PostLike;
 import com.lived.domain.post.entity.mapping.PostScrap;
 import com.lived.domain.post.repository.*;
+import com.lived.domain.report.repository.ReportRepository;
 import com.lived.global.apiPayload.code.GeneralErrorCode;
 import com.lived.global.apiPayload.exception.GeneralException;
 import com.lived.global.dto.CursorPageResponse;
@@ -43,6 +44,7 @@ public class PostService {
   private final MemberBlockRepository memberBlockRepository;
   private final CommentRepository commentRepository;
   private final SearchService searchService;
+  private final ReportRepository reportRepository;
 
   private static final int MAX_IMAGE_COUNT = 10;
 
@@ -321,32 +323,36 @@ public class PostService {
             p.getTitle().toLowerCase().contains(keyword.toLowerCase()) ||
             p.getContent().toLowerCase().contains(keyword.toLowerCase()))
         .filter(p -> cursor == null || p.getId() < cursor)
+        .filter(p -> {
+          // 신고/차단 확인
+          boolean isReported = reportRepository.existsByReporterIdAndTargetTypeAndTargetId(
+              memberId, ReportTargetType.POST, p.getId()
+          );
+          boolean isBlocked = memberBlockRepository.existsByBlockerIdAndBlockedId(
+              memberId, p.getMember().getId()
+          );
+          return !isReported && !isBlocked;
+        })
         .sorted((a, b) -> b.getId().compareTo(a.getId()))
         .limit(size + 1)
         .map(p -> {
-          // 차단 여부 확인
-          boolean isBlocked = memberBlockRepository.existsByBlockerIdAndBlockedId(memberId,
-              p.getMember().getId());
 
-          // 썸네일 조회 (orderIndex = 1)
           String thumbnailUrl = postImageRepository.findFirstByPostIdAndOrderIndex(p.getId(), 1)
               .map(PostImage::getImageUrl)
               .orElse(null);
 
-          // 전체 이미지 개수
           int imageCount = postImageRepository.findAllByPostId(p.getId()).size();
 
           return PostResponseDTO.PostListItem.builder()
               .postId(p.getId())
               .category(p.getCategory())
               .categoryLabel(p.getCategory().getLabel())
-              .title(isBlocked ? "차단한 사용자의 게시글입니다." : p.getTitle())
-              .content(isBlocked ? "차단한 사용자의 게시글입니다." : p.getContent())
+              .title(p.getTitle())
+              .content(p.getContent())
               .likeCount(p.getLikeCount())
               .commentCount(p.getCommentCount())
               .thumbnailUrl(thumbnailUrl)
               .imageCount(imageCount)
-              .isBlocked(isBlocked)
               .createdAt(p.getCreatedAt())
               .build();
         })
@@ -410,11 +416,20 @@ public class PostService {
       throw new GeneralException(GeneralErrorCode.POST_NOT_FOUND);
     }
 
+    // 신고/차단 확인
+    boolean isReported = reportRepository.existsByReporterIdAndTargetTypeAndTargetId(
+        memberId, ReportTargetType.POST, postId
+    );
+    boolean isBlocked = memberBlockRepository.existsByBlockerIdAndBlockedId(
+        memberId, post.getMember().getId()
+    );
+
+    if (isReported || isBlocked) {
+      throw new GeneralException(GeneralErrorCode.POST_NOT_FOUND);
+    }
+
     // 조회수 증가
     post.incrementViewCount();
-
-    // 차단 여부 확인
-    boolean isBlocked = memberBlockRepository.existsByBlockerIdAndBlockedId(memberId, post.getMember().getId());
 
     // 좋아요 여부 확인
     boolean isLiked = postLikeRepository.existsByPostIdAndMemberId(postId, memberId);
@@ -443,8 +458,8 @@ public class PostService {
         .postId(post.getId())
         .category(post.getCategory())
         .categoryLabel(post.getCategory().getLabel())
-        .title(isBlocked ? "차단한 사용자의 게시글입니다." : post.getTitle())
-        .content(isBlocked ? "차단한 사용자의 게시글입니다." : post.getContent())
+        .title(post.getTitle())
+        .content(post.getContent())
         .viewCount(post.getViewCount())
         .likeCount(post.getLikeCount())
         .commentCount(post.getCommentCount())
@@ -492,7 +507,6 @@ public class PostService {
               .commentCount(p.getCommentCount())
               .thumbnailUrl(thumbnailUrl)
               .imageCount(imageCount)
-              .isBlocked(false)
               .createdAt(p.getCreatedAt())
               .build();
         })
@@ -537,12 +551,18 @@ public class PostService {
         .filter(p -> p.getDeletedAt() == null)
         .filter(p -> commentedPostIds.contains(p.getId()))
         .filter(p -> cursor == null || p.getId() < cursor)
+        .filter(p -> {
+          boolean isReported = reportRepository.existsByReporterIdAndTargetTypeAndTargetId(
+              memberId, ReportTargetType.POST, p.getId()
+          );
+          boolean isBlocked = memberBlockRepository.existsByBlockerIdAndBlockedId(
+              memberId, p.getMember().getId()
+          );
+          return !isReported && !isBlocked;
+        })
         .sorted((a, b) -> b.getId().compareTo(a.getId()))
         .limit(size + 1)
         .map(p -> {
-          // 차단 여부 확인
-          boolean isBlocked = memberBlockRepository.existsByBlockerIdAndBlockedId(memberId, p.getMember().getId());
-
           // 썸네일 조회 (orderIndex = 1)
           String thumbnailUrl = postImageRepository.findFirstByPostIdAndOrderIndex(p.getId(), 1)
               .map(PostImage::getImageUrl)
@@ -555,13 +575,12 @@ public class PostService {
               .postId(p.getId())
               .category(p.getCategory())
               .categoryLabel(p.getCategory().getLabel())
-              .title(isBlocked ? "차단한 사용자의 게시글입니다." : p.getTitle())
-              .content(isBlocked ? "차단한 사용자의 게시글입니다." : p.getContent())
+              .title(p.getTitle())
+              .content(p.getContent())
               .likeCount(p.getLikeCount())
               .commentCount(p.getCommentCount())
               .thumbnailUrl(thumbnailUrl)
               .imageCount(imageCount)
-              .isBlocked(isBlocked)
               .createdAt(p.getCreatedAt())
               .build();
         })
@@ -604,11 +623,18 @@ public class PostService {
         .filter(p -> p.getDeletedAt() == null)
         .filter(p -> scrappedPostIds.contains(p.getId()))
         .filter(p -> cursor == null || p.getId() < cursor)
+        .filter(p -> {
+          boolean isReported = reportRepository.existsByReporterIdAndTargetTypeAndTargetId(
+              memberId, ReportTargetType.POST, p.getId()
+          );
+          boolean isBlocked = memberBlockRepository.existsByBlockerIdAndBlockedId(
+              memberId, p.getMember().getId()
+          );
+          return !isReported && !isBlocked;
+        })
         .sorted((a, b) -> b.getId().compareTo(a.getId()))
         .limit(size + 1)
         .map(p -> {
-          // 차단 여부 확인
-          boolean isBlocked = memberBlockRepository.existsByBlockerIdAndBlockedId(memberId, p.getMember().getId());
 
           // 썸네일 조회 (orderIndex = 1)
           String thumbnailUrl = postImageRepository.findFirstByPostIdAndOrderIndex(p.getId(), 1)
@@ -622,13 +648,12 @@ public class PostService {
               .postId(p.getId())
               .category(p.getCategory())
               .categoryLabel(p.getCategory().getLabel())
-              .title(isBlocked ? "차단한 사용자의 게시글입니다." : p.getTitle())
-              .content(isBlocked ? "차단한 사용자의 게시글입니다." : p.getContent())
+              .title(p.getTitle())
+              .content(p.getContent())
               .likeCount(p.getLikeCount())
               .commentCount(p.getCommentCount())
               .thumbnailUrl(thumbnailUrl)
               .imageCount(imageCount)
-              .isBlocked(isBlocked)
               .createdAt(p.getCreatedAt())
               .build();
         })

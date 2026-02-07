@@ -101,9 +101,6 @@ public class PostResponseDTO {
     @Schema(description = "이미지 개수", example = "0")
     private Integer imageCount;
 
-    @Schema(description = "차단 여부", example = "false")
-    private Boolean isBlocked;
-
     @Schema(description = "작성 시각", example = "2026-01-12T09:17:00+09:00")
     private LocalDateTime createdAt;
   }
