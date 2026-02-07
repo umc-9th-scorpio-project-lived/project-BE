@@ -3,7 +3,7 @@ spring:
     name: lived
 
   datasource:
-    url: "${RDS_URL}"
+    url: "${RDS_URL}?serverTimezone=Asia/Seoul&useLegacyDatetimeCode=false"
     username: "${RDS_USERNAME}"
     password: "${RDS_PASSWORD}"
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -80,4 +80,4 @@ server:
 
 gemini:
   api-url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent
-  api-key: "{GEMINI_API_KEY}"
+  api-key: ${GEMINI_API_KEY}
