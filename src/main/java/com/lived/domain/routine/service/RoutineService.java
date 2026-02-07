@@ -167,6 +167,8 @@ public class RoutineService {
                 // 이미 생성된 수행 기록이 있다면 DB에서 삭제
                 routineHistoryRepository.findByMemberRoutineIdAndCheckDate(memberRoutineId, request.targetDate())
                         .ifPresent(routineHistoryRepository::delete);
+
+                memberRoutineRepository.flush();
             }
             case AFTER_SET -> memberRoutine.terminateAt(request.targetDate());
             case ALL_SET -> {
