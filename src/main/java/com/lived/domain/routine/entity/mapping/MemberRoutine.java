@@ -83,7 +83,10 @@ public class MemberRoutine extends BaseEntity {
         if(date.isBefore((this.startDate)) || !this.isActive) return false;
         if(this.endDate != null && date.isAfter(this.endDate)) return false;
 
-        if(this.excludedDates.contains(date)) return false;
+        boolean isExcluded = this.excludedDates.stream()
+                .anyMatch(excludedDate -> excludedDate.isEqual(date));
+
+        if(isExcluded) return false;
 
         return switch (this.repeatType) {
             case WEEKLY -> checkWeekly(date);

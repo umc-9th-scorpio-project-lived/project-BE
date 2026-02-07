@@ -70,6 +70,9 @@ public class RoutineService {
     // 홈 화면 루틴 조회 로직
     @Transactional(readOnly = true)
     public HomeRoutineResponseDTO getHomeRoutines(Long memberId, LocalDate targetDate) {
+
+        entityManager.clear();
+
         List<MemberRoutine> activeRoutines = memberRoutineRepository.findAllByMemberIdAndIsActiveTrue(memberId);
 
         // targetDate가 반복 설정에 해당하는지 필터링
