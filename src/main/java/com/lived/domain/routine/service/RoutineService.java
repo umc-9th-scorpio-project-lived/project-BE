@@ -13,7 +13,9 @@ import com.lived.domain.routine.repository.RoutineHistoryRepository;
 import com.lived.domain.routine.repository.RoutineRepository;
 import com.lived.global.apiPayload.code.GeneralErrorCode;
 import com.lived.global.apiPayload.exception.GeneralException;
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,6 +38,9 @@ public class RoutineService {
     private final RoutineRepository routineRepository;
 
     private final RoutineStatisticsService statisticsService;
+
+    @Autowired
+    private EntityManager entityManager;
 
     // 루틴 생성 로직 (커스텀)
     public Long createCustomRoutine(Long memberId, RoutineRequestDTO request) {
@@ -169,6 +174,8 @@ public class RoutineService {
                         .ifPresent(routineHistoryRepository::delete);
 
                 memberRoutineRepository.flush();
+
+                entityManager.clear();
             }
             case AFTER_SET -> memberRoutine.terminateAt(request.targetDate());
             case ALL_SET -> {
