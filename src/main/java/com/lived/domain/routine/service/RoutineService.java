@@ -160,7 +160,14 @@ public class RoutineService {
                 .orElseThrow(() -> new GeneralException(GeneralErrorCode.ROUTINE_NOT_FOUND));
 
         switch (request.deleteType()) {
-            case ONLY_SET -> memberRoutine.excludeDate(request.targetDate());
+            case ONLY_SET -> {
+                // 예외 날짜 리스트에 추가
+                memberRoutine.excludeDate(request.targetDate());
+
+                // 이미 생성된 수행 기록이 있다면 DB에서 삭제
+                routineHistoryRepository.findByMemberRoutineIdAndCheckDate(memberRoutineId, request.targetDate())
+                        .ifPresent(routineHistoryRepository::delete);
+            }
             case AFTER_SET -> memberRoutine.terminateAt(request.targetDate());
             case ALL_SET -> {
                 routineHistoryRepository.deleteAllByMemberRoutineId(memberRoutineId);
