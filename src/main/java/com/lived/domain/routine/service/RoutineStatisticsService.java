@@ -18,6 +18,10 @@ import com.lived.domain.routine.repository.RoutineHistoryRepository;
 import com.lived.global.apiPayload.code.GeneralErrorCode;
 import com.lived.global.apiPayload.exception.GeneralException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -370,5 +374,22 @@ public class RoutineStatisticsService {
         sb.append("4. 예시: \"월요일의 루틴 완료율이 줄어들었어요. 루틴을 조금 조정해보는 건 어때요?\"");
 
         return sb.toString();
+    }
+
+    // 대형 열매 리스트 페이징 조회
+    public BigFruitListResponseDTO getBigFruitsPaging(Long memberId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+
+        Page<RoutineBigFruit> fruitPage = routineBigFruitRepository.findAllByMemberId(memberId, pageable);
+
+        List<RoutineStatisticsResponseDTO.BigFruitDTO> bigFruitList = fruitPage.getContent().stream()
+                .map(this::toBigFruitDTO)
+                .toList();
+
+        return BigFruitListResponseDTO.builder()
+                .hasNext(fruitPage.hasNext())
+                .currentPage(page)
+                .fruits(bigFruitList)
+                .build();
     }
 }
