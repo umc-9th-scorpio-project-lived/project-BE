@@ -14,9 +14,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 @Entity
 @Getter
@@ -78,7 +76,7 @@ public class MemberRoutine extends BaseEntity {
     @ElementCollection
     @CollectionTable(name = "routine_exclusion", joinColumns = @JoinColumn(name = "member_routine_id"))
     @Column(name = "excluded_date")
-    private List<LocalDate> excludedDates = new ArrayList<>();
+    private Set<LocalDate> excludedDates = new HashSet<>();
 
 
     public boolean isScheduledFor(LocalDate date) {
