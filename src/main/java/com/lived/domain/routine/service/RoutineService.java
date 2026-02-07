@@ -206,6 +206,7 @@ public class RoutineService {
                     return true;
                 });
 
+        routineHistoryRepository.flush();
         statisticsService.syncRoutineFruit(memberRoutine, targetDate);
 
         return isDone;

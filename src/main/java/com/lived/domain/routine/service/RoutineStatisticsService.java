@@ -23,6 +23,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.DayOfWeek;
@@ -162,7 +163,7 @@ public class RoutineStatisticsService {
     }
 
     // achievementRate 업데이트
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRED)
     public void syncRoutineFruit(MemberRoutine routine, LocalDate date) {
         LocalDate startOfMonth = date.withDayOfMonth(1);
         LocalDate endOfMonth = date.withDayOfMonth(date.lengthOfMonth());
@@ -171,12 +172,15 @@ public class RoutineStatisticsService {
 
         // RoutineFruit 조회 또는 생성
         RoutineFruit fruit = routineFruitRepository.findByMemberRoutineIdAndMonth(routine.getId(), startOfMonth)
-                .orElseGet(() -> routineFruitRepository.save(
-                        RoutineFruit.builder()
-                                .memberRoutine(routine)
-                                .month(startOfMonth)
-                                .build()
-                ));
+                .orElseGet(() -> {
+                    RoutineFruit newFruit = RoutineFruit.builder()
+                            .memberRoutine(routine)
+                            .month(startOfMonth)
+                            .fruitType(FruitType.NONE)
+                            .build();
+                    return routineFruitRepository.save(newFruit);
+
+                });
 
         // 엔티티 내부 로직을 통해 열매 등급 업데이트
         fruit.updateAchievement(rate);
