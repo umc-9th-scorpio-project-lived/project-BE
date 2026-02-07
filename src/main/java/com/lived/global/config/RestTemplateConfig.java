@@ -1,4 +1,4 @@
-package com.lived.domain.routine.enums;
+package com.lived.global.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
