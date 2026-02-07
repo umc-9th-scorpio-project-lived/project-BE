@@ -12,6 +12,8 @@ import com.lived.domain.member.entity.Member;
 import com.lived.domain.member.repository.MemberRepository;
 import com.lived.domain.post.entity.Post;
 import com.lived.domain.post.repository.PostRepository;
+import com.lived.domain.report.repository.ReportRepository;
+import com.lived.domain.report.entity.enums.ReportTargetType;
 import com.lived.global.apiPayload.code.GeneralErrorCode;
 import com.lived.global.apiPayload.exception.GeneralException;
 import java.util.List;
@@ -32,6 +34,8 @@ public class CommentService {
   private final MemberRepository memberRepository;
   private final CommentLikeRepository commentLikeRepository;
   private final MemberBlockRepository memberBlockRepository;
+  private final ReportRepository reportRepository;
+
 
   /**
    * 댓글 작성
@@ -258,6 +262,16 @@ public class CommentService {
     List<Comment> parentComments = allComments.stream()
         .filter(c -> c.getParent() == null)
         .filter(c -> cursor == null || c.getId() < cursor)
+        .filter(c -> {
+          // 신고/차단한 원댓글 제외
+          boolean isReported = reportRepository.existsByReporterIdAndTargetTypeAndTargetId(
+              memberId, ReportTargetType.COMMENT, c.getId()
+          );
+          boolean isBlocked = memberBlockRepository.existsByBlockerIdAndBlockedId(
+              memberId, c.getMember().getId()
+          );
+          return !isReported && !isBlocked;
+        })
         .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt())) // 최신순
         .limit(size + 1)
         .toList();
@@ -291,10 +305,18 @@ public class CommentService {
       List<Comment> allComments,
       Long memberId
   ) {
-    // 차단 여부 확인
+    // 신고/차단 확인
+    boolean isReported = reportRepository.existsByReporterIdAndTargetTypeAndTargetId(
+        memberId, ReportTargetType.COMMENT, comment.getId()
+    );
     boolean isBlocked = memberBlockRepository.existsByBlockerIdAndBlockedId(
         memberId, comment.getMember().getId()
     );
+
+    // 신고/차단한 댓글은 표시 안 함
+    if (isReported || isBlocked) {
+      return null;
+    }
 
     // 좋아요 여부 확인
     boolean isLiked = commentLikeRepository.existsByCommentIdAndMemberId(
@@ -306,6 +328,7 @@ public class CommentService {
         .filter(c -> c.getParent() != null && c.getParent().getId().equals(comment.getId()))
         .sorted((a, b) -> a.getCreatedAt().compareTo(b.getCreatedAt())) // 오래된순
         .map(reply -> buildCommentDetail(reply, allComments, memberId))
+        .filter(reply -> reply != null) // 신고/차단된 답글 제외
         .toList();
 
     // 삭제된 댓글이면서 답글이 있는 경우
@@ -315,8 +338,6 @@ public class CommentService {
     } else if (comment.getDeletedAt() != null) {
       // 삭제되고 답글도 없으면 표시 안함
       return null;
-    } else if (isBlocked) {
-      content = "차단한 사용자의 댓글입니다.";
     } else {
       content = comment.getContent();
     }
