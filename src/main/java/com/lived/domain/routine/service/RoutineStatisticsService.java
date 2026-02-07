@@ -21,10 +21,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.TextStyle;
 import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -222,13 +224,33 @@ public class RoutineStatisticsService {
         String periodTitle;
 
         if (type == StatisticsType.WEEKLY) {
-            if(week == null) {
+            if (week == null) {
                 week = 1;
             }
+
             LocalDate firstDayOfMonth = LocalDate.of(year, month, 1);
-            LocalDate weekStart = firstDayOfMonth.plusDays((long) (week - 1) * 7);
-            startDate = weekStart;
-            endDate = weekStart.plusDays(6);
+            LocalDate lastDayOfMonth = firstDayOfMonth.withDayOfMonth(firstDayOfMonth.lengthOfMonth());
+
+            LocalDate firstSaturday = firstDayOfMonth.with(TemporalAdjusters.nextOrSame(DayOfWeek.SATURDAY));
+
+            if (week == 1) {
+                startDate = firstDayOfMonth;
+                endDate = firstSaturday;
+            } else {
+                LocalDate weekStart = firstSaturday.plusDays(1).plusWeeks(week - 2);
+                startDate = weekStart;
+                endDate = weekStart.plusDays(6);
+            }
+
+            if (endDate.isAfter(lastDayOfMonth)) {
+                endDate = lastDayOfMonth;
+            }
+
+            if (startDate.isAfter(lastDayOfMonth)) {
+                startDate = lastDayOfMonth;
+                endDate = lastDayOfMonth;
+            }
+
             periodTitle = month + "월 " + week + "주차";
         } else {
             YearMonth yearMonth = YearMonth.of(year, month);
