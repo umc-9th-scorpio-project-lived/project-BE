@@ -338,9 +338,12 @@ public class RoutineStatisticsService {
         int percent = (fruit.getGoalValue() == 0) ? 0 :
                 (int) ((double) fruit.getCurrentValue() / fruit.getGoalValue() * 100);
 
-        String desc = (fruit.getType() == BigFruitType.STREAK)
-                ? "최대 연속일 " + fruit.getGoalValue() + "일 달성"
-                : fruit.getGoalValue() + "개 완료";
+        String desc;
+        if (fruit.getType() == BigFruitType.STREAK) {
+            desc = "최대 연속일 달성!\n" + fruit.getGoalValue() + "일 동안 해냈어요";
+        } else {
+            desc = "누적 개수 달성!\n총 " + fruit.getGoalValue() + "개 완료";
+        }
 
         return RoutineStatisticsResponseDTO.BigFruitDTO.builder()
                 .id(fruit.getId())
@@ -369,9 +372,10 @@ public class RoutineStatisticsService {
 
         sb.append("\n[제약 조건]:\n");
         sb.append("1. 이모지나 인사말을 빼고, 핵심만 말해줘.\n");
-        sb.append("2. 정확히 '두 문장'으로만 답변해줘.\n");
-        sb.append("3. 첫 번째 문장은 데이터에 대한 팩트(감소/증가 등)를, 두 번째 문장은 제안이나 격려를 해줘.\n");
-        sb.append("4. 예시: \"월요일의 루틴 완료율이 줄어들었어요. 루틴을 조금 조정해보는 건 어때요?\"");
+        sb.append("2. 정확히 '두 문장'으로 답변해줘.\n");
+        // AI에게 줄바꿈을 명시적으로 요청
+        sb.append("3. 첫 번째 문장과 두 번째 문장 사이에는 반드시 줄바꿈(\\n)을 넣어줘.\n");
+        sb.append("4. 첫 번째 문장은 데이터 팩트, 두 번째 문장은 제안/격려.\n");
 
         return sb.toString();
     }
