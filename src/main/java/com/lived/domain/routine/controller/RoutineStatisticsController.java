@@ -34,7 +34,7 @@ public class RoutineStatisticsController {
     @Operation(
             summary = "월별 루틴 트래커 전체 데이터 조회",
             description = "특정 멤버의 해당 월 열매 요약과 모든 루틴별 달성 상태 리스트를 한 번에 조회합니다.")
-    @GetMapping("/calender")
+    @GetMapping("/calendar")
     public ApiResponse<MonthlyTrackerViewResponseDTO> getMonthlyCalender(
             @AuthMember Long memberId,
             @Parameter(description = "조회할 연도 (YYYY)", example = "2024") @RequestParam int year,
@@ -73,8 +73,7 @@ public class RoutineStatisticsController {
 
     @Operation(
             summary = "루틴 나무 모아보기",
-            description = "월별 나무 현황을 최신순으로 페이징하여 조회합니다. (page는 0부터 시작, size는 한 번에 불러올 월의 개수)"
-    )
+            description = "월별 나무 현황을 최신순으로 페이징하여 조회합니다. (page는 0부터 시작, size는 한 번에 불러올 월의 개수)")
     @GetMapping("/trees")
     public ApiResponse<RoutineTreeListResponseDTO> getRoutineTreeList(
             @AuthMember Long memberId,
@@ -88,8 +87,7 @@ public class RoutineStatisticsController {
 
     @Operation(
             summary = "나의 주간/월간 통계 조회",
-            description = "주간 또는 월간 루틴 달성률, AI 조언, 그래프 데이터를 조회합니다."
-    )
+            description = "주간 또는 월간 루틴 달성률, AI 조언, 그래프 데이터를 조회합니다.")
     @GetMapping("/me")
     public ApiResponse<RoutineStatisticsResponseDTO> getMyStatistics(
             @AuthMember Long memberId,
@@ -98,6 +96,20 @@ public class RoutineStatisticsController {
             @Parameter(description = "주차 (주간 통계일 경우 필수)", example = "2") @RequestParam(required = false) Integer week,
             @Parameter(description = "통계 타입 (WEEKLY, MONTHLY)", example = "WEEKLY") @RequestParam StatisticsType type) {
         RoutineStatisticsResponseDTO result = routineStatisticsService.getMyStatistics(memberId, year, month, week, type);
+        return ApiResponse.onSuccess(GeneralSuccessCode.OK, result);
+    }
+
+    @Operation(
+            summary = "대형 열매 목록 조회",
+            description = "사용자가 획득한 모든 대형 열매의 리스트를 최신순으로 조회합니다.")
+    @GetMapping("/bigFruits")
+    public ApiResponse<BigFruitListResponseDTO> getAllBigFruits(
+            @AuthMember Long memberId,
+            @Parameter(description = "페이지 번호 (0부터 시작)", example = "0")
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @Parameter(description = "한 번에 불러올 개수", example = "10")
+            @RequestParam(name = "size", defaultValue = "10") int size) {
+        BigFruitListResponseDTO result = routineStatisticsService.getAllBigFruits(memberId);
         return ApiResponse.onSuccess(GeneralSuccessCode.OK, result);
     }
 }

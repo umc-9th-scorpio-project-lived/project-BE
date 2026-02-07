@@ -8,9 +8,11 @@ import lombok.NoArgsConstructor;
 import java.util.List;
 
 @Getter
-@Builder // [해결 2] @Builder 어노테이션 추가
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class BigFruitListResponseDTO {
+    private boolean hasNext;
+    private int currentPage;
     private List<RoutineStatisticsResponseDTO.BigFruitDTO> fruits;
 }
