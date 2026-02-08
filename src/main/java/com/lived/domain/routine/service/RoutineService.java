@@ -25,6 +25,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -224,7 +225,7 @@ public class RoutineService {
         return isDone;
     }
 
-    // 일괄 선택된 루틴 등록
+    // 일괄 선택된 루틴 등록(카테고리 추천용)
     @Transactional
     public int registerRoutinesBatch(Long memberId, RoutineBatchAddRequestDTO request) {
         Member member = memberRepository.findById(memberId)
@@ -265,4 +266,36 @@ public class RoutineService {
         return memberRoutines.size();
     }
 
+
+    // 일괄 선택된 루틴 등록(Ai 추천용)
+    @Transactional
+    public int registerAiRoutinesBatch(Long memberid, RoutineAiBatchSaveRequestDTO request) {
+        Member member = memberRepository.findById(memberid)
+                .orElseThrow(() -> new GeneralException(GeneralErrorCode.MEMBER_NOT_FOUND));
+
+        // 기존 루틴 제목 가져와 중복 방지
+        Set<String> existingTitles = memberRoutineRepository.findAllByMemberIdAndIsActiveTrue(memberid)
+                .stream()
+                .map(MemberRoutine::getTitle)
+                .collect(Collectors.toSet());
+
+        List<MemberRoutine> memberRoutines = request.routines().stream()
+                .filter(item -> !existingTitles.contains(item.title()))
+                .map(item -> MemberRoutine.builder()
+                        .member(member)
+                        .title(item.title())
+                        .emoji(item.emoji())
+                        .startDate(LocalDate.now())
+                        .repeatType(RepeatType.WEEKLY)
+                        .repeatValue("0,1,2,3,4,5,6")
+                        .isActive(true)
+                        .isAlarmOn(false)
+                        .build())
+                .collect(Collectors.toList());
+
+        if (memberRoutines.isEmpty()) return 0;
+
+        memberRoutineRepository.saveAll(memberRoutines);
+        return memberRoutines.size();
+    }
 }
