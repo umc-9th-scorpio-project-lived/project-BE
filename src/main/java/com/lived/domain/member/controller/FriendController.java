@@ -29,9 +29,10 @@ public class FriendController {
             description = "현재 수락(ACCEPTED)된 상태의 친구 목록을 가나다순으로 조회합니다. 하단 시트에서 친구 이름을 눌러 루틴 나무로 이동할 때 사용합니다."
     )
     public ApiResponse<FriendshipResponseDTO.FriendListDTO> getFriendList(
-            @Parameter(hidden = true) @AuthMember Long memberId
+            @Parameter(hidden = true) @AuthMember Long memberId,
+            @RequestParam(name = "name", required = false) String name
     ) {
-        FriendshipResponseDTO.FriendListDTO result = friendshipService.getFriendList(memberId);
+        FriendshipResponseDTO.FriendListDTO result = friendshipService.getFriendList(memberId, name);
         return ApiResponse.onSuccess(GeneralSuccessCode.OK, result);
     }
 
