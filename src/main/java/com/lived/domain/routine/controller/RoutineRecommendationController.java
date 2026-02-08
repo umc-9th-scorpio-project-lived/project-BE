@@ -84,7 +84,7 @@ public class RoutineRecommendationController {
     @Operation(summary = "AI 추천 루틴 일괄 등록 API", description = "AI가 추천한 루틴 리스트 중 사용자가 선택한 루틴들을 일괄 등록합니다.")
     @PostMapping("/ai/batch")
     public ApiResponse<Integer> registerAiRoutineBatch(
-            /*@AuthMember*/ Long memberId,
+            @AuthMember Long memberId,
             @RequestBody @Valid RoutineAiBatchSaveRequestDTO request
             ) {
         int registeredCount = routineService.registerAiRoutinesBatch(memberId, request);
