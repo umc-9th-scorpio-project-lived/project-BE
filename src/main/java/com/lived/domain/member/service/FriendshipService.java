@@ -39,20 +39,17 @@ public class FriendshipService {
      * 탈퇴하지 않은 유저만 포함
      * 닉네임 가나다순 정렬
      */
-    public FriendshipResponseDTO.FriendListDTO getFriendList(Long memberId) {
+    public FriendshipResponseDTO.FriendListDTO getFriendList(Long memberId, String name) {
         // 본인 확인
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new GeneralException(GeneralErrorCode.MEMBER_NOT_FOUND));
 
         // 수락된 친구 관계 조회
-        List<Friendship> friendships = friendshipRepository.findAllAcceptedFriends(member);
+        List<Friendship> friendships = friendshipRepository.findAllAcceptedFriendsByName(member, name);
 
         // 친구 정보
         List<FriendshipResponseDTO.FriendInfoDTO> friendInfoList = friendships.stream()
-                .map(f -> {
-                    // 내가 신청자인지 수신자인지에 따라 상대방 추출
-                    return f.getRequester().equals(member) ? f.getReceiver() : f.getRequester();
-                })
+                .map(f -> f.getRequester().equals(member) ? f.getReceiver() : f.getRequester())
                 // 계정이 활성 상태인 친구만 보이게함
                 .filter(friend -> friend != null && MemberStatus.ACTIVE.equals(friend.getStatus()))
                 .map(FriendshipConverter::toFriendInfoDTO)

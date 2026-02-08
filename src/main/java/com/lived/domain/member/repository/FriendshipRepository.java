@@ -16,8 +16,11 @@ public interface FriendshipRepository extends JpaRepository<Friendship, Long> {
             "JOIN FETCH f.receiver " +
             "WHERE (f.requester = :member OR f.receiver = :member) " +
             "AND f.status = 'ACCEPTED' " +
-            "AND f.isDeleted = false")
-    List<Friendship> findAllAcceptedFriends(@Param("member") Member member);
+            "AND f.isDeleted = false " +
+            "AND (:name IS NULL OR " +
+            "    (f.requester != :member AND f.requester.name LIKE %:name%) OR " +
+            "    (f.receiver != :member AND f.receiver.name LIKE %:name%))")
+    List<Friendship> findAllAcceptedFriendsByName(@Param("member") Member member, @Param("name") String name);
 
     // 두 사람 사이의 모든 관계 조회
     @Query("SELECT f FROM Friendship f WHERE " +
