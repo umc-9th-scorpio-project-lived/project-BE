@@ -1,9 +1,6 @@
 package com.lived.domain.routine.controller;
 
-import com.lived.domain.routine.dto.RoutineAiRecommendResponseDTO;
-import com.lived.domain.routine.dto.RoutineBatchAddRequestDTO;
-import com.lived.domain.routine.dto.RoutineRecommendResponseDTO;
-import com.lived.domain.routine.dto.RoutineResponseDTO;
+import com.lived.domain.routine.dto.*;
 import com.lived.domain.routine.service.RoutineRecommendationService;
 import com.lived.domain.routine.service.RoutineService;
 import com.lived.global.apiPayload.ApiResponse;
@@ -11,10 +8,8 @@ import com.lived.global.apiPayload.code.GeneralSuccessCode;
 import com.lived.global.auth.annotation.AuthMember;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -54,8 +49,8 @@ public class RoutineRecommendationController {
     }
 
     @Operation(
-            summary = "추천 루틴 일괄 등록 API",
-            description = "선택된 루틴 템플릿들을 내 루틴으로 한 번에 등록합니다. 온보딩 및 추천 기능에서 공통으로 사용됩니다."
+            summary = "추천 루틴 일괄 등록 API(카테고리 추천용)",
+            description = "선택된 루틴 템플릿들을 내 루틴으로 한 번에 등록합니다."
     )
     @PostMapping("/batch")
     public ApiResponse<String> addRoutinesBatch(
@@ -84,5 +79,16 @@ public class RoutineRecommendationController {
                 routineRecommendationService.getAiRecommendations(memberId);
 
         return ApiResponse.onSuccess(GeneralSuccessCode.OK, response);
+    }
+
+    @Operation(summary = "AI 추천 루틴 일괄 등록 API", description = "AI가 추천한 루틴 리스트 중 사용자가 선택한 루틴들을 일괄 등록합니다.")
+    @PostMapping("/ai/batch")
+    public ApiResponse<Integer> registerAiRoutineBatch(
+            /*@AuthMember*/ Long memberId,
+            @RequestBody @Valid RoutineAiBatchSaveRequestDTO request
+            ) {
+        int registeredCount = routineService.registerAiRoutinesBatch(memberId, request);
+
+        return ApiResponse.onSuccess(GeneralSuccessCode.ROUTINE_CREATED, registeredCount);
     }
 }
