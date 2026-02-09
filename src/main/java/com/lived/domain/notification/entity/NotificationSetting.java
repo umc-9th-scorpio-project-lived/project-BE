@@ -32,48 +32,44 @@ public class NotificationSetting extends BaseEntity {
     private Boolean routineEnabled = true;
 
     @Builder.Default
+    @Column(name = "routine_report_enabled", nullable = false)
+    private Boolean routineReportEnabled = true;
+
+    @Builder.Default
     @Column(name = "community_enabled", nullable = false)
     private Boolean communityEnabled = true;
 
     @Builder.Default
-    @Column(name = "post_like_enabled", nullable = false)
-    private Boolean postLikeEnabled = true;
+    @Column(name = "community_hot_enabled", nullable = false)
+    private Boolean communityHotEnabled = true;
 
     @Builder.Default
     @Column(name = "comment_enabled", nullable = false)
     private Boolean commentEnabled = true;
 
     @Builder.Default
-    @Column(name = "comment_like_enabled", nullable = false)
-    private Boolean commentLikeEnabled = true;
-
-    @Builder.Default
     @Column(name = "marketing_enabled", nullable = false)
     private Boolean marketingEnabled = false;
 
     public void update(NotificationRequestDTO.NotificationSettingDTO request) {
-        // 전체 알림 설정(allEnabled)이 들어왔는지 확인
         if (request.getAllEnabled() != null) {
             this.allEnabled = request.getAllEnabled();
 
-            // 전체 설정이 바뀌면 하위 항목들도 모두 동일한 값으로 강제 변경
             this.routineEnabled = request.getAllEnabled();
+            this.routineReportEnabled = request.getAllEnabled();
             this.communityEnabled = request.getAllEnabled();
-            this.postLikeEnabled = request.getAllEnabled();
+            this.communityHotEnabled = request.getAllEnabled();
             this.commentEnabled = request.getAllEnabled();
-            this.commentLikeEnabled = request.getAllEnabled();
             this.marketingEnabled = request.getAllEnabled();
 
-            // 전체 설정을 건드렸을 때는 하위 개별 설정 로직을 타지 않고 바로 종료
             return;
         }
 
-        // 전체 설정이 들어오지 않은 경우에만 각자 개별적으로 업데이트
         if (request.getRoutineEnabled() != null) this.routineEnabled = request.getRoutineEnabled();
+        if (request.getRoutineReportEnabled() != null) this.routineReportEnabled = request.getRoutineReportEnabled();
         if (request.getCommunityEnabled() != null) this.communityEnabled = request.getCommunityEnabled();
-        if (request.getPostLikeEnabled() != null) this.postLikeEnabled = request.getPostLikeEnabled();
+        if (request.getCommunityHotEnabled() != null) this.communityHotEnabled = request.getCommunityHotEnabled();
         if (request.getCommentEnabled() != null) this.commentEnabled = request.getCommentEnabled();
-        if (request.getCommentLikeEnabled() != null) this.commentLikeEnabled = request.getCommentLikeEnabled();
         if (request.getMarketingEnabled() != null) this.marketingEnabled = request.getMarketingEnabled();
     }
 }

@@ -24,10 +24,10 @@ public class NotificationConverter {
         return NotificationResponseDTO.NotificationSettingDTO.builder()
                 .allEnabled(notificationSetting.getAllEnabled())
                 .routineEnabled(notificationSetting.getRoutineEnabled())
+                .routineReportEnabled(notificationSetting.getRoutineReportEnabled())
                 .communityEnabled(notificationSetting.getCommunityEnabled())
-                .postLikeEnabled(notificationSetting.getPostLikeEnabled())
+                .communityHotEnabled(notificationSetting.getCommunityHotEnabled())
                 .commentEnabled(notificationSetting.getCommentEnabled())
-                .commentLikeEnabled(notificationSetting.getCommentLikeEnabled())
                 .marketingEnabled(notificationSetting.getMarketingEnabled())
                 .build();
     }
