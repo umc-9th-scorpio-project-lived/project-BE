@@ -58,4 +58,13 @@ public class NotificationController {
 
         return ApiResponse.onSuccess(GeneralSuccessCode.OK, "FCM 토큰이 성공적으로 등록되었습니다.");
     }
+
+    @PatchMapping("{notificationId}/read")
+    @Operation(summary = "알림 읽음 처리 API", description = "특정 알림(notificationId)을 읽음 상태로 변경합니다.")
+    public ApiResponse<String> readNotification(@AuthMember Long memberId, @PathVariable(name = "notificationId") Long notificationId) {
+
+        notificationService.readNotification(memberId, notificationId);
+
+        return ApiResponse.onSuccess(GeneralSuccessCode.OK, "알림이 읽음 처리되었습니다.");
+    }
 }
