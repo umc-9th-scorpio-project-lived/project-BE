@@ -36,7 +36,7 @@ public class NotificationController {
 
     @GetMapping("/settings")
     @Operation(summary = "알림 설정 조회 API", description = "사용자의 현재 알림 설정 ON/OFF 상태를 조회합니다.")
-    public ApiResponse<NotificationResponseDTO.NotificationSettingDTO> getNotificationSetting(@AuthMember Long memberId) {
+    public ApiResponse<NotificationResponseDTO.NotificationSettingDTO> getNotificationSetting(@RequestParam Long memberId) {
 
         NotificationResponseDTO.NotificationSettingDTO result = notificationSettingService.getNotificationSetting(memberId);
 
