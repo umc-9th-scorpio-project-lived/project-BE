@@ -1,5 +1,6 @@
 package com.lived.domain.notification.repository;
 
+import com.lived.domain.member.entity.Member;
 import com.lived.domain.notification.entity.NotificationSetting;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -7,5 +8,6 @@ import java.util.Optional;
 
 public interface NotificationSettingRepository extends JpaRepository<NotificationSetting, Long> {
     // 특정 회원의 알림 설정 정보 조회
-    NotificationSetting findByMemberId(Long memberId);
+    Optional<NotificationSetting> findByMember(Member member);
+    Optional<NotificationSetting> findByMemberId(Long memberId);
 }

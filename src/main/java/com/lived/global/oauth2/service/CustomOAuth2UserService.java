@@ -4,6 +4,8 @@ import com.lived.domain.member.entity.Member;
 import com.lived.domain.member.enums.MemberStatus;
 import com.lived.domain.member.enums.Provider;
 import com.lived.domain.member.repository.MemberRepository;
+import com.lived.domain.notification.entity.NotificationSetting;
+import com.lived.domain.notification.repository.NotificationSettingRepository;
 import com.lived.global.oauth2.dto.OAuthAttributes;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -14,6 +16,7 @@ import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -22,9 +25,11 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequest, OAuth2User> {
 
     private final MemberRepository memberRepository;
+    private final NotificationSettingRepository notificationSettingRepository;
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
@@ -48,14 +53,24 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
                 providerEnum
         );
 
+        Member member;
         boolean isNewMember = memberEntity.isEmpty();
 
         // 만약 INACTIVE인 유저라면 복구 수행
-        if (memberEntity.isPresent()) {
-            Member member = memberEntity.get();
+        if (memberEntity.isEmpty()) {
+            member = memberRepository.save(attributes.toEntity(providerEnum));
+            createNotificationSetting(member);
+            isNewMember = true;
+        } else {
+            member = memberEntity.get();
+            isNewMember = false;
+
             if (MemberStatus.INACTIVE.equals(member.getStatus())) {
                 member.recover();
-                memberRepository.save(member);
+            }
+
+            if (notificationSettingRepository.findByMember(member).isEmpty()) {
+                createNotificationSetting(member);
             }
         }
 
@@ -67,7 +82,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         memberData.put("provider", attributes.getProvider());
 
         if (!isNewMember) {
-            memberData.put("memberId", memberEntity.get().getId());
+            memberData.put("memberId", member.getId());
         }
 
         return new DefaultOAuth2User(
@@ -75,5 +90,20 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
                 memberData,
                 attributes.getNameAttributeKey()
         );
+    }
+
+    private void createNotificationSetting(Member member) {
+        NotificationSetting setting = NotificationSetting.builder()
+                .member(member)
+                .allEnabled(true)
+                .routineEnabled(true)
+                .routineReportEnabled(true)
+                .communityEnabled(true)
+                .communityHotEnabled(true)
+                .commentEnabled(true) // 엔티티 필드에 맞춰 추가
+                .marketingEnabled(false)
+                .build();
+
+        notificationSettingRepository.save(setting);
     }
 }
