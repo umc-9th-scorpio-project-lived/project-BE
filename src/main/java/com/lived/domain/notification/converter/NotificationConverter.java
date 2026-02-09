@@ -6,12 +6,13 @@ import com.lived.domain.notification.entity.NotificationSetting;
 
 public class NotificationConverter {
 
-    public static NotificationResponseDTO.NotificationDTO toNotificationDTO(Notification notification) {
+    public static NotificationResponseDTO.NotificationDTO toNotificationDTO(Notification notification, String emoji) {
         return NotificationResponseDTO.NotificationDTO.builder()
                 .id(notification.getId())
                 .memberId(notification.getMember().getId())
                 .title(notification.getTitle())
                 .content(notification.getContent())
+                .emoji(emoji)
                 .targetId(notification.getTargetId())
                 .target(notification.getTarget())
                 .isRead(notification.getIsRead())

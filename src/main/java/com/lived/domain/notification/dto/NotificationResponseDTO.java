@@ -19,6 +19,7 @@ public class NotificationResponseDTO {
         private Long memberId;
         private String title;
         private String content;
+        private String emoji;
         private TargetType target;
         private Long targetId;
         private Boolean isRead;
