@@ -10,6 +10,7 @@ import lombok.experimental.SuperBuilder;
 @Entity
 @Table(name = "notification")
 @Getter
+@Setter
 @SuperBuilder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor

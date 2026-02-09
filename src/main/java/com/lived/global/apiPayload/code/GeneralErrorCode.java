@@ -48,7 +48,11 @@ public enum GeneralErrorCode implements BaseErrorCode {
     // 사용자 차단 관련 에러 코드
     BLOCK_ALREADY_EXISTS(HttpStatus.CONFLICT, "BLOCK409_1", "이미 차단한 사용자입니다."),
     BLOCK_SELF_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "BLOCK400_1", "자기 자신을 차단할 수 없습니다."),
-    BLOCK_NOT_FOUND(HttpStatus.NOT_FOUND, "BLOCK404_1", "차단 정보를 찾을 수 없습니다.");
+    BLOCK_NOT_FOUND(HttpStatus.NOT_FOUND, "BLOCK404_1", "차단 정보를 찾을 수 없습니다."),
+
+    // 알림 관련 에러 코드
+    NOTIFICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "NOTIFICATION404_1", "해당 알림을 찾을 수 없습니다."),
+    NOTIFICATION_FORBIDDEN(HttpStatus.FORBIDDEN, "NOTIFICATION403_1", "알림에 대한 권한이 없습니다.");
 
     private final HttpStatus status;
     private final String code;

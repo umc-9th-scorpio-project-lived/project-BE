@@ -7,6 +7,9 @@ import com.lived.domain.notification.entity.NotificationSetting;
 import com.lived.domain.notification.enums.TargetType;
 import com.lived.domain.notification.repository.NotificationRepository;
 import com.lived.domain.notification.repository.NotificationSettingRepository;
+import com.lived.global.apiPayload.code.BaseErrorCode;
+import com.lived.global.apiPayload.code.GeneralErrorCode;
+import com.lived.global.apiPayload.exception.GeneralException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,5 +35,17 @@ public class NotificationService {
         }
 
         return dtoNotificationList;
+    }
+
+    @Transactional
+    public void readNotification(Long memberId, Long notificationId) {
+        Notification notification = notificationRepository.findById(notificationId)
+                .orElseThrow(() -> new GeneralException(GeneralErrorCode.NOTIFICATION_NOT_FOUND));
+
+        if (!notification.getMember().getId().equals(memberId)) {
+            throw new GeneralException(GeneralErrorCode.NOTIFICATION_FORBIDDEN);
+        }
+
+        notification.setIsRead(true);
     }
 }
