@@ -1,5 +1,8 @@
 package com.lived.global.oauth2.dto;
 
+import com.lived.domain.member.entity.Member;
+import com.lived.domain.member.enums.MemberStatus;
+import com.lived.domain.member.enums.Provider;
 import lombok.Builder;
 import lombok.Getter;
 import java.util.Map;
@@ -53,6 +56,16 @@ public class OAuthAttributes {
                 .provider("KAKAO")
                 .attributes(attributes)
                 .nameAttributeKey(userNameAttributeName)
+                .build();
+    }
+
+    public Member toEntity(Provider provider) {
+        return Member.builder()
+                .name(this.name)
+                .email(this.email)
+                .socialId(this.socialId)
+                .provider(provider)
+                .status(MemberStatus.ACTIVE)
                 .build();
     }
 }
