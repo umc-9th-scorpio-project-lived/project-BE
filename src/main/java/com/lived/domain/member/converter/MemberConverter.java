@@ -18,7 +18,8 @@ public class MemberConverter {
                 .socialId(request.getSocialId()) // 소셜id
                 .provider(request.getProvider()) // 소셜 제공자
                 .name(request.getName())         // 이름
-                .nickname(nickname) // 닉네임
+                .email(request.getEmail())       // 이메일
+                .nickname(nickname)              // 닉네임
                 .gender(request.getGender())     // 성별
                 .birth(request.getBirth())       // 생년월일
                 .livingPeriod(request.getLivingPeriod()) // 자취연차

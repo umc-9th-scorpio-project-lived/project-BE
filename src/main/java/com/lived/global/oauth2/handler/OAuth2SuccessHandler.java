@@ -34,6 +34,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         boolean isNewMember = (boolean) oAuth2User.getAttributes().get("isNewMember");
         String socialId = (String) oAuth2User.getAttributes().get("socialId");
         String name = (String) oAuth2User.getAttributes().get("name");
+        String email = (String) oAuth2User.getAttributes().get("email");
         String provider = (String) oAuth2User.getAttributes().get("provider");
         Provider providerEnum = Provider.valueOf(provider.toUpperCase());
 
@@ -45,6 +46,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
                     .queryParam("isNewMember", true)
                     .queryParam("socialId", socialId)
                     .queryParam("name", name)
+                    .queryParam("email", email)
                     .queryParam("provider", provider)
                     .build()
                     .encode(StandardCharsets.UTF_8)

@@ -29,6 +29,9 @@ public class MemberRequestDTO {
         @NotBlank(message = "이름은 필수입니다.")
         private String name;
 
+        @Schema(description = "소셜 계정 이메일", example = "test@example.com")
+        private String email;
+
         // 회원가입 페이지에서 입력받는 정보
         @NotNull(message = "자취 연차 정보는 필수입니다.")
         private LivingPeriod livingPeriod;

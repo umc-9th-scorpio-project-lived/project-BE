@@ -62,6 +62,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         Map<String, Object> memberData = new HashMap<>(attributes.getAttributes());
         memberData.put("isNewMember", isNewMember);
         memberData.put("name", attributes.getName());
+        memberData.put("email", attributes.getEmail());
         memberData.put("socialId", attributes.getSocialId());
         memberData.put("provider", attributes.getProvider());
 
