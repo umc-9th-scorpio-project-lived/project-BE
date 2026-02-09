@@ -31,7 +31,7 @@ public class FriendshipConverter {
         return FriendshipResponseDTO.InviteInfoDTO.builder()
                 .inviterId(member.getId())
                 .inviterName(member.getName())
-                .invitationUrl("http://localhost:5173/accept-invite?inviterId=" + member.getId())
+                .invitationUrl("http://saraboni.co.kr/accept-invite?inviterId=" + member.getId())
                 .build();
     }
 
