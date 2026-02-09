@@ -5,12 +5,11 @@ import com.lived.domain.notification.dto.NotificationRequestDTO;
 import com.lived.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
-import lombok.experimental.SuperBuilder;
 
 @Entity
 @Table(name = "notification_setting")
 @Getter
-@SuperBuilder
+@Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 public class NotificationSetting extends BaseEntity {
@@ -51,20 +50,18 @@ public class NotificationSetting extends BaseEntity {
     @Column(name = "marketing_enabled", nullable = false)
     private Boolean marketingEnabled = false;
 
+
     public void update(NotificationRequestDTO.NotificationSettingDTO request) {
         if (request.getAllEnabled() != null) {
             this.allEnabled = request.getAllEnabled();
-
             this.routineEnabled = request.getAllEnabled();
             this.routineReportEnabled = request.getAllEnabled();
             this.communityEnabled = request.getAllEnabled();
             this.communityHotEnabled = request.getAllEnabled();
             this.commentEnabled = request.getAllEnabled();
             this.marketingEnabled = request.getAllEnabled();
-
             return;
         }
-
         if (request.getRoutineEnabled() != null) this.routineEnabled = request.getRoutineEnabled();
         if (request.getRoutineReportEnabled() != null) this.routineReportEnabled = request.getRoutineReportEnabled();
         if (request.getCommunityEnabled() != null) this.communityEnabled = request.getCommunityEnabled();
