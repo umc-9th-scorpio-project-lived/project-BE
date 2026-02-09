@@ -34,9 +34,6 @@ public class Member extends BaseEntity {
     @Column(name = "nickname", nullable = false, length = 64)
     private String nickname; // 서비스 내 활동명
 
-    @Column(name = "email", length = 128, nullable = false) // 이메일 필드 추가
-    private String email;
-
     @Enumerated(EnumType.STRING)
     @Column(name = "gender", nullable = false)
     private Gender gender; // 사용자 성별
