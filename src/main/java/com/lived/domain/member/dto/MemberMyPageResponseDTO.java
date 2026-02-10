@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public class MemberMyPageResponseDTO {
@@ -17,6 +18,8 @@ public class MemberMyPageResponseDTO {
     public static class MyProfileResponse {
         private Long memberId;
         private String name;
+        private String email;
+        private LocalDateTime createdAt;
     }
 
     @Getter
