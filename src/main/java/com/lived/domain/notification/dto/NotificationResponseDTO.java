@@ -32,14 +32,11 @@ public class NotificationResponseDTO {
     @AllArgsConstructor
     public static class NotificationSettingDTO {
         private Boolean allEnabled;
-
         private Boolean routineEnabled;
-        private Boolean routineReportEnabled;
-
+        private Boolean statsEnabled;
         private Boolean communityEnabled;
-        private Boolean communityHotEnabled;
         private Boolean commentEnabled;
-
+        private Boolean hotPostEnabled;
         private Boolean marketingEnabled;
     }
 }
