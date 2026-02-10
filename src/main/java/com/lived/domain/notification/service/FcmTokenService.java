@@ -40,4 +40,11 @@ public class FcmTokenService {
             fcmTokenRepository.save(newToken);
         }
     }
+
+    public void deleteToken(Long memberId, String token) {
+        FcmToken fcmToken = fcmTokenRepository.findByMemberIdAndToken(memberId, token)
+                .orElseThrow(() -> new GeneralException(GeneralErrorCode.MEMBER_NOT_FOUND));
+
+        fcmTokenRepository.delete(fcmToken);
+    }
 }

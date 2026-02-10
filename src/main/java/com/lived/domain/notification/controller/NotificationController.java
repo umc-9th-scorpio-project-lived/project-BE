@@ -59,6 +59,15 @@ public class NotificationController {
         return ApiResponse.onSuccess(GeneralSuccessCode.OK, "FCM 토큰이 성공적으로 등록되었습니다.");
     }
 
+    @DeleteMapping("/token")
+    @Operation(summary = "FCM 토큰 삭제 API", description = "로그아웃 시 사용자의 특정 기기 FCM 토큰을 삭제합니다.")
+    public ApiResponse<String> deleteFcmToken(@AuthMember Long memberId, @RequestBody NotificationRequestDTO.FcmTokenDTO request) {
+
+        fcmTokenService.deleteToken(memberId, request.getToken());
+
+        return ApiResponse.onSuccess(GeneralSuccessCode.OK, "FCM 토큰이 성공적으로 삭제되었습니다.");
+    }
+
     @PatchMapping("{notificationId}/read")
     @Operation(summary = "알림 읽음 처리 API", description = "특정 알림(notificationId)을 읽음 상태로 변경합니다.")
     public ApiResponse<String> readNotification(@AuthMember Long memberId, @PathVariable(name = "notificationId") Long notificationId) {
