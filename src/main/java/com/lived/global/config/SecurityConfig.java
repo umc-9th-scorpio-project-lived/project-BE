@@ -80,7 +80,15 @@ public class SecurityConfig {
     public org.springframework.web.cors.CorsConfigurationSource corsConfigurationSource() {
         org.springframework.web.cors.CorsConfiguration configuration = new org.springframework.web.cors.CorsConfiguration();
 
-        configuration.addAllowedOrigin("http://localhost:5173"); // 프론트 로컬 주소
+        // 기존 로컬 테스트용 주소
+        configuration.addAllowedOrigin("http://localhost:5173");
+
+        // 프론트엔드 배포 주소
+        configuration.addAllowedOrigin("https://saraboni.co.kr");
+
+        configuration.addAllowedOrigin("https://www.saraboni.co.kr");
+
+
         configuration.addAllowedHeader("*"); // 모든 헤더 허용
         configuration.addAllowedMethod("*"); // 모든 HTTP 메서드 허용
         configuration.setAllowCredentials(true); // 쿠키/인증정보 허용

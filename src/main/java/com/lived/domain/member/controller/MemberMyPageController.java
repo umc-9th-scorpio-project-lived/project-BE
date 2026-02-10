@@ -24,7 +24,7 @@ public class MemberMyPageController {
 
     @GetMapping("")
     @Operation(summary = "기본 프로필 정보 조회", description = "사용자 이름을 조회합니다.")
-    public ApiResponse<MemberMyPageResponseDTO.MyProfileResponse> getMyProfile(@RequestParam Long memberId) {
+    public ApiResponse<MemberMyPageResponseDTO.MyProfileResponse> getMyProfile(@AuthMember Long memberId) {
         return ApiResponse.onSuccess(GeneralSuccessCode.OK, memberMyPageService.getMyProfile(memberId));
     }
 
