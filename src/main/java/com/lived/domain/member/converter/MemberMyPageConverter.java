@@ -17,6 +17,8 @@ public class MemberMyPageConverter {
         return MemberMyPageResponseDTO.MyProfileResponse.builder()
                 .memberId(member.getId())
                 .name(member.getName())
+                .email(member.getEmail())
+                .createdAt(member.getCreatedAt())
                 .build();
     }
 
