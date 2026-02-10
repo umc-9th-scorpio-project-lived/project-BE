@@ -25,51 +25,51 @@ public class NotificationSetting extends BaseEntity {
 
     @Builder.Default
     @Column(name = "all_enabled", nullable = false)
-    private Boolean allEnabled = true;
+    private Boolean allEnabled = true; // 전체 알림 설정
 
     @Builder.Default
     @Column(name = "routine_enabled", nullable = false)
-    private Boolean routineEnabled = true;
+    private Boolean routineEnabled = true; // 루틴 알림
 
     @Builder.Default
-    @Column(name = "routine_report_enabled", nullable = false)
-    private Boolean routineReportEnabled = true;
+    @Column(name = "stats_enabled", nullable = false)
+    private Boolean statsEnabled = true; // 통계 분석 알림 (기존 routineReportEnabled)
 
     @Builder.Default
     @Column(name = "community_enabled", nullable = false)
-    private Boolean communityEnabled = true;
-
-    @Builder.Default
-    @Column(name = "community_hot_enabled", nullable = false)
-    private Boolean communityHotEnabled = true;
+    private Boolean communityEnabled = true; // 커뮤니티 알림
 
     @Builder.Default
     @Column(name = "comment_enabled", nullable = false)
-    private Boolean commentEnabled = true;
+    private Boolean commentEnabled = true; // 댓글 알림
+
+    @Builder.Default
+    @Column(name = "hot_post_enabled", nullable = false)
+    private Boolean hotPostEnabled = true; // 실시간 인기글 알림
 
     @Builder.Default
     @Column(name = "marketing_enabled", nullable = false)
-    private Boolean marketingEnabled = false;
+    private Boolean marketingEnabled = false; // 마케팅 정보 알림
 
     public void update(NotificationRequestDTO.NotificationSettingDTO request) {
+        // 1. 전체 알림 설정 변경 시 모든 항목 일괄 변경
         if (request.getAllEnabled() != null) {
             this.allEnabled = request.getAllEnabled();
-
             this.routineEnabled = request.getAllEnabled();
-            this.routineReportEnabled = request.getAllEnabled();
+            this.statsEnabled = request.getAllEnabled();
             this.communityEnabled = request.getAllEnabled();
-            this.communityHotEnabled = request.getAllEnabled();
             this.commentEnabled = request.getAllEnabled();
+            this.hotPostEnabled = request.getAllEnabled();
             this.marketingEnabled = request.getAllEnabled();
-
             return;
         }
 
+        // 2. 개별 설정 변경 (null이 아닌 경우에만 업데이트)
         if (request.getRoutineEnabled() != null) this.routineEnabled = request.getRoutineEnabled();
-        if (request.getRoutineReportEnabled() != null) this.routineReportEnabled = request.getRoutineReportEnabled();
+        if (request.getStatsEnabled() != null) this.statsEnabled = request.getStatsEnabled();
         if (request.getCommunityEnabled() != null) this.communityEnabled = request.getCommunityEnabled();
-        if (request.getCommunityHotEnabled() != null) this.communityHotEnabled = request.getCommunityHotEnabled();
         if (request.getCommentEnabled() != null) this.commentEnabled = request.getCommentEnabled();
+        if (request.getHotPostEnabled() != null) this.hotPostEnabled = request.getHotPostEnabled();
         if (request.getMarketingEnabled() != null) this.marketingEnabled = request.getMarketingEnabled();
     }
 }

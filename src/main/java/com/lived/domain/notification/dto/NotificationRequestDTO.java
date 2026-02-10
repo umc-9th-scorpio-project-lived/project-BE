@@ -6,16 +6,13 @@ public class NotificationRequestDTO {
 
     @Getter
     public static class NotificationSettingDTO {
-        private Boolean allEnabled;
-
-        private Boolean routineEnabled;
-        private Boolean routineReportEnabled;
-
-        private Boolean communityEnabled;
-        private Boolean communityHotEnabled;
-        private Boolean commentEnabled;
-
-        private Boolean marketingEnabled;
+        private Boolean allEnabled;         // 전체 알림
+        private Boolean routineEnabled;     // 루틴 알림
+        private Boolean statsEnabled;       // 통계 분석 알림
+        private Boolean communityEnabled;   // 커뮤니티 알림
+        private Boolean commentEnabled;     // 댓글 알림
+        private Boolean hotPostEnabled;     // 실시간 인기글 알림
+        private Boolean marketingEnabled;   // 마케팅 정보 알림
     }
 
     @Getter
