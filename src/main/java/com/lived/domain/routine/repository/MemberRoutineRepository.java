@@ -18,4 +18,7 @@ public interface MemberRoutineRepository extends JpaRepository<MemberRoutine, Lo
     boolean existsByMemberIdAndTitleAndIsActiveTrue(Long memberId, String title);
 
     List<MemberRoutine> findAllByMemberId(Long memberId);
+
+    // 수정 시 활용: memberRoutineId를 제외하고, 활성화된 루틴 중 이름 중복 확인
+    boolean existsByMemberIdAndTitleAndIsActiveTrueAndIdNot(Long memberId, String title, Long memberRoutineId);
 }
