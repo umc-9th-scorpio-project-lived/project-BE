@@ -72,7 +72,7 @@ jwt:
   refresh-token-expiration: 1209600000
 
 app:
-  frontend-url: http://localhost:5173
+  frontend-url: https://saraboni.co.kr
 
 logging:
     level:
