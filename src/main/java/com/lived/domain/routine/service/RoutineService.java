@@ -159,6 +159,13 @@ public class RoutineService {
         MemberRoutine memberRoutine = memberRoutineRepository.findById(memberRoutineId)
                 .orElseThrow(() -> new GeneralException(GeneralErrorCode.ROUTINE_NOT_FOUND));
 
+        if (memberRoutineRepository.existsByMemberIdAndTitleAndIsActiveTrueAndIdNot(
+                memberRoutine.getMember().getId(),
+                request.title(),
+                memberRoutineId)) {
+            throw new GeneralException(GeneralErrorCode.ROUTINE_ALREADY_EXISTS);
+        }
+
         memberRoutine.update(request);
     }
 
