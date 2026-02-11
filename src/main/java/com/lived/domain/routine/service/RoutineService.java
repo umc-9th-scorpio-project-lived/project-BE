@@ -125,7 +125,7 @@ public class RoutineService {
 
     // 날짜 포맷팅
     private String formatFullDate(LocalDate date) {
-        return date.format(DateTimeFormatter.ofPattern("EEEE, MM월 dd일", Locale.KOREAN));
+        return date.format(DateTimeFormatter.ofPattern("EEEE, M월 dd일", Locale.KOREAN));
     }
 
     // 진행 상황 메시지
