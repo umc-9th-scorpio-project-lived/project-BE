@@ -16,18 +16,8 @@ public interface RoutineHistoryRepository extends JpaRepository<RoutineHistory, 
     // 특정 날짜의 수행 기록 조회
     Optional<RoutineHistory> findByMemberRoutineIdAndCheckDate(Long memberRoutineId, LocalDate checkDate);
 
-    // 특정 기간 내 완료된 기록 수
-    long countByMemberRoutineIdAndCheckDateBetweenAndIsDoneTrue(
-            Long memberRoutineId, LocalDate start, LocalDate end);
-
     // 특정 루틴 리스트와 날짜에 해당하는 모든 기록을 한 번에 조회
     List<RoutineHistory> findAllByMemberRoutineIdInAndCheckDate(List<Long> memberRoutineIds, LocalDate checkDate);
-
-    // 특정 루틴과 연결된 모든 수행 기록을 삭제
-    @Modifying //SELECT 없이 바로 DELETE 쿼리
-    @Transactional
-    @Query("DELETE FROM RoutineHistory rh WHERE rh.memberRoutine.id = :memberRoutineId")
-    void deleteAllByMemberRoutineId(@Param("memberRoutineId") Long memberRoutineId);
 
     // 특정 루틴의 한 달간 모든 기록 조회
     List<RoutineHistory> findAllByMemberRoutineIdAndCheckDateBetween(Long memberRoutineId, LocalDate state, LocalDate end);
