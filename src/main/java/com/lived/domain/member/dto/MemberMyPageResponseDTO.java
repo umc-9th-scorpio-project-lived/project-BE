@@ -32,16 +32,16 @@ public class MemberMyPageResponseDTO {
         private String profileImageUrl;
         private String livingPeriod;
 
-        private List<MyPageFruitInfo> fruits;
+        private List<MyPageBigFruitInfo> bigFruits;
     }
 
     @Getter
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class MyPageFruitInfo {
+    public static class MyPageBigFruitInfo {
         private Long fruitId;
-        private String fruitType;
+        private String bigFruitType;
     }
 
     @Getter

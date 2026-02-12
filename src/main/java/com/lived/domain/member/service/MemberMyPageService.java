@@ -9,6 +9,7 @@ import com.lived.domain.member.enums.TreeVisibility;
 import com.lived.domain.member.repository.MemberMyPageQueryRepository;
 import com.lived.domain.member.repository.MemberRepository;
 import com.lived.domain.member.repository.TreeVisibilityTargetRepository;
+import com.lived.domain.routine.entity.RoutineBigFruit;
 import com.lived.domain.routine.entity.RoutineFruit;
 import com.lived.global.apiPayload.code.GeneralErrorCode;
 import com.lived.global.apiPayload.exception.GeneralException;
@@ -42,8 +43,8 @@ public class MemberMyPageService {
     public MemberMyPageResponseDTO.CommunityProfileResponse getCommunityProfile(Long memberId) {
         Member member = memberRepository.findById(memberId).orElseThrow(
                 () -> new GeneralException(GeneralErrorCode.MEMBER_NOT_FOUND));
-        List<RoutineFruit> fruits = queryRepository.findTop5Fruits(member);
-        return memberMyPageConverter.toCommunityProfileResponse(member, fruits);
+        List<RoutineBigFruit> bigFruits = queryRepository.findTop5BigFruits(member);
+        return memberMyPageConverter.toCommunityProfileResponse(member, bigFruits);
     }
 
     // 커뮤니티 프로필 정보 수정
@@ -67,8 +68,8 @@ public class MemberMyPageService {
             member.updateProfile(request.getNickname(), member.getProfileImageUrl());
         }
 
-        List<RoutineFruit> fruits = queryRepository.findTop5Fruits(member);
-        return memberMyPageConverter.toCommunityProfileResponse(member, fruits);
+        List<RoutineBigFruit> bigFruits = queryRepository.findTop5BigFruits(member);
+        return memberMyPageConverter.toCommunityProfileResponse(member, bigFruits);
     }
 
     public MemberMyPageResponseDTO.TreeVisibilityResponse getTreeVisibility(Long memberId) {
