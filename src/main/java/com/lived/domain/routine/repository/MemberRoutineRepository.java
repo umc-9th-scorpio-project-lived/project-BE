@@ -20,6 +20,9 @@ public interface MemberRoutineRepository extends JpaRepository<MemberRoutine, Lo
 
     List<MemberRoutine> findAllByMemberId(Long memberId);
 
+    // 수정 시 활용: memberRoutineId를 제외하고, 활성화된 루틴 중 이름 중복 확인
+    boolean existsByMemberIdAndTitleAndIsActiveTrueAndIdNot(Long memberId, String title, Long memberRoutineId);
+
     // 알림이 켜져 있고, 현재 시간(시/분)이 일치하는 활성 루틴 조회
     @Query("SELECT mr FROM MemberRoutine mr " +
             "JOIN FETCH mr.member m " +
