@@ -23,26 +23,20 @@ public class NotificationSettingService {
 
     @Transactional
     public NotificationResponseDTO.NotificationSettingDTO getNotificationSetting(Long memberId) {
-        NotificationSetting notificationSetting = notificationSettingRepository.findByMemberId(memberId)
-                .orElseThrow(() -> new GeneralException(GeneralErrorCode.MEMBER_NOT_FOUND));
+        return notificationSettingRepository.findByMemberId(memberId)
+                .map(NotificationConverter::toNotificationSettingDTO)
+                .orElseGet(() -> {
+                    Member member = memberRepository.findById(memberId)
+                            .orElseThrow(() -> new GeneralException(GeneralErrorCode.MEMBER_NOT_FOUND));
 
-        // 만약 데이터가 없다면 새로 생성
-        if (notificationSetting == null) {
-            // 유저 존재 여부 확인
-            Member member = memberRepository.findById(memberId)
-                    .orElseThrow(() -> new GeneralException(GeneralErrorCode.MEMBER_NOT_FOUND));
-
-            // 기본값으로 새 설정 객체 생성 및 저장
-            notificationSetting = notificationSettingRepository.save(
-                    NotificationSetting.builder()
-                            .member(member)
-                            .allEnabled(true)
-                            // 필요한 다른 설정 필드들도 여기에 추가
-                            .build()
-            );
-        }
-
-        return NotificationConverter.toNotificationSettingDTO(notificationSetting);
+                    NotificationSetting newSetting = notificationSettingRepository.save(
+                            NotificationSetting.builder()
+                                    .member(member)
+                                    .allEnabled(true)
+                                    .build()
+                    );
+                    return NotificationConverter.toNotificationSettingDTO(newSetting);
+                });
     }
 
     @Transactional
