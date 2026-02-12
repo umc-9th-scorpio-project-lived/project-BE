@@ -361,25 +361,26 @@ public class RoutineStatisticsService {
 
     private String createPrompt(StatisticsType type, String periodTitle, int totalRate, List<RoutineStatisticsResponseDTO.DailyStatisticsDTO> dailyStats) {
         StringBuilder sb = new StringBuilder();
-        sb.append("너는 사용자의 루틴 관리를 도와주는 AI 코치야.\n");
-        sb.append("아래 데이터를 보고 사용자에게 조언을 해줘.\n\n");
 
-        sb.append("[분석 기간]: ").append(periodTitle).append("\n");
-        sb.append("[전체 달성률]: ").append(totalRate).append("%\n");
+        sb.append("루틴 분석 AI 코치입니다. 다음 데이터를 분석해 조언을 작성하세요.\n\n");
 
-        if (type == StatisticsType.WEEKLY) {
-            sb.append("[요일별 달성률]:\n");
+        sb.append("[기간]: ").append(periodTitle).append("\n");
+        sb.append("[달성률]: ").append(totalRate).append("%\n");
+
+        if (type == StatisticsType.WEEKLY && dailyStats != null) {
+            sb.append("[요일별]: ");
             for (RoutineStatisticsResponseDTO.DailyStatisticsDTO day : dailyStats) {
-                sb.append("- ").append(day.getDayOfWeek()).append(": ").append(day.getPercentage()).append("%\n");
+                sb.append(day.getDayOfWeek()).append("(").append(day.getPercentage()).append("%), ");
             }
+            sb.setLength(sb.length() - 2);
+            sb.append("\n");
         }
 
-        sb.append("\n[제약 조건]:\n");
-        sb.append("1. 이모지나 인사말을 빼고, 핵심만 말해줘.\n");
-        sb.append("2. 정확히 '두 문장'으로 답변해줘.\n");
-        // AI에게 줄바꿈을 명시적으로 요청
-        sb.append("3. 첫 번째 문장과 두 번째 문장 사이에는 반드시 줄바꿈(\\n)을 넣어줘.\n");
-        sb.append("4. 첫 번째 문장은 데이터 팩트, 두 번째 문장은 제안/격려.\n");
+        sb.append("\n[제약 조건]\n");
+        sb.append("1. '해요'체를 사용해 친절하게 말하세요.\n");
+        sb.append("2. 이모지나 인사말 없이 핵심만 '두 문장'으로 답하세요.\n");
+        sb.append("3. 문장 사이에는 반드시 줄바꿈(\\n)을 넣으세요.\n");
+        sb.append("4. 첫 문장은 데이터 요약, 두 번째 문장은 제안/격려를 담으세요.\n");
 
         return sb.toString();
     }
