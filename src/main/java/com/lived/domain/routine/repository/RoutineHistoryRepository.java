@@ -37,4 +37,7 @@ public interface RoutineHistoryRepository extends JpaRepository<RoutineHistory, 
     List<RoutineHistory> findAllByMemberIdAndDateBetween(@Param("memberId") Long memberId,
                                                          @Param("startDate") LocalDate startDate,
                                                          @Param("endDate") LocalDate endDate);
+
+    // AFTER SET 삭제
+    void deleteAllByMemberRoutineIdAndCheckDateAfterOrEqual(Long memberRoutineId, LocalDate targetDate);
 }
