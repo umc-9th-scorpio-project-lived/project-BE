@@ -3,6 +3,7 @@ package com.lived.domain.member.converter;
 import com.lived.domain.member.dto.MemberMyPageResponseDTO;
 import com.lived.domain.member.entity.Member;
 import com.lived.domain.member.entity.TreeVisibilityTarget;
+import com.lived.domain.routine.entity.RoutineBigFruit;
 import com.lived.domain.routine.entity.RoutineFruit;
 import org.springframework.stereotype.Component;
 
@@ -23,21 +24,21 @@ public class MemberMyPageConverter {
     }
 
     // 커뮤니티 프로필 정보 변환
-    public MemberMyPageResponseDTO.CommunityProfileResponse toCommunityProfileResponse(Member member, List<RoutineFruit> fruits) {
+    public MemberMyPageResponseDTO.CommunityProfileResponse toCommunityProfileResponse(Member member, List<RoutineBigFruit> bigFruits) {
         return MemberMyPageResponseDTO.CommunityProfileResponse.builder()
                 .memberId(member.getId())
                 .nickname(member.getNickname())
                 .profileImageUrl(member.getProfileImageUrl())
                 .livingPeriod(member.getLivingPeriod().name())
-                .fruits(mapToFruitInfoList(fruits))
+                .bigFruits(mapToBigFruitInfoList(bigFruits))
                 .build();
     }
 
-    private List<MemberMyPageResponseDTO.MyPageFruitInfo> mapToFruitInfoList(List<RoutineFruit> fruits) {
+    private List<MemberMyPageResponseDTO.MyPageBigFruitInfo> mapToBigFruitInfoList(List<RoutineBigFruit> fruits) {
         return fruits.stream()
-                .map(fruit -> MemberMyPageResponseDTO.MyPageFruitInfo.builder()
+                .map(fruit -> MemberMyPageResponseDTO.MyPageBigFruitInfo.builder()
                         .fruitId(fruit.getId())
-                        .fruitType(fruit.getFruitType().name())
+                        .bigFruitType(fruit.getType().name())
                         .build())
                 .collect(Collectors.toList());
     }
