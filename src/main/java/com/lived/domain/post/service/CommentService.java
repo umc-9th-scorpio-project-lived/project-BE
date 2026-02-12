@@ -1,6 +1,8 @@
 package com.lived.domain.post.service;
 
 import com.lived.domain.member.repository.MemberBlockRepository;
+import com.lived.domain.notification.dto.NotificationEvent;
+import com.lived.domain.notification.enums.TargetType;
 import com.lived.domain.post.converter.CommentConverter;
 import com.lived.domain.post.dto.CommentRequestDTO;
 import com.lived.domain.post.dto.CommentResponseDTO;
@@ -20,6 +22,7 @@ import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,6 +38,7 @@ public class CommentService {
   private final CommentLikeRepository commentLikeRepository;
   private final MemberBlockRepository memberBlockRepository;
   private final ReportRepository reportRepository;
+  private final ApplicationEventPublisher eventPublisher;
 
 
   /**
@@ -82,6 +86,17 @@ public class CommentService {
 
     // Post의 댓글 수 증가
     post.incrementCommentCount();
+
+    // 본인의 글에 본인이 댓글을 단 경우가 아닐 때, 알림 이벤트 발행
+    if (!post.getMember().getId().equals(memberId)) {
+      eventPublisher.publishEvent(NotificationEvent.builder()
+              .receiver(post.getMember())
+              .title("새 댓글 알림")
+              .content(member.getNickname() + "님이 댓글을 남겼습니다: " + savedComment.getContent())
+              .targetId(post.getId())
+              .targetType(TargetType.COMMENT)
+              .build());
+    }
 
     return CommentConverter.toCreateCommentResponse(savedComment);
   }

@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalTime;
 import java.util.List;
 
 public interface MemberRoutineRepository extends JpaRepository<MemberRoutine, Long> {
@@ -18,4 +19,13 @@ public interface MemberRoutineRepository extends JpaRepository<MemberRoutine, Lo
     boolean existsByMemberIdAndTitleAndIsActiveTrue(Long memberId, String title);
 
     List<MemberRoutine> findAllByMemberId(Long memberId);
+
+    // 알림이 켜져 있고, 현재 시간(시/분)이 일치하는 활성 루틴 조회
+    @Query("SELECT mr FROM MemberRoutine mr " +
+            "JOIN FETCH mr.member m " +
+            "LEFT JOIN FETCH mr.excludedDates " +
+            "WHERE mr.isActive = true " +
+            "AND mr.isAlarmOn = true " +
+            "AND mr.alarmTime = :nowTime")
+    List<MemberRoutine> findRoutinesToNotify(@Param("nowTime") LocalTime nowTime);
 }
