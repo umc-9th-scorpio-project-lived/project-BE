@@ -126,6 +126,13 @@ public class RoutineRecommendationService {
             routineContext = "없음 (루틴이 비어있으니 일반적인 건강 루틴을 추천해줘)";
         }
 
+        String availableEmojis = "👍, 😁, 😂, 🤩, 🤪, 😤, 😶, 😍, 😪, 😎, " +
+                "☕, 🥗, 🍎, 🥤, 🍕, 🍜, 🍱, 🍔, 🥐, 🍰, " +
+                "🛌, 🏃, 📚, 💪, 🧘, 🎮, 🎨, 🎵, ✍️, 🍳, " +
+                "☀️, 🌙, ⭐, 🌈, 🌸, 🌳, 🍃, 🌊, 🔥, ❄️, " +
+                "🎧, 💻, 📖, ✏️, ⚽, 💡, ⏰, 📅, 🔔, 🎁, " +
+                "💖, ❤️, 💔, 🤎, 💙, 🖤, 🤍, 🩶, ❤️‍🔥, 💗";
+
         // 프롬프트
         String prompt = "사용자의 현재 루틴은 [" + routineContext + "] 입니다.\n" +
                 "이 루틴들과 함께하면 좋은 새로운 루틴들을 추천해주세요.\n" +
@@ -133,6 +140,7 @@ public class RoutineRecommendationService {
                 "1. 루틴 1개당 3개씩 추천할 것.\n" +
                 "2. 응답은 반드시 JSON 배열 형식으로만 대답할 것.\n" +
                 "3. 각 추천마다 baseRoutineTitle 필드에 반드시 [" + routineContext + "] 중 하나를 적을 것.\n" +
+                "4. emoji 필드에는 반드시 다음 리스트에 있는 이모지만 사용할 것: [" + availableEmojis + "]\n" +
                 "형식: [{\"title\": \"...\", \"emoji\": \"...\", \"baseRoutineTitle\": \"...\"}]";
 
         return callGeminiApi(prompt);
@@ -162,6 +170,8 @@ public class RoutineRecommendationService {
             // JSON 배열 부분([ ])만 추출하는 정규식
             if (jsonContent.contains("[") && jsonContent.contains("]")) {
                 jsonContent = jsonContent.substring(jsonContent.indexOf("["), jsonContent.lastIndexOf("]") + 1);
+
+                jsonContent = jsonContent.replaceAll("```json", "").replaceAll("```", "").trim();
             }
 
             // DTO 리스트로 변환
