@@ -3,6 +3,7 @@ package com.lived.domain.routine.entity.mapping;
 import com.lived.domain.member.entity.Member;
 import com.lived.domain.routine.dto.RoutineUpdateRequestDTO;
 import com.lived.domain.routine.entity.Routine;
+import com.lived.domain.routine.entity.RoutineHistory;
 import com.lived.domain.routine.enums.RepeatType;
 import com.lived.global.entity.BaseEntity;
 import jakarta.persistence.*;
@@ -71,6 +72,11 @@ public class MemberRoutine extends BaseEntity {
 
     @Column(name = "end_date")
     private LocalDate endDate;
+
+    // 부모 삭제 시 자식(History)도 함께 삭제되도록 설정
+    @Builder.Default
+    @OneToMany(mappedBy = "memberRoutine", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<RoutineHistory> histories = new ArrayList<>();
 
     @Builder.Default
     @ElementCollection
