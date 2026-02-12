@@ -39,5 +39,11 @@ public interface RoutineHistoryRepository extends JpaRepository<RoutineHistory, 
                                                          @Param("endDate") LocalDate endDate);
 
     // AFTER SET 삭제
-    void deleteAllByMemberRoutineIdAndCheckDateAfterOrEqual(Long memberRoutineId, LocalDate targetDate);
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM RoutineHistory rh WHERE rh.memberRoutine.id = :memberRoutineId AND rh.checkDate >= :targetDate")
+    void deleteAllByMemberRoutineIdAndCheckDateAfterOrEqual(
+            @Param("memberRoutineId") Long memberRoutineId,
+            @Param("targetDate") LocalDate targetDate
+    );
 }
