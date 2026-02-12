@@ -48,7 +48,7 @@ public class RoutineService {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new GeneralException(GeneralErrorCode.MEMBER_NOT_FOUND));
 
-        if (memberRoutineRepository.existsByMemberIdAndTitleAndIsActiveTrue(memberId, request.getTitle())){
+        if (memberRoutineRepository.existsByMemberIdAndTitleAndIsActiveTrue(memberId, request.getTitle())) {
             throw new GeneralException(GeneralErrorCode.ROUTINE_ALREADY_EXISTS);
         }
 
@@ -182,13 +182,19 @@ public class RoutineService {
 
                 // 이미 생성된 수행 기록이 있다면 DB에서 삭제
                 routineHistoryRepository.findByMemberRoutineIdAndCheckDate(memberRoutineId, request.targetDate())
-                        .ifPresent(routineHistoryRepository::delete);
+                        .ifPresent(history -> {
+                            routineHistoryRepository.delete(history);
+                            routineHistoryRepository.flush();
+                        });
 
-                memberRoutineRepository.flush();
+                memberRoutineRepository.saveAndFlush(memberRoutine);
 
+                entityManager.flush();
                 entityManager.clear();
             }
+
             case AFTER_SET -> memberRoutine.terminateAt(request.targetDate());
+
             case ALL_SET -> {
                 routineHistoryRepository.deleteAllByMemberRoutineId(memberRoutineId);
 
@@ -209,11 +215,11 @@ public class RoutineService {
         MemberRoutine memberRoutine = memberRoutineRepository.findById(memberRoutineId)
                 .orElseThrow(() -> new GeneralException(GeneralErrorCode.ROUTINE_NOT_FOUND));
 
-        if(targetDate.isAfter(LocalDate.now())) {
+        if (targetDate.isAfter(LocalDate.now())) {
             throw new GeneralException(GeneralErrorCode.FUTURE_ROUTINE_CHECK_NOT_ALLOWED);
         }
 
-        if(!memberRoutine.isScheduledFor(targetDate)) {
+        if (!memberRoutine.isScheduledFor(targetDate)) {
             throw new GeneralException(GeneralErrorCode.BAD_REQUEST);
         }
 
@@ -257,7 +263,7 @@ public class RoutineService {
                 .filter(template -> !existingRoutineIds.contains(template.getId())) // 중복 제거
                 .toList();
 
-        if(templates.isEmpty()) {
+        if (templates.isEmpty()) {
             return 0;
         }
 
