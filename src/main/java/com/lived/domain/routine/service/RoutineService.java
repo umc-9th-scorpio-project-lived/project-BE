@@ -125,7 +125,7 @@ public class RoutineService {
 
     // 날짜 포맷팅
     private String formatFullDate(LocalDate date) {
-        return date.format(DateTimeFormatter.ofPattern("EEEE, M월 dd일", Locale.KOREAN));
+        return date.format(DateTimeFormatter.ofPattern("EEEE, M월 d일", Locale.KOREAN));
     }
 
     // 진행 상황 메시지
@@ -192,7 +192,13 @@ public class RoutineService {
             case ALL_SET -> {
                 routineHistoryRepository.deleteAllByMemberRoutineId(memberRoutineId);
 
+                // 만약 MemberRoutine 엔티티 안에 @ElementCollection(excludedDates)이 있다면
+                // 부모를 삭제하기 전에 자식 컬렉션을 명시적으로 비워주는 것이 안전
+                memberRoutine.getExcludedDates().clear();
+
                 memberRoutineRepository.delete(memberRoutine);
+
+                memberRoutineRepository.flush();
             }
         }
     }

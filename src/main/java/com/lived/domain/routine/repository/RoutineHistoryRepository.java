@@ -3,8 +3,10 @@ package com.lived.domain.routine.repository;
 import com.lived.domain.routine.entity.RoutineHistory;
 import com.lived.domain.routine.entity.mapping.MemberRoutine;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -22,7 +24,10 @@ public interface RoutineHistoryRepository extends JpaRepository<RoutineHistory, 
     List<RoutineHistory> findAllByMemberRoutineIdInAndCheckDate(List<Long> memberRoutineIds, LocalDate checkDate);
 
     // 특정 루틴과 연결된 모든 수행 기록을 삭제
-    void deleteAllByMemberRoutineId(Long memberRoutineId);
+    @Modifying //SELECT 없이 바로 DELETE 쿼리
+    @Transactional
+    @Query("DELETE FROM RoutineHistory rh WHERE rh.memberRoutine.id = :memberRoutineId")
+    void deleteAllByMemberRoutineId(@Param("memberRoutineId") Long memberRoutineId);
 
     // 특정 루틴의 한 달간 모든 기록 조회
     List<RoutineHistory> findAllByMemberRoutineIdAndCheckDateBetween(Long memberRoutineId, LocalDate state, LocalDate end);
