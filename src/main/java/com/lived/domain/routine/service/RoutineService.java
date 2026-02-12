@@ -9,6 +9,7 @@ import com.lived.domain.routine.entity.RoutineHistory;
 import com.lived.domain.routine.enums.RepeatType;
 import com.lived.domain.routine.entity.mapping.MemberRoutine;
 import com.lived.domain.routine.repository.MemberRoutineRepository;
+import com.lived.domain.routine.repository.RoutineFruitRepository;
 import com.lived.domain.routine.repository.RoutineHistoryRepository;
 import com.lived.domain.routine.repository.RoutineRepository;
 import com.lived.global.apiPayload.code.GeneralErrorCode;
@@ -42,6 +43,8 @@ public class RoutineService {
 
     @Autowired
     private EntityManager entityManager;
+    @Autowired
+    private RoutineFruitRepository routineFruitRepository;
 
     // 루틴 생성 로직 (커스텀)
     public Long createCustomRoutine(Long memberId, RoutineRequestDTO request) {
@@ -188,15 +191,28 @@ public class RoutineService {
                         });
 
                 memberRoutineRepository.saveAndFlush(memberRoutine);
+                statisticsService.syncRoutineFruit(memberRoutine, request.targetDate());
 
-                entityManager.flush();
-                entityManager.clear();
+                entityManager.clear(); // 1차 캐시 초기화로 다음 조회 시 정합성 보장
             }
 
-            case AFTER_SET -> memberRoutine.terminateAt(request.targetDate());
+            case AFTER_SET -> {
+                memberRoutine.terminateAt(request.targetDate());
+
+                routineHistoryRepository.deleteAllByMemberRoutineIdAndCheckDateAfterOrEqual(memberRoutineId, request.targetDate());
+                routineHistoryRepository.flush();
+
+                statisticsService.syncRoutineFruit(memberRoutine, request.targetDate());
+            }
 
             case ALL_SET -> {
+                // 연관된 열매 통계 데이터 삭제
+                routineFruitRepository.deleteAllByMemberRoutineId(memberRoutineId);
+
+                // 루틴 자체 삭제
                 memberRoutineRepository.delete(memberRoutine);
+
+                memberRoutineRepository.flush();
             }
         }
     }

@@ -1,6 +1,5 @@
 package com.lived.domain.routine.repository;
 
-import com.lived.domain.routine.entity.Routine;
 import com.lived.domain.routine.entity.RoutineFruit;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -17,4 +16,7 @@ public interface RoutineFruitRepository extends JpaRepository<RoutineFruit, Long
 
     // StartDate와 EndDate 사이의 Month를 가진 데이터를 전부 조회
     List<RoutineFruit> findAllByMemberRoutineMemberIdAndMonthBetween(Long memberId, LocalDate startDate, LocalDate endDate);
+
+    // 루틴 전체 삭제 시 열매 기록 일괄 삭제 (외래키 제약조건 방지)
+    void deleteAllByMemberRoutineId(Long memberRoutineId);
 }
