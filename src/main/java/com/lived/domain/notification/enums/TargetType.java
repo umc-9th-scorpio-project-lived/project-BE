@@ -8,5 +8,6 @@ public enum TargetType {
 
     COMMUNITY,
     COMMENT,
-    COMMUNITY_HOT
+    COMMUNITY_HOT,
+    MARKETING
 }

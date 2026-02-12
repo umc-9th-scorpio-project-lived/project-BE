@@ -23,7 +23,8 @@ public class NotificationSettingService {
 
     @Transactional
     public NotificationResponseDTO.NotificationSettingDTO getNotificationSetting(Long memberId) {
-        NotificationSetting notificationSetting = notificationSettingRepository.findByMemberId(memberId);
+        NotificationSetting notificationSetting = notificationSettingRepository.findByMemberId(memberId)
+                .orElseThrow(() -> new GeneralException(GeneralErrorCode.MEMBER_NOT_FOUND));
 
         // 만약 데이터가 없다면 새로 생성
         if (notificationSetting == null) {
@@ -46,7 +47,8 @@ public class NotificationSettingService {
 
     @Transactional
     public NotificationResponseDTO.NotificationSettingDTO updateNotificationSetting(Long memberId, NotificationRequestDTO.NotificationSettingDTO request) {
-        NotificationSetting notificationSetting = notificationSettingRepository.findByMemberId(memberId);
+        NotificationSetting notificationSetting = notificationSettingRepository.findByMemberId(memberId)
+                .orElseThrow(() -> new GeneralException(GeneralErrorCode.MEMBER_NOT_FOUND));
 
         notificationSetting.update(request);
 

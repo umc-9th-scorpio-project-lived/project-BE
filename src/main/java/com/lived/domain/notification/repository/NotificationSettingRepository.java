@@ -7,5 +7,5 @@ import java.util.Optional;
 
 public interface NotificationSettingRepository extends JpaRepository<NotificationSetting, Long> {
     // 특정 회원의 알림 설정 정보 조회
-    NotificationSetting findByMemberId(Long memberId);
+    Optional<NotificationSetting> findByMemberId(Long memberId);
 }
