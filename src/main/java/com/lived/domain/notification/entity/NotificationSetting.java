@@ -52,24 +52,43 @@ public class NotificationSetting extends BaseEntity {
     private Boolean marketingEnabled = false; // 마케팅 정보 알림
 
     public void update(NotificationRequestDTO.NotificationSettingDTO request) {
-        // 1. 전체 알림 설정 변경 시 모든 항목 일괄 변경
+        // [전체 알림] 토글이 조작된 경우
         if (request.getAllEnabled() != null) {
-            this.allEnabled = request.getAllEnabled();
-            this.routineEnabled = request.getAllEnabled();
-            this.statsEnabled = request.getAllEnabled();
-            this.communityEnabled = request.getAllEnabled();
-            this.commentEnabled = request.getAllEnabled();
-            this.hotPostEnabled = request.getAllEnabled();
-            this.marketingEnabled = request.getAllEnabled();
+            boolean masterValue = request.getAllEnabled();
+            this.allEnabled = masterValue;
+
+            // 전체가 true면 모두 true, 전체가 false면 모두 false로 일괄 변경
+            this.routineEnabled = masterValue;
+            this.statsEnabled = masterValue;
+            this.communityEnabled = masterValue;
+            this.commentEnabled = masterValue;
+            this.hotPostEnabled = masterValue;
+            this.marketingEnabled = masterValue;
+
+            // 마스터 스위치 작동 시에는 여기서 종료
             return;
         }
 
-        // 2. 개별 설정 변경 (null이 아닌 경우에만 업데이트)
+        // [개별 알림] 설정 변경
         if (request.getRoutineEnabled() != null) this.routineEnabled = request.getRoutineEnabled();
         if (request.getStatsEnabled() != null) this.statsEnabled = request.getStatsEnabled();
         if (request.getCommunityEnabled() != null) this.communityEnabled = request.getCommunityEnabled();
         if (request.getCommentEnabled() != null) this.commentEnabled = request.getCommentEnabled();
         if (request.getHotPostEnabled() != null) this.hotPostEnabled = request.getHotPostEnabled();
         if (request.getMarketingEnabled() != null) this.marketingEnabled = request.getMarketingEnabled();
+
+        // [상태 동기화] 개별 설정 이후 전체 알림 상태를 재계산
+        // 하나라도 false면 전체 알림은 false여야 함
+        if (!isAllChildEnabled()) {
+            this.allEnabled = false;
+        }
+    }
+
+    /**
+     * 모든 하위 알림이 true인지 확인하는 헬퍼 메서드
+     */
+    private boolean isAllChildEnabled() {
+        return routineEnabled && statsEnabled && communityEnabled &&
+                commentEnabled && hotPostEnabled && marketingEnabled;
     }
 }
