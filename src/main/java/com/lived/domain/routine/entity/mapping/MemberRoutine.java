@@ -155,8 +155,6 @@ public class MemberRoutine extends BaseEntity {
     // 이후 일정 삭제
     public void terminateAt(LocalDate date) {
         this.endDate = date.minusDays(1);
-        if(this.endDate.isBefore(this.startDate)) {
-            this.isActive = false;
-        }
+        this.isActive = false;
     }
 }
