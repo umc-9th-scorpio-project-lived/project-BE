@@ -1,0 +1,82 @@
+package com.lived.domain.post.controller;
+
+import com.lived.domain.post.dto.SearchResponseDTO;
+import com.lived.domain.post.service.SearchService;
+import com.lived.global.apiPayload.ApiResponse;
+import com.lived.global.apiPayload.code.GeneralSuccessCode;
+import com.lived.global.auth.annotation.AuthMember;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.*;
+
+@Tag(name = "Community")
+@RestController
+@RequestMapping("/api/posts/search")
+@RequiredArgsConstructor
+public class SearchController {
+
+  private final SearchService searchService;
+
+  @Operation(
+      summary = "검색어 기록 조회",
+      description = "최근 검색어 기록을 최대 10개까지 조회합니다."
+  )
+  @ApiResponses({
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(
+          responseCode = "200",
+          description = "조회 성공"
+      )
+  })
+  @GetMapping("/history")
+  public ApiResponse<SearchResponseDTO.SearchHistoryListResponse> getSearchHistory(
+      @Parameter(hidden = true) @AuthMember Long memberId
+  ) {
+    SearchResponseDTO.SearchHistoryListResponse response =
+        searchService.getSearchHistory(memberId);
+    return ApiResponse.onSuccess(GeneralSuccessCode.OK, response);
+  }
+
+  @Operation(
+      summary = "검색어 개별 삭제",
+      description = "특정 검색어 기록을 삭제합니다."
+  )
+  @ApiResponses({
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(
+          responseCode = "200",
+          description = "삭제 성공"
+      )
+  })
+  @DeleteMapping("/history/{historyId}")
+  public ApiResponse<SearchResponseDTO.DeleteSearchHistoryResponse> deleteSearchHistory(
+      @Parameter(hidden = true) @AuthMember Long memberId,
+
+      @Parameter(description = "검색 기록 ID", required = true, example = "1")
+      @PathVariable Long historyId
+  ) {
+    SearchResponseDTO.DeleteSearchHistoryResponse response =
+        searchService.deleteSearchHistory(historyId, memberId);
+    return ApiResponse.onSuccess(GeneralSuccessCode.OK, response);
+  }
+
+  @Operation(
+      summary = "검색어 전체 삭제",
+      description = "모든 검색어 기록을 삭제합니다."
+  )
+  @ApiResponses({
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(
+          responseCode = "200",
+          description = "전체 삭제 성공"
+      )
+  })
+  @DeleteMapping("/history")
+  public ApiResponse<SearchResponseDTO.DeleteAllSearchHistoryResponse> deleteAllSearchHistory(
+      @Parameter(hidden = true) @AuthMember Long memberId
+  ) {
+    SearchResponseDTO.DeleteAllSearchHistoryResponse response =
+        searchService.deleteAllSearchHistory(memberId);
+    return ApiResponse.onSuccess(GeneralSuccessCode.OK, response);
+  }
+}
