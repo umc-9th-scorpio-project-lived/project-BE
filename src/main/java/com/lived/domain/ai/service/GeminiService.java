@@ -14,19 +14,20 @@ import org.springframework.web.client.RestClient;
 @RequiredArgsConstructor
 public class GeminiService {
 
+    @Value("${gemini.api-url}")
+    private String apiUrl;
+
     @Value("${gemini.api-key}")
     private String apiKey;
 
     public String getAiAdvice(String prompt) {
         try {
-            String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
-
-            log.info("Gemini 요청 시작 (Header Auth): gemini-2.5-flash");
+            log.info("Gemini 요청 시작 (Header Auth): API URL = {}", apiUrl);
 
             RestClient restClient = RestClient.create();
 
             GeminiResponse response = restClient.post()
-                    .uri(url)
+                    .uri(apiUrl)
                     .header("x-goog-api-key", apiKey.trim()) // 헤더 인증 유지
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(GeminiRequest.create(prompt))
